@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tuteur de français IA</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Barre du haut -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">🎙️</span>
+      <span class="brand-name" data-i18n="brand">Tuteur FR</span>
+    </div>
+    <div class="topbar-actions">
+      <button id="langBtn" class="icon-btn" title="Language">EN</button>
+      <button id="themeBtn" class="icon-btn" data-i18n-title="theme_title" title="Basculer clair / sombre">🌙</button>
+      <button id="settingsBtn" class="icon-btn" data-i18n-title="settings_title" title="Réglages">⚙️</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- Colonne gauche : réglages de la leçon -->
+    <aside class="panel panel-left">
+      <h2 class="panel-title" data-i18n="panel_lesson">Ta leçon</h2>
+
+      <label class="field">
+        <span data-i18n="label_level">Niveau</span>
+        <select id="levelSelect">
+          <option value="debutant" data-i18n="lvl_beginner">Débutant</option>
+          <option value="intermediaire" selected data-i18n="lvl_intermediate">Intermédiaire</option>
+          <option value="avance" data-i18n="lvl_advanced">Avancé</option>
+        </select>
+      </label>
+
+      <label class="field">
+        <span data-i18n="label_persona">Personnage</span>
+        <select id="personaSelect">
+          <option value="tuteur" selected data-i18n="persona_tutor">Tuteur classique</option>
+          <option value="hugo">Victor Hugo</option>
+          <option value="vangogh">Vincent van Gogh</option>
+          <option value="stromae">Stromae</option>
+          <option value="curie">Marie Curie</option>
+          <option value="napoleon">Napoléon Bonaparte</option>
+          <option value="zidane">Zinédine Zidane</option>
+          <option value="guetta">David Guetta</option>
+          <option value="bardot">Brigitte Bardot</option>
+        </select>
+      </label>
+
+      <label class="field">
+        <span data-i18n="label_mode">Mode</span>
+        <select id="modeSelect">
+          <option value="libre" selected data-i18n="mode_libre">Conversation libre</option>
+          <option value="guidee" data-i18n="mode_guidee">Conversation guidée</option>
+          <option value="roleplay" data-i18n="mode_roleplay">Jeu de rôle</option>
+          <option value="grammaire" data-i18n="mode_grammaire">Grammaire</option>
+        </select>
+      </label>
+
+      <label class="field" id="contextField" hidden>
+        <span id="contextLabel" data-i18n="ctx_subject">Sujet</span>
+        <input id="contextInput" type="text" data-i18n-ph="ctx_ph_default" placeholder="Ex : voyage, restaurant..." />
+      </label>
+
+      <label class="field">
+        <span data-i18n="label_voice">Voix du tuteur</span>
+        <select id="voiceSelect"></select>
+      </label>
+
+      <label class="field">
+        <span data-i18n="label_rate">Vitesse de la voix</span>
+        <select id="rateSelect">
+          <option value="0.8" data-i18n="rate_slow">Lente</option>
+          <option value="0.95" selected data-i18n="rate_normal">Normale</option>
+          <option value="1.1" data-i18n="rate_fast">Rapide</option>
+        </select>
+      </label>
+
+      <button id="startBtn" class="btn btn-primary" data-i18n="btn_start">Démarrer la conversation</button>
+      <button id="resetBtn" class="btn btn-ghost" data-i18n="btn_reset">Nouvelle leçon</button>
+
+      <div class="hint" id="engineHint"></div>
+    </aside>
+
+    <!-- Colonne centrale : transcription + micro -->
+    <section class="panel panel-center">
+      <div id="transcript" class="transcript">
+        <div class="empty-state">
+          <p data-i18n-html="empty_1">Choisis ton niveau et ton mode, puis clique sur <strong>Démarrer la conversation</strong>.</p>
+          <p class="small" data-i18n="empty_2">Ton tuteur te parlera en français et corrigera tes réponses.</p>
+        </div>
+      </div>
+
+      <div class="mic-zone">
+        <div id="waveform" class="waveform">
+          <span></span><span></span><span></span><span></span><span></span>
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
+        <button id="micBtn" class="mic-btn" disabled data-i18n-title="mic_title" title="Parler">🎤</button>
+        <div id="statusLine" class="status-line">Prêt</div>
+
+        <form id="textForm" class="text-form">
+          <input id="textInput" type="text" data-i18n-ph="text_ph" placeholder="...ou écris ta réponse ici" autocomplete="off" />
+          <button type="submit" class="btn btn-send" data-i18n="btn_send">Envoyer</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- Colonne droite : corrections + vocabulaire -->
+    <aside class="panel panel-right">
+      <h2 class="panel-title" data-i18n="panel_corrections">Corrections</h2>
+      <div id="corrections" class="corrections">
+        <p class="small muted" data-i18n="corrections_empty">Tes corrections apparaîtront ici après chaque réponse.</p>
+      </div>
+      <div class="panel-title-row">
+        <h2 class="panel-title" data-i18n="panel_vocab">Vocabulaire</h2>
+        <button id="clearVocabBtn" class="link-btn" data-i18n="vocab_clear">Vider</button>
+      </div>
+      <div id="vocab" class="vocab">
+        <p class="small muted" data-i18n="vocab_empty">Les nouveaux mots s'ajouteront ici.</p>
+      </div>
+    </aside>
+  </main>
+
+  <!-- Fenêtre des réglages -->
+  <div id="settingsModal" class="modal" hidden>
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2 data-i18n="settings_h">Réglages</h2>
+        <button id="closeSettings" class="icon-btn">✕</button>
+      </div>
+
+      <label class="field">
+        <span data-i18n="label_provider">Fournisseur d'IA</span>
+        <select id="providerSelect">
+          <option value="groq" data-i18n="prov_groq">Groq (gratuit, sans carte)</option>
+          <option value="gemini" data-i18n="prov_gemini">Google Gemini (gratuit selon pays)</option>
+          <option value="anthropic" data-i18n="prov_anthropic">Claude (Anthropic)</option>
+          <option value="openai" data-i18n="prov_openai">OpenAI (GPT)</option>
+        </select>
+      </label>
+
+      <label class="field">
+        <span data-i18n="label_apikey">Clé API</span>
+        <input id="apiKeyInput" type="password" data-i18n-ph="apikey_ph" placeholder="Colle ta clé ici" />
+      </label>
+
+      <p class="small muted" data-i18n="privacy_note">
+        Ta clé est enregistrée uniquement dans ce navigateur (localStorage). Elle n'est jamais envoyée ailleurs qu'au fournisseur choisi.
+      </p>
+
+      <div class="modal-actions">
+        <button id="saveSettings" class="btn btn-primary" data-i18n="btn_save">Enregistrer</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
