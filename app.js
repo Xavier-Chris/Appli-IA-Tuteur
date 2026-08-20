@@ -393,8 +393,12 @@ if (SR) {
   };
   recognition.onresult = (e) => {
     let interim = "";
-    finalText = "";
-    for (let i = 0; i < e.results.length; i++) {
+    // On ne relit que les résultats nouveaux depuis le dernier événement
+    // (resultIndex), pas tout le tableau depuis le début. Sur Android,
+    // le moteur vocal réémet parfois d'anciens segments déjà traités ;
+    // les additionner à chaque fois provoquait un texte final dupliqué
+    // (« bonjourbonjbonbonjourbonbonjourbonj »).
+    for (let i = e.resultIndex; i < e.results.length; i++) {
       const seg = e.results[i][0].transcript;
       if (e.results[i].isFinal) finalText += seg;
       else interim += seg;
