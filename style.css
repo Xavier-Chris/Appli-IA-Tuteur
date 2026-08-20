@@ -242,7 +242,14 @@ select:focus, input:focus { border-color: var(--primary); }
 .text-form input { flex: 1; }
 
 /* ---- Corrections ---- */
-.corrections, .vocab { overflow-y: auto; }
+/* Corrections : une seule visible à la fois (défilement pour les
+   autres), pour laisser le plus de place possible au vocabulaire. */
+.corrections {
+  max-height: 170px;
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
+}
+.vocab { flex: 1; overflow-y: auto; }
 .correction-card {
   border: 1px solid var(--border);
   border-radius: 12px;
@@ -251,6 +258,8 @@ select:focus, input:focus { border-color: var(--primary); }
   background: var(--panel-2);
   font-size: 14px;
   animation: pop .18s ease;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
 }
 .correction-card .row { margin-bottom: 6px; }
 .correction-card .tag { font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); display: block; }
