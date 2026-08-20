@@ -276,7 +276,10 @@ $("contextInput").addEventListener("input", (e) => (state.context = e.target.val
 //  Synthèse vocale (le tuteur parle)
 // =========================================================
 let frenchVoices = [];
-let selectedVoiceName = localStorage.getItem("voiceName") || "";
+// Clé renommée (voiceNameV2) pour que les anciens réglages figés sur la
+// voix "Paul" (non neuronale) ne bloquent plus le choix automatique
+// de la meilleure voix disponible (voix "Natural" en priorité).
+let selectedVoiceName = localStorage.getItem("voiceNameV2") || "";
 let voiceRate = parseFloat(localStorage.getItem("voiceRate")) || 0.95;
 
 // Score de "naturel" : les voix neuronales (Edge) et Google passent devant.
@@ -305,11 +308,6 @@ function loadVoices() {
   frenchVoices = all
     .filter((v) => v.lang && v.lang.replace("_", "-").toLowerCase() === "fr-fr")
     .sort((a, b) => voiceScore(b) - voiceScore(a));
-
-  // On ne garde que la voix de Paul. Si elle n'existe pas sur cet appareil,
-  // on garde les autres voix de France comme secours.
-  const paul = frenchVoices.filter((v) => v.name.toLowerCase().includes("paul"));
-  if (paul.length) frenchVoices = paul;
 
   const sel = document.getElementById("voiceSelect");
   if (!sel) return;
@@ -361,7 +359,7 @@ function speak(text) {
 // Menu de choix de la voix : on change et on donne un aperçu.
 document.getElementById("voiceSelect").addEventListener("change", (e) => {
   selectedVoiceName = e.target.value;
-  localStorage.setItem("voiceName", selectedVoiceName);
+  localStorage.setItem("voiceNameV2", selectedVoiceName);
   speak("Bonjour, je suis ton professeur de français. Écoute ma voix.");
 });
 document.getElementById("rateSelect").addEventListener("change", (e) => {
