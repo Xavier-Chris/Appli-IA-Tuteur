@@ -772,26 +772,42 @@ async function callGroq(systemPrompt, messages) {
   const fullMessages = [{ role: "system", content: systemPrompt }, ...messages];
   let lastErr;
   for (const model of GROQ_MODELS) {
-    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        Authorization: "Bearer " + state.apiKey,
-      },
-      body: JSON.stringify({
-        model,
-        max_tokens: 800,
-        response_format: { type: "json_object" },
-        messages: fullMessages,
-      }),
-    });
-    if (res.ok) {
-      const json = await res.json();
-      return json.choices?.[0]?.message?.content || "";
+    // Une réponse JSON mal formée (souvent coupée avant la fin) est parfois
+    // un aléa ponctuel du modèle : on retente une fois sur le même modèle
+    // avant de passer au suivant.
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          Authorization: "Bearer " + state.apiKey,
+        },
+        body: JSON.stringify({
+          model,
+          max_tokens: 1200,
+          response_format: { type: "json_object" },
+          messages: fullMessages,
+        }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        return json.choices?.[0]?.message?.content || "";
+      }
+      let code = "";
+      let detail = "";
+      try {
+        const body = await res.json();
+        code = body.error?.code || "";
+        detail = JSON.stringify(body.error || {});
+      } catch (_) {}
+      lastErr = new Error(`${res.status} ${detail}`);
+      lastErr.status = res.status;
+      if (code === "json_validate_failed" && attempt === 0) continue;   // on retente
+      break;
     }
-    lastErr = new Error(await readError(res));
-    // 400 / 404 = modèle indisponible : on tente le suivant. Sinon on arrête.
-    if (res.status !== 400 && res.status !== 404) throw lastErr;
+    // 400 (modèle indisponible ou JSON invalide même après retry) / 404 :
+    // on tente le modèle suivant. Toute autre erreur (ex : 401) arrête tout.
+    if (lastErr.status !== 400 && lastErr.status !== 404) throw lastErr;
   }
   throw lastErr;
 }
