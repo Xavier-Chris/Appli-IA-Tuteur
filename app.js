@@ -626,6 +626,7 @@ Ne mets rien d'autre que ce JSON.`;
 async function lookupWord(word, sentenceContext, spanEl) {
   const cleanWord = (word || "").trim();
   if (!cleanWord || !state.apiKey) return;
+  speak(cleanWord);   // prononce le mot cliqué, en plus de sa traduction
   spanEl.classList.add("looking-up");
   try {
     const raw = await callProvider(buildVocabLookupPrompt(), [
