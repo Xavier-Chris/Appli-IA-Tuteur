@@ -92,6 +92,8 @@ const I18N = {
     voice_default: "Voix par défaut du navigateur",
     hint_engine: "Moteur", hint_key_ok: "clé OK ✅", hint_key_missing: "clé manquante ⚠️",
     hint_voice: "Voix", hint_mic_ok: "micro dispo 🎤", hint_mic_no: "micro indispo (utilise le texte)",
+    hint_mic_brave: "micro indispo sur Brave ⚠️",
+    brave_warning: "⚠️ <strong>Tu utilises Brave</strong> : la reconnaissance vocale ne fonctionne pas dans ce navigateur (limitation volontaire de Brave, pas un bug de l'app). Utilise Chrome ou Edge pour parler au micro, ou écris tes réponses en attendant.",
   },
   en: {
     brand: "French Tutor",
@@ -153,6 +155,8 @@ const I18N = {
     voice_default: "Browser default voice",
     hint_engine: "Engine", hint_key_ok: "key OK ✅", hint_key_missing: "key missing ⚠️",
     hint_voice: "Voice", hint_mic_ok: "mic ready 🎤", hint_mic_no: "mic unavailable (type instead)",
+    hint_mic_brave: "mic unavailable on Brave ⚠️",
+    brave_warning: "⚠️ <strong>You're using Brave</strong>: voice recognition doesn't work in this browser (a deliberate Brave limitation, not an app bug). Use Chrome or Edge to talk with the mic, or type your answers instead.",
   },
 };
 
@@ -845,9 +849,24 @@ function refreshEngineHint() {
     state.provider === "groq" ? "Groq" :
     "Claude";
   const key = state.apiKey ? t("hint_key_ok") : t("hint_key_missing");
-  const voice = SR ? t("hint_mic_ok") : t("hint_mic_no");
+  const voice = !SR ? t("hint_mic_no") : isBraveBrowser ? t("hint_mic_brave") : t("hint_mic_ok");
   $("engineHint").innerHTML = `${t("hint_engine")} : ${engine} · ${key}<br/>${t("hint_voice")} : ${voice}`;
 }
+
+// =========================================================
+//  Avertissement Brave (la reconnaissance vocale n'y fonctionne pas)
+// =========================================================
+let isBraveBrowser = false;
+(async () => {
+  isBraveBrowser = !!(navigator.brave && (await navigator.brave.isBrave()));
+  if (!isBraveBrowser) return;
+  const banner = document.createElement("div");
+  banner.className = "browser-warning";
+  banner.innerHTML = `<span data-i18n-html="brave_warning">${t("brave_warning")}</span><button class="close-warning" title="✕">✕</button>`;
+  banner.querySelector(".close-warning").addEventListener("click", () => banner.remove());
+  document.querySelector(".topbar").insertAdjacentElement("afterend", banner);
+  refreshEngineHint();
+})();
 
 // ---- Init ----
 applyTheme();

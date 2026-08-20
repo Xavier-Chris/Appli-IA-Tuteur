@@ -50,6 +50,32 @@ body {
   border-bottom: 1px solid var(--border);
   background: var(--panel);
 }
+.browser-warning {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  background: var(--panel-2);
+  border-bottom: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.browser-warning strong { color: var(--accent); }
+.browser-warning .close-warning {
+  margin-left: auto;
+  flex-shrink: 0;
+  border: none;
+  background: none;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px;
+}
+.browser-warning .close-warning:hover { color: var(--text); }
+
 .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; }
 .logo { font-size: 22px; }
 .brand-name { letter-spacing: 0.3px; }
