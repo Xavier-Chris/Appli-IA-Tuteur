@@ -404,7 +404,15 @@ let currentAzureAudio = null;
 async function speakAzure(text) {
   const ratePct = Math.round((voiceRate - 1) * 100);
   const rateAttr = ratePct >= 0 ? `+${ratePct}%` : `${ratePct}%`;
-  const ssml = `<speak version="1.0" xml:lang="fr-FR"><voice name="${selectedVoiceName}"><prosody rate="${rateAttr}">${escapeSSML(text)}</prosody></voice></speak>`;
+  // Les voix "Multilingual" (Vivienne, Rémy) détectent automatiquement la
+  // langue mot par mot. Un mot isolé qui existe aussi en anglais (ex :
+  // "aspect") peut alors être prononcé avec un accent anglais, surtout sans
+  // phrase autour pour donner un indice de langue. On force le français
+  // avec la balise <lang> pour ces voix-là.
+  const isMultilingual = selectedVoiceName.toLowerCase().includes("multilingual");
+  const body = escapeSSML(text);
+  const spoken = isMultilingual ? `<lang xml:lang="fr-FR">${body}</lang>` : body;
+  const ssml = `<speak version="1.0" xml:lang="fr-FR"><voice name="${selectedVoiceName}"><prosody rate="${rateAttr}">${spoken}</prosody></voice></speak>`;
 
   const res = await fetch(`https://${state.azureRegion}.tts.speech.microsoft.com/cognitiveservices/v1`, {
     method: "POST",
