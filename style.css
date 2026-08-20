@@ -329,8 +329,27 @@ select:focus, input:focus { border-color: var(--primary); }
 
 /* ---- Responsive ---- */
 @media (max-width: 900px) {
-  .layout { grid-template-columns: 1fr; grid-template-rows: auto 1fr auto; }
-  .panel-left { order: 1; }
-  .panel-center { order: 2; min-height: 55vh; }
-  .panel-right { order: 3; }
+  /* Sur mobile, on abandonne la grille à 3 colonnes (fragile sur petit
+     écran, en particulier avec les unités vh de Safari iOS) pour une
+     simple colonne qui suit l'ordre naturel du HTML : réglages, puis
+     conversation, puis corrections/vocabulaire. La page défile
+     normalement plutôt que d'essayer de tout faire tenir sur un écran. */
+  html, body { height: auto; }
+  body { overflow-x: hidden; }
+  .layout {
+    display: flex;
+    flex-direction: column;
+    flex: none;
+    min-height: 0;
+    padding: 12px;
+    gap: 12px;
+  }
+  .panel { padding: 16px; }
+  .panel-left, .panel-right { flex: none; }
+  .panel-center {
+    flex: none;
+    height: 70vh;
+    height: 70dvh;   /* tient compte de la barre d'adresse mobile */
+  }
+  .panel-title-row { flex-wrap: wrap; row-gap: 6px; }
 }
