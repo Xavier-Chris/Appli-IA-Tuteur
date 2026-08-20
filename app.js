@@ -344,14 +344,18 @@ if ("speechSynthesis" in window) {
 function speak(text) {
   if (!("speechSynthesis" in window)) return;
   speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = "fr-FR";
-  const v = currentVoice();
-  if (v) u.voice = v;
-  u.rate = voiceRate;
-  u.onstart = () => waveform.classList.add("speaking");
-  u.onend = () => waveform.classList.remove("speaking");
-  speechSynthesis.speak(u);
+  // Chrome/Edge ignorent parfois un speak() lancé juste après un cancel() :
+  // un tout petit délai laisse le moteur vocal se remettre à zéro.
+  setTimeout(() => {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "fr-FR";
+    const v = currentVoice();
+    if (v) u.voice = v;
+    u.rate = voiceRate;
+    u.onstart = () => waveform.classList.add("speaking");
+    u.onend = () => waveform.classList.remove("speaking");
+    speechSynthesis.speak(u);
+  }, 60);
 }
 
 // Menu de choix de la voix : on change et on donne un aperçu.
