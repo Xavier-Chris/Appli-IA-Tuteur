@@ -8,6 +8,8 @@
 const state = {
   provider: localStorage.getItem("provider") || "groq",
   apiKey: localStorage.getItem("apiKey") || "",
+  azureKey: localStorage.getItem("azureKey") || "",
+  azureRegion: localStorage.getItem("azureRegion") || "",
   theme: localStorage.getItem("theme") || "light",
   lang: localStorage.getItem("lang") || "en",
   level: "intermediaire",
@@ -82,6 +84,12 @@ const I18N = {
     label_apikey: "Clé API",
     apikey_ph: "Colle ta clé ici",
     privacy_note: "Ta clé est enregistrée uniquement dans ce navigateur (localStorage). Elle n'est jamais envoyée ailleurs qu'au fournisseur choisi.",
+    azure_h: "Voix premium (optionnel)",
+    azure_note: "Ajoute une clé Azure Speech pour des voix bien plus naturelles que celles du navigateur. Sans clé, l'appli garde la voix du navigateur.",
+    label_azure_key: "Clé Azure Speech",
+    azure_key_ph: "Colle ta clé Azure ici",
+    label_azure_region: "Région Azure",
+    azure_region_ph: "ex : francecentral",
     btn_save: "Enregistrer",
     status_ready: "Prêt",
     status_listening: "Je t'écoute...",
@@ -155,6 +163,12 @@ const I18N = {
     label_apikey: "API key",
     apikey_ph: "Paste your key here",
     privacy_note: "Your key is stored only in this browser (localStorage). It is never sent anywhere except to the provider you choose.",
+    azure_h: "Premium voice (optional)",
+    azure_note: "Add an Azure Speech key for voices much more natural than the browser's. Without a key, the app keeps using the browser voice.",
+    label_azure_key: "Azure Speech key",
+    azure_key_ph: "Paste your Azure key here",
+    label_azure_region: "Azure region",
+    azure_region_ph: "e.g. francecentral",
     btn_save: "Save",
     status_ready: "Ready",
     status_listening: "I'm listening...",
@@ -234,14 +248,21 @@ $("closeSettings").addEventListener("click", () => ($("settingsModal").hidden = 
 $("saveSettings").addEventListener("click", () => {
   state.provider = $("providerSelect").value;
   state.apiKey = $("apiKeyInput").value.trim();
+  state.azureKey = $("azureKeyInput").value.trim();
+  state.azureRegion = $("azureRegionInput").value.trim();
   localStorage.setItem("provider", state.provider);
   localStorage.setItem("apiKey", state.apiKey);
+  localStorage.setItem("azureKey", state.azureKey);
+  localStorage.setItem("azureRegion", state.azureRegion);
   $("settingsModal").hidden = true;
   refreshEngineHint();
+  loadVoices();   // la source de voix (Azure ou navigateur) a pu changer
 });
 function openSettings() {
   $("providerSelect").value = state.provider;
   $("apiKeyInput").value = state.apiKey;
+  $("azureKeyInput").value = state.azureKey;
+  $("azureRegionInput").value = state.azureRegion;
   $("settingsModal").hidden = false;
 }
 
@@ -282,6 +303,21 @@ let frenchVoices = [];
 let selectedVoiceName = localStorage.getItem("voiceNameV2") || "";
 let voiceRate = parseFloat(localStorage.getItem("voiceRate")) || 0.95;
 
+// Petite sélection de voix neuronales Azure de bonne qualité en français
+// de France. Azure expose beaucoup plus de voix, mais une liste courte et
+// choisie évite un appel réseau supplémentaire juste pour les lister.
+const AZURE_VOICES = [
+  { id: "fr-FR-VivienneMultilingualNeural", label: "Vivienne ⭐ (femme, très naturelle)" },
+  { id: "fr-FR-RemyMultilingualNeural", label: "Rémy ⭐ (homme, très naturel)" },
+  { id: "fr-FR-DeniseNeural", label: "Denise (femme, naturelle)" },
+  { id: "fr-FR-HenriNeural", label: "Henri (homme, naturel)" },
+  { id: "fr-FR-EloiseNeural", label: "Éloïse (femme, douce)" },
+];
+
+function azureReady() {
+  return !!(state.azureKey && state.azureRegion);
+}
+
 // Score de "naturel" : les voix neuronales (Edge) et Google passent devant.
 function voiceScore(v) {
   const n = (v.name || "").toLowerCase();
@@ -303,15 +339,31 @@ function niceVoiceLabel(v) {
 }
 
 function loadVoices() {
+  const sel = document.getElementById("voiceSelect");
+  if (!sel) return;
+  sel.innerHTML = "";
+
+  // Voix Azure premium : prioritaires dès qu'une clé est configurée.
+  if (azureReady()) {
+    AZURE_VOICES.forEach((v) => {
+      const o = document.createElement("option");
+      o.value = v.id;
+      o.textContent = v.label;
+      sel.appendChild(o);
+    });
+    const found = AZURE_VOICES.find((v) => v.id === selectedVoiceName);
+    selectedVoiceName = found ? found.id : AZURE_VOICES[0].id;
+    sel.value = selectedVoiceName;
+    return;
+  }
+
+  // Sinon, repli sur les voix du navigateur.
   if (!("speechSynthesis" in window)) return;
   const all = speechSynthesis.getVoices();
   frenchVoices = all
     .filter((v) => v.lang && v.lang.replace("_", "-").toLowerCase() === "fr-fr")
     .sort((a, b) => voiceScore(b) - voiceScore(a));
 
-  const sel = document.getElementById("voiceSelect");
-  if (!sel) return;
-  sel.innerHTML = "";
   if (!frenchVoices.length) {
     const o = document.createElement("option");
     o.textContent = t("voice_default");
@@ -337,9 +389,47 @@ function currentVoice() {
 if ("speechSynthesis" in window) {
   loadVoices();
   speechSynthesis.onvoiceschanged = loadVoices;
+} else {
+  loadVoices();
 }
 
-function speak(text) {
+function escapeSSML(s) {
+  return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;" }[c]));
+}
+
+// Voix Azure : synthèse via l'API REST Cognitive Services, retourne un
+// blob audio joué avec un <audio>. Lève une erreur si la clé est invalide
+// ou l'appel échoue, pour que l'appelant puisse basculer sur le navigateur.
+let currentAzureAudio = null;
+async function speakAzure(text) {
+  const ratePct = Math.round((voiceRate - 1) * 100);
+  const rateAttr = ratePct >= 0 ? `+${ratePct}%` : `${ratePct}%`;
+  const ssml = `<speak version="1.0" xml:lang="fr-FR"><voice name="${selectedVoiceName}"><prosody rate="${rateAttr}">${escapeSSML(text)}</prosody></voice></speak>`;
+
+  const res = await fetch(`https://${state.azureRegion}.tts.speech.microsoft.com/cognitiveservices/v1`, {
+    method: "POST",
+    headers: {
+      "Ocp-Apim-Subscription-Key": state.azureKey,
+      "Content-Type": "application/ssml+xml",
+      "X-Microsoft-OutputFormat": "audio-24khz-48kbitrate-mono-mp3",
+    },
+    body: ssml,
+  });
+  if (!res.ok) throw new Error(`Azure TTS ${res.status}`);
+
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  if (currentAzureAudio) { currentAzureAudio.pause(); currentAzureAudio = null; }
+  const audio = new Audio(url);
+  currentAzureAudio = audio;
+  audio.onplay = () => waveform.classList.add("speaking");
+  const cleanup = () => { waveform.classList.remove("speaking"); URL.revokeObjectURL(url); };
+  audio.onended = cleanup;
+  audio.onerror = cleanup;
+  await audio.play();
+}
+
+function speakBrowser(text) {
   if (!("speechSynthesis" in window)) return;
   speechSynthesis.cancel();
   // Chrome/Edge ignorent parfois un speak() lancé juste après un cancel() :
@@ -354,6 +444,19 @@ function speak(text) {
     u.onend = () => waveform.classList.remove("speaking");
     speechSynthesis.speak(u);
   }, 60);
+}
+
+function speak(text) {
+  if (currentAzureAudio) { currentAzureAudio.pause(); currentAzureAudio = null; }
+  if ("speechSynthesis" in window) speechSynthesis.cancel();
+  if (azureReady()) {
+    speakAzure(text).catch((err) => {
+      console.warn("Azure TTS a échoué, repli sur la voix du navigateur :", err);
+      speakBrowser(text);
+    });
+  } else {
+    speakBrowser(text);
+  }
 }
 
 // Menu de choix de la voix : on change et on donne un aperçu.

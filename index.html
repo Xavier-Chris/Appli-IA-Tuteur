@@ -157,6 +157,21 @@
         Ta clé est enregistrée uniquement dans ce navigateur (localStorage). Elle n'est jamais envoyée ailleurs qu'au fournisseur choisi.
       </p>
 
+      <h3 class="modal-subhead" data-i18n="azure_h">Voix premium (optionnel)</h3>
+      <p class="small muted" data-i18n="azure_note">
+        Ajoute une clé Azure Speech pour des voix bien plus naturelles que celles du navigateur. Sans clé, l'appli garde la voix du navigateur.
+      </p>
+
+      <label class="field">
+        <span data-i18n="label_azure_key">Clé Azure Speech</span>
+        <input id="azureKeyInput" type="password" data-i18n-ph="azure_key_ph" placeholder="Colle ta clé Azure ici" />
+      </label>
+
+      <label class="field">
+        <span data-i18n="label_azure_region">Région Azure</span>
+        <input id="azureRegionInput" type="text" data-i18n-ph="azure_region_ph" placeholder="ex : francecentral" />
+      </label>
+
       <div class="modal-actions">
         <button id="saveSettings" class="btn btn-primary" data-i18n="btn_save">Enregistrer</button>
       </div>

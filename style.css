@@ -325,6 +325,7 @@ select:focus, input:focus { border-color: var(--primary); }
 }
 .modal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
 .modal-head h2 { margin: 0; font-size: 18px; }
+.modal-subhead { margin: 18px 0 6px; font-size: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
 .modal-actions { margin-top: 16px; display: flex; justify-content: flex-end; }
 
 /* ---- Responsive ---- */
