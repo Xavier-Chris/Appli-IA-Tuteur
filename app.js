@@ -598,6 +598,8 @@ async function lookupWord(word, sentenceContext, spanEl) {
     spanEl.classList.add("word-added");
   } catch (err) {
     console.error(err);
+    const msg = err && err.message ? err.message : String(err);
+    setStatus(t("error_prefix") + msg);
   } finally {
     spanEl.classList.remove("looking-up");
   }
@@ -613,10 +615,11 @@ function makeWordsClickable(text, container) {
     if (match.index > lastIndex) {
       container.appendChild(document.createTextNode(text.slice(lastIndex, match.index)));
     }
+    const word = match[0];
     const span = document.createElement("span");
     span.className = "clickable-word";
-    span.textContent = match[0];
-    span.addEventListener("click", () => lookupWord(match[0], text, span));
+    span.textContent = word;
+    span.addEventListener("click", () => lookupWord(word, text, span));
     container.appendChild(span);
     lastIndex = re.lastIndex;
   }
