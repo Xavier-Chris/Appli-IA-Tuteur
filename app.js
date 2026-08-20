@@ -383,15 +383,30 @@ if (SR) {
   recognition.continuous = true;   // enregistre jusqu'au prochain clic
   recognition.interimResults = true;
 
-  // Segments finaux stockés par position (index du résultat), pas
-  // additionnés en une seule chaîne. Sur Android, le moteur vocal réémet
-  // parfois plusieurs fois le même segment (même avec resultIndex) ; les
-  // stocker par position et écraser plutôt qu'additionner empêche toute
-  // duplication, quel que soit le nombre de fois où un segment revient.
-  let finalSegments = [];
+  // Fusionne un nouveau segment final avec le texte déjà accumulé. Sur
+  // certains moteurs vocaux (Android notamment), chaque "segment final"
+  // n'est pas un nouveau bout de phrase : c'est une réémission de TOUT
+  // l'énoncé depuis le début, de plus en plus long ("bonjour" -> "bonjour,
+  // je" -> "bonjour, je sais" -> "bonjour, je sais pas"). Les additionner
+  // donnait un texte dupliqué en boucle. On remplace quand le nouveau
+  // segment prolonge (ou est prolongé par) l'existant, et on additionne
+  // seulement s'il s'agit d'un morceau vraiment distinct (comparaison
+  // insensible à la casse, car la reprise n'a pas toujours la même
+  // majuscule initiale que le premier envoi).
+  function mergeFinalSegment(current, incoming) {
+    if (!current) return incoming;
+    if (!incoming) return current;
+    const curLower = current.toLowerCase();
+    const incLower = incoming.toLowerCase();
+    if (incLower.startsWith(curLower)) return incoming;
+    if (curLower.startsWith(incLower)) return current;
+    return current + incoming;
+  }
+
+  let finalText = "";
   recognition.onstart = () => {
     listening = true;
-    finalSegments = [];
+    finalText = "";
     micBtn.classList.add("listening");
     waveform.classList.add("active");
     setStatus(t("status_listening"));
@@ -399,10 +414,10 @@ if (SR) {
   recognition.onresult = (e) => {
     let interim = "";
     for (let i = 0; i < e.results.length; i++) {
-      if (e.results[i].isFinal) finalSegments[i] = e.results[i][0].transcript;
+      if (e.results[i].isFinal) finalText = mergeFinalSegment(finalText, e.results[i][0].transcript);
       else interim += e.results[i][0].transcript;
     }
-    setStatus(interim || finalSegments.join("") || "...");
+    setStatus(interim || finalText || "...");
   };
   recognition.onerror = (e) => {
     console.error("Erreur reconnaissance vocale :", e.error);
@@ -412,7 +427,7 @@ if (SR) {
     listening = false;
     micBtn.classList.remove("listening");
     waveform.classList.remove("active");
-    const text = finalSegments.join("").trim();
+    const text = finalText.trim();
     if (text) sendMessage(text);
     else setStatus(t("status_ready"));
   };
