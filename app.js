@@ -373,7 +373,8 @@ if (SR) {
     setStatus(interim || finalText || "...");
   };
   recognition.onerror = (e) => {
-    setStatus(e.error === "not-allowed" ? t("mic_denied") : t("mic_problem"));
+    console.error("Erreur reconnaissance vocale :", e.error);
+    setStatus(e.error === "not-allowed" ? t("mic_denied") : `${t("mic_problem")} (${e.error})`);
   };
   recognition.onend = () => {
     listening = false;
