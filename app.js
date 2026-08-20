@@ -58,6 +58,16 @@ const I18N = {
     panel_vocab: "Vocabulaire",
     corrections_empty: "Tes corrections apparaîtront ici après chaque réponse.",
     vocab_empty: "Clique sur un mot dans la réponse du tuteur pour l'ajouter ici.",
+    corrections_clear: "Vider",
+    review_btn: "Réviser",
+    review_h: "Révision du vocabulaire",
+    review_empty_novocab: "Ajoute d'abord des mots en cliquant dessus dans une réponse du tuteur.",
+    review_empty_nothing_due: "Rien à réviser pour l'instant. Reviens plus tard !",
+    review_show_answer: "Afficher la réponse",
+    review_knew: "Je savais 👍",
+    review_didnt_know: "À revoir 👎",
+    review_done: "Révision terminée ! Tu as revu {n} mot(s).",
+    review_progress: "Carte {current} / {total}",
     empty_1: "Choisis ton niveau et ton mode, puis clique sur <strong>Démarrer la conversation</strong>.",
     empty_2: "Ton tuteur te parlera en français et corrigera tes réponses.",
     mic_title: "Parler",
@@ -121,6 +131,16 @@ const I18N = {
     panel_vocab: "Vocabulary",
     corrections_empty: "Your corrections will appear here after each answer.",
     vocab_empty: "Click a word in the tutor's reply to add it here.",
+    corrections_clear: "Clear",
+    review_btn: "Review",
+    review_h: "Vocabulary review",
+    review_empty_novocab: "Add words first by clicking them in a tutor reply.",
+    review_empty_nothing_due: "Nothing to review right now. Come back later!",
+    review_show_answer: "Show answer",
+    review_knew: "I knew it 👍",
+    review_didnt_know: "Needs more practice 👎",
+    review_done: "Review complete! You reviewed {n} word(s).",
+    review_progress: "Card {current} / {total}",
     empty_1: "Choose your level and mode, then click <strong>Start conversation</strong>.",
     empty_2: "Your tutor will speak French and correct your answers.",
     mic_title: "Speak",
@@ -183,6 +203,7 @@ function applyLang() {
   // Éléments qui dépendent de l'état, pas seulement d'un attribut fixe.
   updateContextField();
   refreshEngineHint();
+  updateReviewButton();
   if (!state.started) setStatus(SR ? t("status_ready") : t("no_mic"));
 }
 
@@ -417,7 +438,6 @@ $("resetBtn").addEventListener("click", () => {
   state.messages = [];
   state.started = false;
   transcriptEl.innerHTML = `<div class="empty-state"><p>${t("reset_ready")}</p></div>`;
-  correctionsEl.innerHTML = `<p class="small muted">${t("corrections_empty")}</p>`;
   micBtn.disabled = true;
   setStatus(t("status_ready"));
 });
@@ -849,17 +869,44 @@ function tidyTranscript(text) {
   return frenchSpacing(s);
 }
 
+// Les corrections sont mémorisées entre les sessions (localStorage),
+// comme le vocabulaire, pour suivre les fautes récurrentes dans le temps.
+let savedCorrections = [];
+try { savedCorrections = JSON.parse(localStorage.getItem("correctionsBank")) || []; } catch (_) { savedCorrections = []; }
+
+function persistCorrections() {
+  localStorage.setItem("correctionsBank", JSON.stringify(savedCorrections));
+}
+
+function renderCorrectionsPanel() {
+  if (!savedCorrections.length) {
+    correctionsEl.innerHTML = `<p class="small muted">${t("corrections_empty")}</p>`;
+    return;
+  }
+  correctionsEl.innerHTML = "";
+  savedCorrections.forEach((c) => {
+    const card = document.createElement("div");
+    card.className = "correction-card";
+    card.innerHTML = `
+      <div class="row"><span class="tag">${t("c_said")}</span><span class="said">${escapeHtml(c.original || "")}</span></div>
+      <div class="row"><span class="tag">${t("c_better")}</span><span class="better">${escapeHtml(c.better)}</span></div>
+      <div class="row"><span class="tag">${t("c_why")}</span><span class="why">${escapeHtml(c.explanation || "")}</span></div>`;
+    correctionsEl.appendChild(card);
+  });
+}
+
 function renderCorrection(c) {
   if (!c || !c.better) return;
-  if (correctionsEl.querySelector(".muted")) correctionsEl.innerHTML = "";
-  const card = document.createElement("div");
-  card.className = "correction-card";
-  card.innerHTML = `
-    <div class="row"><span class="tag">${t("c_said")}</span><span class="said">${escapeHtml(c.original || "")}</span></div>
-    <div class="row"><span class="tag">${t("c_better")}</span><span class="better">${escapeHtml(c.better)}</span></div>
-    <div class="row"><span class="tag">${t("c_why")}</span><span class="why">${escapeHtml(c.explanation || "")}</span></div>`;
-  correctionsEl.prepend(card);
+  savedCorrections.unshift({ original: c.original || "", better: c.better, explanation: c.explanation || "" });
+  persistCorrections();
+  renderCorrectionsPanel();
 }
+
+$("clearCorrectionsBtn").addEventListener("click", () => {
+  savedCorrections = [];
+  persistCorrections();
+  renderCorrectionsPanel();
+});
 
 // Le vocabulaire est mémorisé entre les sessions (localStorage), comme un
 // carnet personnel qui s'enrichit au fil des leçons.
@@ -873,25 +920,31 @@ function persistVocab() {
 function renderVocabPanel() {
   if (!savedVocab.length) {
     vocabEl.innerHTML = `<p class="small muted">${t("vocab_empty")}</p>`;
-    return;
+  } else {
+    vocabEl.innerHTML = "";
+    savedVocab.forEach((v) => {
+      const el = document.createElement("div");
+      el.className = "vocab-item";
+      const genderTag = v.gender ? `<span class="vocab-tag">${v.gender === "f" ? "n.f." : "n.m."}</span>` : "";
+      const infTag = v.infinitive ? `<span class="vocab-tag">→ ${escapeHtml(v.infinitive)}</span>` : "";
+      el.innerHTML = `
+        <div class="vocab-main"><span class="word">${escapeHtml(v.word)}</span>${genderTag}${infTag}</div>
+        <span class="tr">${escapeHtml(v.translation || "")}</span>`;
+      vocabEl.appendChild(el);
+    });
   }
-  vocabEl.innerHTML = "";
-  savedVocab.forEach((v) => {
-    const el = document.createElement("div");
-    el.className = "vocab-item";
-    const genderTag = v.gender ? `<span class="vocab-tag">${v.gender === "f" ? "n.f." : "n.m."}</span>` : "";
-    const infTag = v.infinitive ? `<span class="vocab-tag">→ ${escapeHtml(v.infinitive)}</span>` : "";
-    el.innerHTML = `
-      <div class="vocab-main"><span class="word">${escapeHtml(v.word)}</span>${genderTag}${infTag}</div>
-      <span class="tr">${escapeHtml(v.translation || "")}</span>`;
-    vocabEl.appendChild(el);
-  });
+  updateReviewButton();
 }
 
+// Nouveau mot : prêt à être révisé dès maintenant (boîte 0 du système
+// de Leitner), pour encourager une première révision peu après l'ajout.
 function addVocabItem(word, translation, gender, infinitive) {
   const key = word.trim().toLowerCase();
   if (savedVocab.some((v) => v.word.trim().toLowerCase() === key)) return;
-  savedVocab.unshift({ word, translation: translation || "", gender: gender || null, infinitive: infinitive || null });
+  savedVocab.unshift({
+    word, translation: translation || "", gender: gender || null, infinitive: infinitive || null,
+    box: 0, nextReview: Date.now(),
+  });
   persistVocab();
 }
 
@@ -900,6 +953,103 @@ $("clearVocabBtn").addEventListener("click", () => {
   persistVocab();
   renderVocabPanel();
 });
+
+// =========================================================
+//  Révision espacée du vocabulaire (système de Leitner)
+// =========================================================
+// Boîte 0 à 4 : intervalle en jours avant la prochaine révision si la
+// réponse est connue. Une réponse ratée renvoie toujours en boîte 0.
+const LEITNER_INTERVALS_DAYS = [1, 2, 4, 8, 16];
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+function dueVocab() {
+  const now = Date.now();
+  // Les mots sauvegardés avant l'ajout de la révision n'ont pas de
+  // date : on les considère prêts à réviser dès aujourd'hui.
+  return savedVocab.filter((v) => !v.nextReview || v.nextReview <= now);
+}
+
+function updateReviewButton() {
+  const due = dueVocab().length;
+  $("reviewBtn").textContent = due > 0 ? `${t("review_btn")} (${due})` : t("review_btn");
+}
+
+let reviewQueue = [];
+let reviewIndex = 0;
+let reviewAnswered = 0;
+
+function openReview() {
+  reviewQueue = dueVocab().sort(() => Math.random() - 0.5);
+  reviewIndex = 0;
+  reviewAnswered = 0;
+  $("reviewModal").hidden = false;
+  renderReviewCard();
+}
+
+function closeReview() {
+  $("reviewModal").hidden = true;
+  renderVocabPanel();
+}
+
+function renderReviewCard() {
+  const body = $("reviewBody");
+  if (!reviewQueue.length) {
+    const msg = savedVocab.length ? t("review_empty_nothing_due") : t("review_empty_novocab");
+    body.innerHTML = `<p class="review-empty">${escapeHtml(msg)}</p>`;
+    return;
+  }
+  if (reviewIndex >= reviewQueue.length) {
+    body.innerHTML = `<p class="review-done">${t("review_done").replace("{n}", String(reviewAnswered))}</p>`;
+    return;
+  }
+  const v = reviewQueue[reviewIndex];
+  const genderTag = v.gender ? `<span class="vocab-tag">${v.gender === "f" ? "n.f." : "n.m."}</span>` : "";
+  const progress = t("review_progress")
+    .replace("{current}", String(reviewIndex + 1))
+    .replace("{total}", String(reviewQueue.length));
+  body.innerHTML = `
+    <p class="review-progress">${progress}</p>
+    <div class="review-card">
+      <span class="review-word">${escapeHtml(v.word)}</span>${genderTag}
+      <div class="review-answer" id="reviewAnswer" hidden>
+        <span class="review-translation">${escapeHtml(v.translation || "")}</span>
+        ${v.infinitive ? `<span class="vocab-tag">→ ${escapeHtml(v.infinitive)}</span>` : ""}
+      </div>
+    </div>
+    <div class="review-actions" id="reviewActions"></div>`;
+
+  const actions = $("reviewActions");
+  const showBtn = document.createElement("button");
+  showBtn.className = "btn btn-ghost";
+  showBtn.textContent = t("review_show_answer");
+  showBtn.addEventListener("click", () => {
+    $("reviewAnswer").hidden = false;
+    actions.innerHTML = "";
+    const knowBtn = document.createElement("button");
+    knowBtn.className = "btn btn-primary";
+    knowBtn.textContent = t("review_knew");
+    knowBtn.addEventListener("click", () => gradeCard(v, true));
+    const dontKnowBtn = document.createElement("button");
+    dontKnowBtn.className = "btn btn-ghost";
+    dontKnowBtn.textContent = t("review_didnt_know");
+    dontKnowBtn.addEventListener("click", () => gradeCard(v, false));
+    actions.appendChild(dontKnowBtn);
+    actions.appendChild(knowBtn);
+  });
+  actions.appendChild(showBtn);
+}
+
+function gradeCard(v, knew) {
+  v.box = knew ? Math.min((v.box || 0) + 1, LEITNER_INTERVALS_DAYS.length - 1) : 0;
+  v.nextReview = Date.now() + LEITNER_INTERVALS_DAYS[v.box] * DAY_MS;
+  persistVocab();
+  reviewAnswered++;
+  reviewIndex++;
+  renderReviewCard();
+}
+
+$("reviewBtn").addEventListener("click", openReview);
+$("closeReview").addEventListener("click", closeReview);
 
 function escapeHtml(s) {
   return String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -941,3 +1091,4 @@ applyTheme();
 document.getElementById("rateSelect").value = String(voiceRate);
 applyLang();   // applique la langue (met aussi à jour l'indice moteur et le statut)
 renderVocabPanel();   // affiche le vocabulaire sauvegardé des sessions précédentes
+renderCorrectionsPanel();   // affiche les corrections sauvegardées des sessions précédentes

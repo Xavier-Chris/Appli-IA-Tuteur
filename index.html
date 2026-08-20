@@ -110,13 +110,19 @@
 
     <!-- Colonne droite : corrections + vocabulaire -->
     <aside class="panel panel-right">
-      <h2 class="panel-title" data-i18n="panel_corrections">Corrections</h2>
+      <div class="panel-title-row panel-title-row-first">
+        <h2 class="panel-title" data-i18n="panel_corrections">Corrections</h2>
+        <button id="clearCorrectionsBtn" class="link-btn" data-i18n="corrections_clear">Vider</button>
+      </div>
       <div id="corrections" class="corrections">
         <p class="small muted" data-i18n="corrections_empty">Tes corrections apparaîtront ici après chaque réponse.</p>
       </div>
       <div class="panel-title-row">
         <h2 class="panel-title" data-i18n="panel_vocab">Vocabulaire</h2>
-        <button id="clearVocabBtn" class="link-btn" data-i18n="vocab_clear">Vider</button>
+        <span class="panel-title-actions">
+          <button id="reviewBtn" class="link-btn">Réviser</button>
+          <button id="clearVocabBtn" class="link-btn" data-i18n="vocab_clear">Vider</button>
+        </span>
       </div>
       <div id="vocab" class="vocab">
         <p class="small muted" data-i18n="vocab_empty">Les nouveaux mots s'ajouteront ici.</p>
@@ -154,6 +160,17 @@
       <div class="modal-actions">
         <button id="saveSettings" class="btn btn-primary" data-i18n="btn_save">Enregistrer</button>
       </div>
+    </div>
+  </div>
+
+  <!-- Fenêtre de révision du vocabulaire -->
+  <div id="reviewModal" class="modal" hidden>
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2 data-i18n="review_h">Révision du vocabulaire</h2>
+        <button id="closeReview" class="icon-btn">✕</button>
+      </div>
+      <div id="reviewBody"></div>
     </div>
   </div>
 
