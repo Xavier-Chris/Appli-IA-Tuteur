@@ -57,7 +57,7 @@ const I18N = {
     panel_corrections: "Corrections",
     panel_vocab: "Vocabulaire",
     corrections_empty: "Tes corrections apparaîtront ici après chaque réponse.",
-    vocab_empty: "Les nouveaux mots s'ajouteront ici.",
+    vocab_empty: "Clique sur un mot dans la réponse du tuteur pour l'ajouter ici.",
     empty_1: "Choisis ton niveau et ton mode, puis clique sur <strong>Démarrer la conversation</strong>.",
     empty_2: "Ton tuteur te parlera en français et corrigera tes réponses.",
     mic_title: "Parler",
@@ -120,7 +120,7 @@ const I18N = {
     panel_corrections: "Corrections",
     panel_vocab: "Vocabulary",
     corrections_empty: "Your corrections will appear here after each answer.",
-    vocab_empty: "New words will appear here.",
+    vocab_empty: "Click a word in the tutor's reply to add it here.",
     empty_1: "Choose your level and mode, then click <strong>Start conversation</strong>.",
     empty_2: "Your tutor will speak French and correct your answers.",
     mic_title: "Speak",
@@ -557,17 +557,72 @@ Règle des corrections (TRÈS IMPORTANT) :
 - Une question qui n'utilise pas l'inversion n'est JAMAIS une faute. Les questions sans inversion (« Tu viens quand ? », « Vous habitez où ? », « Il fait quoi ? ») sont correctes : ne les corrige pas et ne propose jamais d'ajouter l'inversion.
 - Le tutoiement (« tu ») et le vouvoiement (« vous ») sont tous les deux corrects : ne considère JAMAIS le choix entre « tu » et « vous » comme une faute. Quand tu corriges une phrase, garde le MÊME registre que l'apprenant (s'il utilise « tu », corrige avec « tu » ; s'il utilise « vous », corrige avec « vous »), sauf si le contexte impose le vouvoiement (par exemple un entretien d'embauche, l'administration, un médecin).
 - Si la phrase est correcte, même en registre familier, mets OBLIGATOIREMENT "correction" à null.
-- Rédige le champ "explanation" en ${explLang}. Rédige toujours chaque "translation" du vocabulaire en ANGLAIS, quelle que soit la langue de l'interface.
+- Rédige le champ "explanation" en ${explLang}.
 
 Tu DOIS répondre EXCLUSIVEMENT avec un objet JSON valide, sans aucun texte autour, avec cette forme exacte :
 {
   "userText": "la phrase de l'apprenant réécrite avec une ponctuation soignée : majuscule au début, virgules si besoin, et point ou point d'interrogation à la fin. Garde EXACTEMENT ses mots, ne corrige PAS la grammaire dans ce champ.",
   "reply": "ta réponse orale en français, courte",
-  "correction": { "original": "ce que l'apprenant a dit", "better": "version corrigée en français", "explanation": "explication courte et simple en ${explLang}" } ou null,
-  "newVocab": [ { "word": "mot ou expression en français", "translation": "traduction en anglais" } ],
-  "expression": "une expression française authentique liée au sujet, ou null"
+  "correction": { "original": "ce que l'apprenant a dit", "better": "version corrigée en français", "explanation": "explication courte et simple en ${explLang}" } ou null
 }
-"newVocab" contient 0 à 3 éléments. Ne mets rien d'autre que ce JSON.`;
+Ne mets rien d'autre que ce JSON.`;
+}
+
+// =========================================================
+//  Recherche d'un mot cliqué dans le chat (vocabulaire à la demande)
+// =========================================================
+function buildVocabLookupPrompt() {
+  return `Tu es un dictionnaire français-anglais expert, utilisé dans une application d'apprentissage du français.
+On te donne un mot ou une courte expression française, cliqué par un apprenant dans une phrase, avec la phrase complète comme contexte.
+Réponds EXCLUSIVEMENT avec un objet JSON valide, sans aucun texte autour, avec cette forme exacte :
+{
+  "word": "le mot ou l'expression exactement comme on te l'a donné, sans le modifier",
+  "translation": "traduction en anglais, courte et naturelle, adaptée au contexte donné",
+  "gender": "m" ou "f" si le mot est un nom commun (indique son genre), sinon null,
+  "infinitive": "la forme infinitive" si le mot est un verbe conjugué et que sa forme diffère de l'infinitif, sinon null
+}
+Ne mets rien d'autre que ce JSON.`;
+}
+
+async function lookupWord(word, sentenceContext, spanEl) {
+  const cleanWord = (word || "").trim();
+  if (!cleanWord || !state.apiKey) return;
+  spanEl.classList.add("looking-up");
+  try {
+    const raw = await callProvider(buildVocabLookupPrompt(), [
+      { role: "user", content: `Phrase : "${sentenceContext}"\nMot ou expression cliqué : "${cleanWord}"` },
+    ]);
+    const data = parseJSON(raw, { word: cleanWord, translation: "", gender: null, infinitive: null });
+    addVocabItem(data.word || cleanWord, data.translation, data.gender, data.infinitive);
+    renderVocabPanel();
+    spanEl.classList.add("word-added");
+  } catch (err) {
+    console.error(err);
+  } finally {
+    spanEl.classList.remove("looking-up");
+  }
+}
+
+// Découpe un texte en segments, en rendant chaque mot cliquable
+// (la ponctuation et les espaces restent du texte simple).
+function makeWordsClickable(text, container) {
+  const re = /[A-Za-zÀ-ÖØ-öø-ÿ''-]+/g;
+  let lastIndex = 0;
+  let match;
+  while ((match = re.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      container.appendChild(document.createTextNode(text.slice(lastIndex, match.index)));
+    }
+    const span = document.createElement("span");
+    span.className = "clickable-word";
+    span.textContent = match[0];
+    span.addEventListener("click", () => lookupWord(match[0], text, span));
+    container.appendChild(span);
+    lastIndex = re.lastIndex;
+  }
+  if (lastIndex < text.length) {
+    container.appendChild(document.createTextNode(text.slice(lastIndex)));
+  }
 }
 
 // =========================================================
@@ -586,11 +641,7 @@ async function sendMessage(text, isSystemTrigger = false) {
   micBtn.disabled = true;
 
   try {
-    const raw =
-      state.provider === "openai" ? await callOpenAI() :
-      state.provider === "gemini" ? await callGemini() :
-      state.provider === "groq" ? await callGroq() :
-      await callAnthropic();
+    const raw = await callProvider(buildSystemPrompt(), state.messages);
     const data = parseTutorJSON(raw);
 
     if (userBubble && data.userText) userBubble.textContent = frenchSpacing(data.userText);
@@ -598,7 +649,6 @@ async function sendMessage(text, isSystemTrigger = false) {
     addBubble("tutor", data.reply);
     speak(data.reply);
     renderCorrection(data.correction);
-    renderVocab(data.newVocab, data.expression);
     setStatus(t("your_turn"));
   } catch (err) {
     console.error(err);
@@ -614,7 +664,10 @@ async function sendMessage(text, isSystemTrigger = false) {
 // =========================================================
 //  Appels aux API
 // =========================================================
-async function callAnthropic() {
+// Chaque fonction accepte un system prompt et une liste de messages,
+// pour pouvoir servir aussi bien la conversation principale que de
+// petites requêtes ponctuelles (ex : recherche d'un mot cliqué).
+async function callAnthropic(systemPrompt, messages) {
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
@@ -626,8 +679,8 @@ async function callAnthropic() {
     body: JSON.stringify({
       model: "claude-sonnet-5",
       max_tokens: 700,
-      system: buildSystemPrompt(),
-      messages: state.messages,
+      system: systemPrompt,
+      messages,
     }),
   });
   if (!res.ok) throw new Error(await readError(res));
@@ -635,7 +688,7 @@ async function callAnthropic() {
   return json.content?.[0]?.text || "";
 }
 
-async function callOpenAI() {
+async function callOpenAI(systemPrompt, messages) {
   const res = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: {
@@ -646,7 +699,7 @@ async function callOpenAI() {
       model: "gpt-4o",
       max_tokens: 700,
       response_format: { type: "json_object" },
-      messages: [{ role: "system", content: buildSystemPrompt() }, ...state.messages],
+      messages: [{ role: "system", content: systemPrompt }, ...messages],
     }),
   });
   if (!res.ok) throw new Error(await readError(res));
@@ -663,9 +716,9 @@ const GROQ_MODELS = [
   "openai/gpt-oss-20b",
 ];
 
-async function callGroq() {
+async function callGroq(systemPrompt, messages) {
   // Groq est compatible avec le format OpenAI.
-  const messages = [{ role: "system", content: buildSystemPrompt() }, ...state.messages];
+  const fullMessages = [{ role: "system", content: systemPrompt }, ...messages];
   let lastErr;
   for (const model of GROQ_MODELS) {
     const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -678,7 +731,7 @@ async function callGroq() {
         model,
         max_tokens: 800,
         response_format: { type: "json_object" },
-        messages,
+        messages: fullMessages,
       }),
     });
     if (res.ok) {
@@ -692,10 +745,10 @@ async function callGroq() {
   throw lastErr;
 }
 
-async function callGemini() {
+async function callGemini(systemPrompt, messages) {
   // Gemini utilise les rôles "user" et "model" (pas "assistant"),
   // et la consigne système passe par un champ séparé.
-  const contents = state.messages.map((m) => ({
+  const contents = messages.map((m) => ({
     role: m.role === "assistant" ? "model" : "user",
     parts: [{ text: m.content }],
   }));
@@ -708,7 +761,7 @@ async function callGemini() {
         "x-goog-api-key": state.apiKey,
       },
       body: JSON.stringify({
-        system_instruction: { parts: [{ text: buildSystemPrompt() }] },
+        system_instruction: { parts: [{ text: systemPrompt }] },
         contents,
         generationConfig: { responseMimeType: "application/json", maxOutputTokens: 700 },
       }),
@@ -719,15 +772,24 @@ async function callGemini() {
   return json.candidates?.[0]?.content?.parts?.[0]?.text || "";
 }
 
+// Dispatche vers le fournisseur choisi, avec un system prompt et des
+// messages fournis par l'appelant (conversation ou recherche ponctuelle).
+async function callProvider(systemPrompt, messages) {
+  return state.provider === "openai" ? await callOpenAI(systemPrompt, messages) :
+    state.provider === "gemini" ? await callGemini(systemPrompt, messages) :
+    state.provider === "groq" ? await callGroq(systemPrompt, messages) :
+    await callAnthropic(systemPrompt, messages);
+}
+
 async function readError(res) {
   let detail = "";
   try { detail = JSON.stringify((await res.json()).error || {}); } catch (_) {}
   return `${res.status} ${detail}`;
 }
 
-// Parse la réponse JSON du tuteur, avec tolérance.
-function parseTutorJSON(raw) {
-  const fallback = { userText: null, reply: raw || "…", correction: null, newVocab: [], expression: null };
+// Parse une réponse JSON de l'IA avec tolérance (au cas où du texte
+// s'ajoute autour du JSON malgré la consigne).
+function parseJSON(raw, fallback) {
   if (!raw) return fallback;
   try {
     return JSON.parse(raw);
@@ -741,20 +803,28 @@ function parseTutorJSON(raw) {
   }
 }
 
+function parseTutorJSON(raw) {
+  return parseJSON(raw, { userText: null, reply: raw || "…", correction: null });
+}
+
 // =========================================================
 //  Affichage
 // =========================================================
 function addBubble(who, text) {
   const div = document.createElement("div");
   div.className = "bubble " + (who === "user" ? "user" : "tutor");
-  div.textContent = text;
   if (who === "tutor") {
+    // Chaque mot est cliquable : l'apprenant choisit lui-même ce qu'il
+    // veut ajouter à son vocabulaire, au lieu d'une liste imposée.
+    makeWordsClickable(text, div);
     const btn = document.createElement("span");
     btn.className = "speak-again";
     btn.textContent = "🔊";
     btn.title = t("replay_title");
     btn.addEventListener("click", () => speak(text));
     div.appendChild(btn);
+  } else {
+    div.textContent = text;
   }
   transcriptEl.appendChild(div);
   transcriptEl.scrollTop = transcriptEl.scrollHeight;
@@ -806,15 +876,19 @@ function renderVocabPanel() {
   savedVocab.forEach((v) => {
     const el = document.createElement("div");
     el.className = "vocab-item";
-    el.innerHTML = `<span class="word">${escapeHtml(v.word)}</span><span class="tr">${escapeHtml(v.translation || "")}</span>`;
+    const genderTag = v.gender ? `<span class="vocab-tag">${v.gender === "f" ? "n.f." : "n.m."}</span>` : "";
+    const infTag = v.infinitive ? `<span class="vocab-tag">→ ${escapeHtml(v.infinitive)}</span>` : "";
+    el.innerHTML = `
+      <div class="vocab-main"><span class="word">${escapeHtml(v.word)}</span>${genderTag}${infTag}</div>
+      <span class="tr">${escapeHtml(v.translation || "")}</span>`;
     vocabEl.appendChild(el);
   });
 }
 
-function addVocabItem(word, translation) {
+function addVocabItem(word, translation, gender, infinitive) {
   const key = word.trim().toLowerCase();
   if (savedVocab.some((v) => v.word.trim().toLowerCase() === key)) return;
-  savedVocab.unshift({ word, translation: translation || "" });
+  savedVocab.unshift({ word, translation: translation || "", gender: gender || null, infinitive: infinitive || null });
   persistVocab();
 }
 
@@ -823,15 +897,6 @@ $("clearVocabBtn").addEventListener("click", () => {
   persistVocab();
   renderVocabPanel();
 });
-
-function renderVocab(list, expression) {
-  const items = [];
-  if (Array.isArray(list)) list.forEach((v) => v && v.word && items.push(v));
-  if (expression) items.push({ word: expression, translation: "expression" });
-  if (!items.length) return;
-  items.forEach((v) => addVocabItem(v.word, v.translation));
-  renderVocabPanel();
-}
 
 function escapeHtml(s) {
   return String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));

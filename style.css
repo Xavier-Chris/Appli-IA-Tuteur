@@ -181,6 +181,15 @@ select:focus, input:focus { border-color: var(--primary); }
 .bubble.tutor { align-self: flex-start; background: var(--panel-2); color: var(--text); border-bottom-left-radius: 4px; }
 .bubble .speak-again { margin-left: 8px; cursor: pointer; opacity: .6; font-size: 13px; }
 
+.clickable-word {
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color .15s ease, color .15s ease;
+}
+.clickable-word:hover { background: var(--primary); color: var(--primary-ink); }
+.clickable-word.looking-up { opacity: .5; cursor: wait; }
+.clickable-word.word-added { color: var(--good); font-weight: 600; }
+
 /* ---- Zone micro ---- */
 .mic-zone {
   border-top: 1px solid var(--border);
@@ -249,15 +258,24 @@ select:focus, input:focus { border-color: var(--primary); }
 .correction-card .expr { font-style: italic; }
 
 .vocab-item {
-  display: flex; justify-content: space-between; gap: 8px;
+  display: flex; justify-content: space-between; align-items: center; gap: 8px;
   padding: 8px 10px;
   border-radius: 10px;
   background: var(--panel-2);
   margin-bottom: 6px;
   font-size: 14px;
 }
+.vocab-main { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .vocab-item .word { font-weight: 600; }
-.vocab-item .tr { color: var(--muted); }
+.vocab-item .tr { color: var(--muted); flex-shrink: 0; }
+.vocab-tag {
+  font-size: 11px;
+  color: var(--muted);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1px 6px;
+}
 
 /* ---- Modal ---- */
 .modal {
