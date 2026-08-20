@@ -33,7 +33,7 @@ const statusLine = $("statusLine");
 // =========================================================
 const I18N = {
   fr: {
-    brand: "Tuteur FR",
+    brand: "Your French Tutor",
     theme_title: "Basculer clair / sombre",
     settings_title: "Réglages",
     panel_lesson: "Ta leçon",
@@ -106,7 +106,7 @@ const I18N = {
     brave_warning: "⚠️ <strong>Tu utilises Brave</strong> : la reconnaissance vocale ne fonctionne pas dans ce navigateur (limitation volontaire de Brave, pas un bug de l'app). Utilise Chrome ou Edge pour parler au micro, ou écris tes réponses en attendant.",
   },
   en: {
-    brand: "French Tutor",
+    brand: "Your French Tutor",
     theme_title: "Toggle light / dark",
     settings_title: "Settings",
     panel_lesson: "Your lesson",
@@ -533,12 +533,33 @@ const personas = {
     "Tu es franche, insolente, parfois provocatrice, avec un petit côté « éternelle enfant », et passionnée par la cause animale plus que par ton ancienne gloire de cinéma.",
 };
 
+// Repères du CECRL (cadre européen commun de référence pour les langues) :
+// vocabulaire, temps verbaux et structures de phrases attendus à chaque
+// niveau, pour une vraie différence perceptible plutôt qu'une consigne vague.
+const LEVEL_GUIDANCE = {
+  debutant:
+    "Niveau débutant (A1-A2). " +
+    "Vocabulaire : uniquement des mots très courants et concrets du quotidien (famille, nourriture, temps, couleurs, nombres, lieux familiers). Aucun mot abstrait, figuré ou rare. " +
+    "Temps verbaux : présent de l'indicatif, futur proche (aller + infinitif), passé composé avec des verbes courants, impératif simple. N'utilise JAMAIS le subjonctif, le conditionnel complexe ou la voix passive. " +
+    "Phrases : courtes et simples (sujet-verbe-complément), pas ou très peu de subordination. Connecteurs simples uniquement : et, mais, parce que, alors, ou.",
+  intermediaire:
+    "Niveau intermédiaire (B1-B2). " +
+    "Vocabulaire : plus large, avec des mots abstraits courants, des expressions usuelles, des nuances de sentiments et d'opinions. " +
+    "Temps verbaux : passé composé et imparfait en contraste, plus-que-parfait, futur simple, conditionnel présent, et début du subjonctif présent dans des tournures courantes (« il faut que », « je voudrais que », « je ne pense pas que »). " +
+    "Phrases : plus longues, avec des subordonnées relatives (qui, que, où) et causales (parce que, car, comme). Connecteurs logiques variés : cependant, donc, par contre, ensuite, en revanche, du coup.",
+  avance:
+    "Niveau avancé (C1-C2). " +
+    "Vocabulaire : riche et nuancé, expressions idiomatiques, registre soutenu quand le contexte s'y prête, mots précis ou spécialisés selon le sujet abordé. " +
+    "Temps verbaux : tous les temps et modes disponibles, subjonctif et conditionnel passé, concordance des temps. " +
+    "Phrases : complexes, avec plusieurs subordonnées enchâssées. Connecteurs logiques sophistiqués : bien que, quoique, de sorte que, en dépit de, de même que. N'hésite pas aux nuances stylistiques et sous-entendus.",
+};
+
 function buildSystemPrompt() {
   const personaText = personas[state.persona];
   const intro = personaText
     ? `${personaText}
 Tu restes toujours dans ce personnage et tu peux parler librement de ta vie, de ton passé, de tes émotions et de ta personnalité.
-TRÈS IMPORTANT : exprime-toi dans un français simple, clair et moderne, comme on parle aujourd'hui. N'utilise jamais un langage ancien, littéraire ou compliqué, car la personne apprend le français et doit te comprendre facilement.
+TRÈS IMPORTANT : exprime-toi dans un français moderne, jamais dans un style d'époque ou exagérément littéraire, car la personne apprend le français et doit te comprendre. La richesse de ton vocabulaire doit suivre le niveau de l'apprenant précisé plus bas, pas ton époque d'origine.
 Tu es aussi un professeur de français bienveillant, mais tu ne corriges JAMAIS l'apprenant dans ta réponse orale : tu continues simplement la conversation. Les corrections vont seulement dans le champ prévu, jamais dans ta réponse.`
     : "Tu es un professeur de français langue étrangère, patient, encourageant, naturel et parfois drôle. Tu n'es jamais robotique.";
 
@@ -550,14 +571,11 @@ Tu es aussi un professeur de français bienveillant, mais tu ne corriges JAMAIS 
   }[state.mode];
 
   const explLang = state.lang === "en" ? "anglais" : "français";
-  const levelText = {
-    debutant: "débutant (A1-A2)",
-    intermediaire: "intermédiaire (B1-B2)",
-    avance: "avancé (C1-C2)",
-  }[state.level] || "intermédiaire (B1-B2)";
+  const levelGuidance = LEVEL_GUIDANCE[state.level] || LEVEL_GUIDANCE.intermediaire;
 
   return `${intro}
-Niveau de l'apprenant : ${levelText}. Adapte ton vocabulaire et ta vitesse à ce niveau.
+${levelGuidance}
+Respecte STRICTEMENT ces repères de niveau à chaque réponse, aussi bien dans ton vocabulaire que dans la construction de tes phrases.
 Mode de la séance : ${modeText}
 
 Règles :
