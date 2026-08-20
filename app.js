@@ -383,27 +383,26 @@ if (SR) {
   recognition.continuous = true;   // enregistre jusqu'au prochain clic
   recognition.interimResults = true;
 
-  let finalText = "";
+  // Segments finaux stockés par position (index du résultat), pas
+  // additionnés en une seule chaîne. Sur Android, le moteur vocal réémet
+  // parfois plusieurs fois le même segment (même avec resultIndex) ; les
+  // stocker par position et écraser plutôt qu'additionner empêche toute
+  // duplication, quel que soit le nombre de fois où un segment revient.
+  let finalSegments = [];
   recognition.onstart = () => {
     listening = true;
-    finalText = "";
+    finalSegments = [];
     micBtn.classList.add("listening");
     waveform.classList.add("active");
     setStatus(t("status_listening"));
   };
   recognition.onresult = (e) => {
     let interim = "";
-    // On ne relit que les résultats nouveaux depuis le dernier événement
-    // (resultIndex), pas tout le tableau depuis le début. Sur Android,
-    // le moteur vocal réémet parfois d'anciens segments déjà traités ;
-    // les additionner à chaque fois provoquait un texte final dupliqué
-    // (« bonjourbonjbonbonjourbonbonjourbonj »).
-    for (let i = e.resultIndex; i < e.results.length; i++) {
-      const seg = e.results[i][0].transcript;
-      if (e.results[i].isFinal) finalText += seg;
-      else interim += seg;
+    for (let i = 0; i < e.results.length; i++) {
+      if (e.results[i].isFinal) finalSegments[i] = e.results[i][0].transcript;
+      else interim += e.results[i][0].transcript;
     }
-    setStatus(interim || finalText || "...");
+    setStatus(interim || finalSegments.join("") || "...");
   };
   recognition.onerror = (e) => {
     console.error("Erreur reconnaissance vocale :", e.error);
@@ -413,7 +412,7 @@ if (SR) {
     listening = false;
     micBtn.classList.remove("listening");
     waveform.classList.remove("active");
-    const text = finalText.trim();
+    const text = finalSegments.join("").trim();
     if (text) sendMessage(text);
     else setStatus(t("status_ready"));
   };
