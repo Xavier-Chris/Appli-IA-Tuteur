@@ -55,7 +55,16 @@ const I18N = {
     label_rate: "Vitesse de la voix",
     rate_slow: "Lente", rate_normal: "Normale", rate_fast: "Rapide",
     btn_start: "Démarrer la conversation",
-    btn_reset: "Nouvelle leçon",
+    btn_reset: "Terminer et voir le résumé",
+    summary_h: "Résumé de la leçon",
+    summary_duration: "Durée",
+    summary_exchanges: "Échanges",
+    summary_new_words: "Nouveaux mots",
+    summary_corrections: "Fautes corrigées",
+    summary_no_new_words: "Aucun nouveau mot ajouté cette fois.",
+    summary_no_corrections: "Aucune faute corrigée, bien joué !",
+    summary_minutes: "{n} min",
+    summary_less_minute: "moins d'une minute",
     panel_corrections: "Corrections",
     panel_vocab: "Vocabulaire",
     corrections_empty: "Tes corrections apparaîtront ici après chaque réponse.",
@@ -134,7 +143,16 @@ const I18N = {
     label_rate: "Voice speed",
     rate_slow: "Slow", rate_normal: "Normal", rate_fast: "Fast",
     btn_start: "Start conversation",
-    btn_reset: "New lesson",
+    btn_reset: "Finish and see summary",
+    summary_h: "Lesson summary",
+    summary_duration: "Duration",
+    summary_exchanges: "Exchanges",
+    summary_new_words: "New words",
+    summary_corrections: "Corrections made",
+    summary_no_new_words: "No new words added this time.",
+    summary_no_corrections: "No mistakes corrected, well done!",
+    summary_minutes: "{n} min",
+    summary_less_minute: "less than a minute",
     panel_corrections: "Corrections",
     panel_vocab: "Vocabulary",
     corrections_empty: "Your corrections will appear here after each answer.",
@@ -638,8 +656,49 @@ $("textForm").addEventListener("submit", (e) => {
 // =========================================================
 //  Démarrage / reset de la leçon
 // =========================================================
+// Pris au début de la leçon pour pouvoir calculer, à la fin, ce qui a été
+// appris PENDANT cette leçon (durée, nouveaux mots, nouvelles corrections)
+// plutôt que le total cumulé depuis toujours.
+let lessonStartTime = null;
+let vocabCountAtStart = 0;
+let correctionsCountAtStart = 0;
+
+function formatLessonDuration(ms) {
+  const minutes = Math.round(ms / 60000);
+  return minutes < 1 ? t("summary_less_minute") : t("summary_minutes").replace("{n}", minutes);
+}
+
+function showLessonSummary() {
+  const durationText = lessonStartTime ? formatLessonDuration(Date.now() - lessonStartTime) : "";
+  const exchangeCount = state.messages.filter((m) => m.role === "user").length;
+  const newWords = savedVocab.slice(0, Math.max(0, savedVocab.length - vocabCountAtStart));
+  const newCorrections = savedCorrections.slice(0, Math.max(0, savedCorrections.length - correctionsCountAtStart));
+
+  const wordsHtml = newWords.length
+    ? `<ul class="summary-list">${newWords.map((v) => `<li><strong>${escapeHtml(v.word)}</strong> — ${escapeHtml(v.translation || "")}</li>`).join("")}</ul>`
+    : `<p class="small muted">${t("summary_no_new_words")}</p>`;
+  const correctionsHtml = newCorrections.length
+    ? `<ul class="summary-list">${newCorrections.map((c) => `<li><strong>${escapeHtml(c.original || "")}</strong> → ${escapeHtml(c.better)}</li>`).join("")}</ul>`
+    : `<p class="small muted">${t("summary_no_corrections")}</p>`;
+
+  $("summaryBody").innerHTML = `
+    <div class="summary-row"><span class="summary-tag">${t("summary_duration")}</span><span>${durationText}</span></div>
+    <div class="summary-row"><span class="summary-tag">${t("summary_exchanges")}</span><span>${exchangeCount}</span></div>
+    <h3 class="modal-subhead">${t("summary_new_words")} (${newWords.length})</h3>
+    ${wordsHtml}
+    <h3 class="modal-subhead">${t("summary_corrections")} (${newCorrections.length})</h3>
+    ${correctionsHtml}
+  `;
+  $("summaryModal").hidden = false;
+}
+
+$("closeSummary").addEventListener("click", () => ($("summaryModal").hidden = true));
+
 $("startBtn").addEventListener("click", startLesson);
 $("resetBtn").addEventListener("click", () => {
+  if (state.started && state.messages.some((m) => m.role === "user")) {
+    showLessonSummary();
+  }
   state.messages = [];
   state.started = false;
   transcriptEl.innerHTML = `<div class="empty-state"><p>${t("reset_ready")}</p></div>`;
@@ -655,6 +714,9 @@ async function startLesson() {
   }
   state.messages = [];
   state.started = true;
+  lessonStartTime = Date.now();
+  vocabCountAtStart = savedVocab.length;
+  correctionsCountAtStart = savedCorrections.length;
   transcriptEl.innerHTML = "";
   micBtn.disabled = !recognition;
   setStatus(t("preparing"));

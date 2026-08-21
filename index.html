@@ -79,7 +79,7 @@
       </label>
 
       <button id="startBtn" class="btn btn-primary" data-i18n="btn_start">Démarrer la conversation</button>
-      <button id="resetBtn" class="btn btn-ghost" data-i18n="btn_reset">Nouvelle leçon</button>
+      <button id="resetBtn" class="btn btn-ghost" data-i18n="btn_reset">Terminer et voir le résumé</button>
 
       <div class="hint" id="engineHint"></div>
     </aside>
@@ -175,6 +175,17 @@
       <div class="modal-actions">
         <button id="saveSettings" class="btn btn-primary" data-i18n="btn_save">Enregistrer</button>
       </div>
+    </div>
+  </div>
+
+  <!-- Fenêtre de résumé de fin de leçon -->
+  <div id="summaryModal" class="modal" hidden>
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2 data-i18n="summary_h">Résumé de la leçon</h2>
+        <button id="closeSummary" class="icon-btn">✕</button>
+      </div>
+      <div id="summaryBody"></div>
     </div>
   </div>
 
