@@ -397,10 +397,64 @@ function escapeSSML(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;" }[c]));
 }
 
-// Voix Azure : synthèse via l'API REST Cognitive Services, retourne un
-// blob audio joué avec un <audio>. Lève une erreur si la clé est invalide
-// ou l'appel échoue, pour que l'appelant puisse basculer sur le navigateur.
+// Voix Azure : synthèse via l'API REST Cognitive Services. Lève une erreur
+// si la clé est invalide ou l'appel échoue, pour que l'appelant puisse
+// basculer sur le navigateur.
 let currentAzureAudio = null;
+
+// Joue l'audio au fur et à mesure qu'il arrive (au lieu d'attendre le
+// fichier entier) pour réduire le délai avant que la voix démarre.
+// Nécessite MediaSource ; se résout dès que la lecture démarre (comme
+// audio.play(), sans attendre la fin de la lecture).
+function playAzureStream(res) {
+  return new Promise((resolve, reject) => {
+    const mediaSource = new MediaSource();
+    const objectUrl = URL.createObjectURL(mediaSource);
+    const audio = new Audio(objectUrl);
+    currentAzureAudio = audio;
+    audio.onplay = () => waveform.classList.add("speaking");
+    const cleanup = () => { waveform.classList.remove("speaking"); URL.revokeObjectURL(objectUrl); };
+    audio.onended = cleanup;
+    audio.onerror = cleanup;
+
+    let settled = false;
+    const fail = (err) => { if (!settled) { settled = true; cleanup(); reject(err); } };
+    const succeed = () => { settled = true; resolve(); };
+
+    mediaSource.addEventListener("sourceopen", () => {
+      let sourceBuffer;
+      try {
+        sourceBuffer = mediaSource.addSourceBuffer("audio/mpeg");
+      } catch (err) { fail(err); return; }
+
+      const reader = res.body.getReader();
+      let firstChunk = true;
+
+      const handleChunk = ({ done, value }) => {
+        if (done) {
+          if (mediaSource.readyState === "open") {
+            try { mediaSource.endOfStream(); } catch (_) {}
+          }
+          return;
+        }
+        sourceBuffer.addEventListener("updateend", function onUpdateEnd() {
+          sourceBuffer.removeEventListener("updateend", onUpdateEnd);
+          if (firstChunk) {
+            firstChunk = false;
+            audio.play().then(succeed).catch(fail);
+          }
+          reader.read().then(handleChunk).catch(fail);
+        }, { once: true });
+        try {
+          sourceBuffer.appendBuffer(value);
+        } catch (err) { fail(err); }
+      };
+
+      reader.read().then(handleChunk).catch(fail);
+    }, { once: true });
+  });
+}
+
 async function speakAzure(text) {
   const ratePct = Math.round((voiceRate - 1) * 100);
   const rateAttr = ratePct >= 0 ? `+${ratePct}%` : `${ratePct}%`;
@@ -425,9 +479,21 @@ async function speakAzure(text) {
   });
   if (!res.ok) throw new Error(`Azure TTS ${res.status}`);
 
+  if (currentAzureAudio) { currentAzureAudio.pause(); currentAzureAudio = null; }
+
+  // Lecture en flux si le navigateur le permet (Chrome/Edge/Firefox) : la
+  // voix démarre dès les premiers octets reçus au lieu d'attendre le
+  // fichier complet.
+  const canStream = "MediaSource" in window && MediaSource.isTypeSupported("audio/mpeg") && !!res.body;
+  if (canStream) {
+    await playAzureStream(res);
+    return;
+  }
+
+  // Repli pour les navigateurs sans flux mp3 (ex. Safari) : téléchargement
+  // complet avant lecture, comportement identique à avant.
   const blob = await res.blob();
   const url = URL.createObjectURL(blob);
-  if (currentAzureAudio) { currentAzureAudio.pause(); currentAzureAudio = null; }
   const audio = new Audio(url);
   currentAzureAudio = audio;
   audio.onplay = () => waveform.classList.add("speaking");
