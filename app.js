@@ -436,52 +436,6 @@ function wireAudioLifecycle(audio, objectUrl) {
   return cleanup;
 }
 
-// Joue l'audio au fur et à mesure qu'il arrive (au lieu d'attendre le
-// fichier entier) pour réduire le délai avant que la voix démarre.
-// `token` permet d'arrêter proprement (annuler la lecture réseau, libérer
-// l'URL) si une voix plus récente a été déclenchée entre-temps.
-async function playAzureStream(res, token) {
-  const mediaSource = new MediaSource();
-  const objectUrl = URL.createObjectURL(mediaSource);
-  const audio = new Audio(objectUrl);
-  const cleanup = wireAudioLifecycle(audio, objectUrl);
-  const stale = () => token !== speakToken;
-
-  await new Promise((resolve) => mediaSource.addEventListener("sourceopen", resolve, { once: true }));
-  if (stale()) { cleanup(); return; }
-
-  const sourceBuffer = mediaSource.addSourceBuffer("audio/mpeg");
-  const reader = res.body.getReader();
-  let firstChunk = true;
-
-  try {
-    while (true) {
-      if (stale()) { reader.cancel(); cleanup(); return; }
-      const { done, value } = await reader.read();
-      if (done) {
-        // Flux vide (aucun octet reçu) : ce n'est pas un succès silencieux,
-        // sinon l'appelant ne bascule jamais sur la voix du navigateur.
-        if (firstChunk) throw new Error("Azure TTS : flux audio vide");
-        if (mediaSource.readyState === "open") { try { mediaSource.endOfStream(); } catch (_) {} }
-        return;
-      }
-      await new Promise((resolve, reject) => {
-        sourceBuffer.addEventListener("updateend", resolve, { once: true });
-        try { sourceBuffer.appendBuffer(value); } catch (err) { reject(err); }
-      });
-      if (firstChunk) {
-        firstChunk = false;
-        if (stale()) { reader.cancel(); cleanup(); return; }
-        currentAzureAudio = audio;
-        await audio.play();
-      }
-    }
-  } catch (err) {
-    cleanup();
-    throw err;
-  }
-}
-
 async function speakAzure(text, token) {
   const ratePct = Math.round((voiceRate - 1) * 100);
   const rateAttr = ratePct >= 0 ? `+${ratePct}%` : `${ratePct}%`;
@@ -507,17 +461,11 @@ async function speakAzure(text, token) {
   if (!res.ok) throw new Error(`Azure TTS ${res.status}`);
   if (token !== speakToken) return;   // une voix plus récente a déjà pris le relais
 
-  // Lecture en flux si le navigateur le permet (Chrome/Edge/Firefox) : la
-  // voix démarre dès les premiers octets reçus au lieu d'attendre le
-  // fichier complet.
-  const canStream = "MediaSource" in window && MediaSource.isTypeSupported("audio/mpeg") && !!res.body;
-  if (canStream) {
-    await playAzureStream(res, token);
-    return;
-  }
-
-  // Repli pour les navigateurs sans flux mp3 (ex. Safari) : téléchargement
-  // complet avant lecture, comportement identique à avant.
+  // Téléchargement complet avant lecture. La lecture en flux (démarrer dès
+  // les premiers octets) a été essayée puis retirée : elle provoquait des
+  // cas où le son restait muet malgré l'indicateur "en train de parler"
+  // actif, un problème plus grave que le petit gain de délai qu'elle
+  // apportait.
   const blob = await res.blob();
   if (token !== speakToken) return;
   const url = URL.createObjectURL(blob);
