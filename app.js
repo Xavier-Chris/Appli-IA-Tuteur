@@ -337,15 +337,23 @@ let voiceRate = parseFloat(localStorage.getItem("voiceRate")) || 0.95;
 // de France. Azure expose beaucoup plus de voix, mais une liste courte et
 // choisie évite un appel réseau supplémentaire juste pour les lister.
 const AZURE_VOICES = [
-  { id: "fr-FR-VivienneMultilingualNeural", label: "Vivienne ⭐ (femme, très naturelle)" },
-  { id: "fr-FR-RemyMultilingualNeural", label: "Rémy ⭐ (homme, très naturel)" },
-  { id: "fr-FR-DeniseNeural", label: "Denise (femme, naturelle)" },
-  { id: "fr-FR-HenriNeural", label: "Henri (homme, naturel)" },
-  { id: "fr-FR-EloiseNeural", label: "Éloïse (femme, douce)" },
+  { id: "fr-FR-VivienneMultilingualNeural", label: "Vivienne ⭐ (femme, très naturelle)", gender: "f" },
+  { id: "fr-FR-RemyMultilingualNeural", label: "Rémy ⭐ (homme, très naturel)", gender: "m" },
+  { id: "fr-FR-DeniseNeural", label: "Denise (femme, naturelle)", gender: "f" },
+  { id: "fr-FR-HenriNeural", label: "Henri (homme, naturel)", gender: "m" },
+  { id: "fr-FR-EloiseNeural", label: "Éloïse (femme, douce)", gender: "f" },
 ];
 
 function azureReady() {
   return !!(state.azureKey && state.azureRegion);
+}
+
+// Genre de la voix actuellement choisie (pour l'accord grammatical du
+// tuteur classique, qui n'a pas de genre propre contrairement aux
+// personnages historiques). Renvoie null si inconnu (voix du navigateur).
+function currentVoiceGender() {
+  const v = AZURE_VOICES.find((v) => v.id === selectedVoiceName);
+  return v ? v.gender : null;
 }
 
 // Score de "naturel" : les voix neuronales (Edge) et Google passent devant.
@@ -873,6 +881,15 @@ const personas = {
     "Tu es franche, insolente, parfois provocatrice, avec un petit côté « éternelle enfant », et passionnée par la cause animale plus que par ton ancienne gloire de cinéma.",
 };
 
+// Genre réel de chaque personnage historique, pour que l'accord grammatical
+// (adjectifs, participes passés) quand il/elle parle de lui/elle-même soit
+// toujours correct. Le tuteur classique n'a pas de genre défini : il suit
+// alors la voix choisie (voir currentVoiceGender()).
+const PERSONA_GENDER = {
+  hugo: "m", vangogh: "m", stromae: "m",
+  curie: "f", napoleon: "m", zidane: "m", guetta: "m", bardot: "f",
+};
+
 // Repères du CECRL (cadre européen commun de référence pour les langues) :
 // vocabulaire, temps verbaux et structures de phrases attendus à chaque
 // niveau, pour une vraie différence perceptible plutôt qu'une consigne vague.
@@ -915,6 +932,17 @@ Tu es aussi un professeur de français bienveillant, mais tu ne corriges JAMAIS 
 
   const levelGuidance = LEVEL_GUIDANCE[state.level] || LEVEL_GUIDANCE.intermediaire;
 
+  // Le genre du personnage historique est réel et fixe (ex : Marie Curie
+  // reste une femme quelle que soit la voix choisie). Le tuteur classique
+  // n'a pas de genre propre : il suit la voix sélectionnée, pour que
+  // l'accord grammatical corresponde à ce qu'on entend.
+  const gender = PERSONA_GENDER[state.persona] || currentVoiceGender();
+  const genderHint = gender === "f"
+    ? "\n- Tu es une femme : accorde TOUJOURS au féminin tout ce qui te concerne personnellement (adjectifs, participes passés), par exemple « je suis contente », « je suis née », « je suis fatiguée »."
+    : gender === "m"
+    ? "\n- Tu es un homme : accorde TOUJOURS au masculin tout ce qui te concerne personnellement (adjectifs, participes passés), par exemple « je suis content », « je suis né », « je suis fatigué »."
+    : "";
+
   return `${intro}
 ${levelGuidance}
 Respecte STRICTEMENT ces repères de niveau à chaque réponse, aussi bien dans ton vocabulaire que dans la construction de tes phrases.
@@ -922,7 +950,7 @@ Mode de la séance : ${modeText}
 
 Règles :
 - Parle UNIQUEMENT en français dans le champ "reply" (sauf une traduction courte d'un mot difficile si vraiment utile).
-- Écris toujours dans un français IMPECCABLE, naturel et idiomatique, digne d'un professeur natif expérimenté. Aucune faute, aucune tournure maladroite ou traduite.
+- Écris toujours dans un français IMPECCABLE, naturel et idiomatique, digne d'un professeur natif expérimenté. Aucune faute, aucune tournure maladroite ou traduite.${genderHint}
 - Ne corrige JAMAIS et ne signale JAMAIS les erreurs de l'apprenant dans ta réponse. Réagis seulement au sens de ce qu'il dit et continue la conversation naturellement.
 - Garde tes réponses courtes et naturelles, comme à l'oral. Pose une question de suivi pour relancer.
 - Ne pose JAMAIS de question avec l'inversion sujet-verbe (comme « Rêves-tu ? », « As-tu... ? », « Aimes-tu... ? »), même avec un apprenant avancé. Utilise uniquement l'intonation (« Tu rêves ? ») ou « est-ce que » (« Est-ce que tu rêves ? »).
