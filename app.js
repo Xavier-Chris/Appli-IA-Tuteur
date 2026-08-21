@@ -602,7 +602,7 @@ if (SR) {
     micBtn.classList.remove("listening");
     waveform.classList.remove("active");
     const text = finalText.trim();
-    if (text) sendMessage(text);
+    if (text) sendMessage(text, false, true);
     else setStatus(t("status_ready"));
   };
 }
@@ -938,13 +938,22 @@ Ne mets rien d'autre que ce JSON.`;
 // Analyse UNIQUEMENT le dernier message de l'apprenant (pas tout
 // l'historique) : plus rapide et moins cher, puisque rien de tout ça
 // n'a besoin du contexte des tours précédents pour juger une phrase isolée.
-function buildCorrectionSystemPrompt() {
+function buildCorrectionSystemPrompt(fromVoice) {
   const explLang = state.lang === "en" ? "anglais" : "français";
   const modeHint = state.mode === "roleplay" && state.context
     ? `Contexte du jeu de rôle en cours : ${state.context}. Si ce contexte impose le vouvoiement (entretien d'embauche, administration, médecin...), ne considère pas le vouvoiement de l'apprenant comme une faute, c'est attendu.`
     : "";
+  // La reconnaissance vocale du navigateur capitalise parfois par erreur un
+  // mot ordinaire en plein milieu de la phrase (surtout les noms de langue
+  // ou de nationalité), sans que l'apprenant y soit pour quelque chose. On
+  // ne relâche cette règle QUE pour la voix : au clavier, une majuscule
+  // injustifiée reste une vraie faute à corriger (erreur fréquente chez les
+  // anglophones sur les noms de langue).
+  const voiceHint = fromVoice
+    ? `\n- Ce message vient de la reconnaissance vocale du navigateur, pas du clavier : elle capitalise parfois par erreur un mot ordinaire au milieu de la phrase (ex : "le Français" au lieu de "le français"), même si l'apprenant ne l'a pas prononcé avec une majuscule. NE corrige PAS une majuscule inattendue sur un mot par ailleurs bien orthographié : ce n'est pas une faute de l'apprenant, mais un artefact de la transcription. Continue bien sûr à corriger toutes les vraies fautes de langue (conjugaison, accord, élision, orthographe, vocabulaire).`
+    : "";
 
-  return `Tu es un EXPERT de la grammaire et de l'orthographe françaises. Ta seule tâche : analyser UNE phrase dite par un apprenant de français langue étrangère et repérer ses éventuelles fautes. ${modeHint}
+  return `Tu es un EXPERT de la grammaire et de l'orthographe françaises. Ta seule tâche : analyser UNE phrase dite par un apprenant de français langue étrangère et repérer ses éventuelles fautes. ${modeHint}${voiceHint}
 
 Règle des corrections (TRÈS IMPORTANT) :
 - Ne corrige QUE les vraies fautes. Une faute, c'est une erreur de conjugaison, d'orthographe, d'accord, de genre, de vocabulaire, d'élision ou une structure vraiment incorrecte.
@@ -1045,7 +1054,7 @@ function makeWordsClickable(text, container) {
 // =========================================================
 //  Envoi d'un message au tuteur
 // =========================================================
-async function sendMessage(text, isSystemTrigger = false) {
+async function sendMessage(text, isSystemTrigger = false, fromVoice = false) {
   if (state.busy) return;
   if (!state.started) { setStatus(t("start_first")); return; }
   if (!state.apiKey) { openSettings(); return; }
@@ -1058,7 +1067,7 @@ async function sendMessage(text, isSystemTrigger = false) {
   // besoin de tout l'historique) et met à jour son panneau dès qu'elle est
   // prête, même après que le tuteur ait fini de répondre.
   if (!isSystemTrigger) {
-    callProvider(buildCorrectionSystemPrompt(), [{ role: "user", content: text }])
+    callProvider(buildCorrectionSystemPrompt(fromVoice), [{ role: "user", content: text }])
       .then((raw) => renderCorrection(parseJSON(raw, { correction: null }).correction))
       .catch((err) => console.warn("Correction indisponible :", err));
   }
