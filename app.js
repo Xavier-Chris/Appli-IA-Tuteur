@@ -997,6 +997,9 @@ Réponds EXCLUSIVEMENT avec un objet JSON valide, sans aucun texte autour, avec 
   "femininePlural": "la forme féminin pluriel" si le mot est un adjectif, sinon null
 }
 Pour un adjectif, donne TOUJOURS les 4 formes (masculine, masculinePlural, feminine, femininePlural), même si l'une d'elles est identique au mot donné (ex : pour "rouge", masculine et feminine valent tous les deux "rouge").
+Un mot ne peut appartenir qu'à UNE SEULE catégorie à la fois (nom commun / verbe / adjectif), jamais plusieurs en même temps. Certains mots en "-ant" comme "surprenant" ou "intéressant" peuvent être soit un participe présent (verbe, invariable), soit un adjectif (variable en genre et en nombre) : regarde la PHRASE donnée en contexte pour trancher.
+- S'il fonctionne comme un ADJECTIF dans cette phrase (il décrit un nom, il pourrait varier en genre/nombre) : remplis UNIQUEMENT masculine/masculinePlural/feminine/femininePlural. Laisse "gender" et "infinitive" à null.
+- S'il fonctionne comme un VERBE conjugué dans cette phrase : remplis UNIQUEMENT "infinitive". Laisse "gender", masculine, masculinePlural, feminine et femininePlural à null.
 Ne mets rien d'autre que ce JSON.`;
 }
 
