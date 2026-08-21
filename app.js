@@ -1204,20 +1204,35 @@ async function callGroq(systemPrompt, messages) {
         return json.choices?.[0]?.message?.content || "";
       }
       let code = "";
+      let message = "";
       let detail = "";
       try {
         const body = await res.json();
         code = body.error?.code || "";
+        message = body.error?.message || "";
         detail = JSON.stringify(body.error || {});
       } catch (_) {}
       lastErr = new Error(`${res.status} ${detail}`);
       lastErr.status = res.status;
       if (code === "json_validate_failed" && attempt === 0) continue;   // on retente
+      // Limite de débit temporaire (niveau gratuit Groq) : le message
+      // indique combien de temps attendre avant de retenter. On patiente ce
+      // délai puis on réessaie une fois, plutôt que d'afficher directement
+      // une erreur pour un simple pic de trafic passager (plus fréquent
+      // depuis que réponse et correction partent en parallèle).
+      if (res.status === 429 && attempt === 0) {
+        const waitMatch = message.match(/try again in ([\d.]+)s/);
+        const waitMs = Math.min(waitMatch ? parseFloat(waitMatch[1]) * 1000 : 5000, 20000);
+        await new Promise((resolve) => setTimeout(resolve, waitMs + 500));
+        continue;
+      }
       break;
     }
-    // 400 (modèle indisponible ou JSON invalide même après retry) / 404 :
-    // on tente le modèle suivant. Toute autre erreur (ex : 401) arrête tout.
-    if (lastErr.status !== 400 && lastErr.status !== 404) throw lastErr;
+    // 400 (modèle indisponible ou JSON invalide même après retry) / 404 /
+    // 429 (toujours limité après l'attente) : on tente le modèle suivant,
+    // qui a son propre quota séparé chez Groq. Toute autre erreur (ex :
+    // 401) arrête tout.
+    if (lastErr.status !== 400 && lastErr.status !== 404 && lastErr.status !== 429) throw lastErr;
   }
   throw lastErr;
 }
