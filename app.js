@@ -921,7 +921,7 @@ async function callAnthropic(systemPrompt, messages) {
     },
     body: JSON.stringify({
       model: "claude-sonnet-5",
-      max_tokens: 700,
+      max_tokens: 1200,
       system: systemPrompt,
       messages,
     }),
@@ -943,7 +943,7 @@ async function callOpenAI(systemPrompt, messages) {
     },
     body: JSON.stringify({
       model: "gpt-4o",
-      max_tokens: 700,
+      max_tokens: 1200,
       response_format: { type: "json_object" },
       messages: [{ role: "system", content: systemPrompt }, ...messages],
     }),
