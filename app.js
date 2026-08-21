@@ -971,7 +971,9 @@ Réponds EXCLUSIVEMENT avec un objet JSON valide, sans aucun texte autour, avec 
   "word": "le mot ou l'expression exactement comme on te l'a donné, sans le modifier",
   "translation": "traduction en anglais, courte et naturelle, adaptée au contexte donné",
   "gender": "m" ou "f" si le mot est un nom commun (indique son genre), sinon null,
-  "infinitive": "la forme infinitive" si le mot est un verbe conjugué et que sa forme diffère de l'infinitif, sinon null
+  "infinitive": "la forme infinitive" si le mot est un verbe conjugué et que sa forme diffère de l'infinitif, sinon null,
+  "feminine": "la forme féminine singulière" si le mot est un adjectif et que le féminin diffère du mot donné (ex : "beau" -> "belle"), sinon null,
+  "plural": "la forme plurielle, du même genre que le mot donné" si le mot est un adjectif et que le pluriel diffère du mot donné (ex : "beau" -> "beaux"), sinon null
 }
 Ne mets rien d'autre que ce JSON.`;
 }
@@ -985,8 +987,8 @@ async function lookupWord(word, sentenceContext, spanEl) {
     const raw = await callProvider(buildVocabLookupPrompt(), [
       { role: "user", content: `Phrase : "${sentenceContext}"\nMot ou expression cliqué : "${cleanWord}"` },
     ]);
-    const data = parseJSON(raw, { word: cleanWord, translation: "", gender: null, infinitive: null });
-    addVocabItem(data.word || cleanWord, data.translation, data.gender, data.infinitive);
+    const data = parseJSON(raw, { word: cleanWord, translation: "", gender: null, infinitive: null, feminine: null, plural: null });
+    addVocabItem(data.word || cleanWord, data.translation, data.gender, data.infinitive, data.feminine, data.plural);
     renderVocabPanel();
     spanEl.classList.add("word-added");
   } catch (err) {
@@ -1351,8 +1353,10 @@ function renderVocabPanel() {
       el.className = "vocab-item";
       const genderTag = v.gender ? `<span class="vocab-tag">${v.gender === "f" ? "n.f." : "n.m."}</span>` : "";
       const infTag = v.infinitive ? `<span class="vocab-tag">→ ${escapeHtml(v.infinitive)}</span>` : "";
+      const femTag = v.feminine ? `<span class="vocab-tag">fém. ${escapeHtml(v.feminine)}</span>` : "";
+      const plTag = v.plural ? `<span class="vocab-tag">plur. ${escapeHtml(v.plural)}</span>` : "";
       el.innerHTML = `
-        <div class="vocab-main"><span class="word">${escapeHtml(v.word)}</span>${genderTag}${infTag}</div>
+        <div class="vocab-main"><span class="word">${escapeHtml(v.word)}</span>${genderTag}${infTag}${femTag}${plTag}</div>
         <span class="tr">${escapeHtml(v.translation || "")}</span>`;
       vocabEl.appendChild(el);
     });
@@ -1362,11 +1366,12 @@ function renderVocabPanel() {
 
 // Nouveau mot : prêt à être révisé dès maintenant (boîte 0 du système
 // de Leitner), pour encourager une première révision peu après l'ajout.
-function addVocabItem(word, translation, gender, infinitive) {
+function addVocabItem(word, translation, gender, infinitive, feminine, plural) {
   const key = word.trim().toLowerCase();
   if (savedVocab.some((v) => v.word.trim().toLowerCase() === key)) return;
   savedVocab.unshift({
     word, translation: translation || "", gender: gender || null, infinitive: infinitive || null,
+    feminine: feminine || null, plural: plural || null,
     box: 0, nextReview: Date.now(),
   });
   persistVocab();
@@ -1428,6 +1433,8 @@ function renderReviewCard() {
   }
   const v = reviewQueue[reviewIndex];
   const genderTag = v.gender ? `<span class="vocab-tag">${v.gender === "f" ? "n.f." : "n.m."}</span>` : "";
+  const femTag = v.feminine ? `<span class="vocab-tag">fém. ${escapeHtml(v.feminine)}</span>` : "";
+  const plTag = v.plural ? `<span class="vocab-tag">plur. ${escapeHtml(v.plural)}</span>` : "";
   const progress = t("review_progress")
     .replace("{current}", String(reviewIndex + 1))
     .replace("{total}", String(reviewQueue.length));
@@ -1438,6 +1445,7 @@ function renderReviewCard() {
       <div class="review-answer" id="reviewAnswer" hidden>
         <span class="review-translation">${escapeHtml(v.translation || "")}</span>
         ${v.infinitive ? `<span class="vocab-tag">→ ${escapeHtml(v.infinitive)}</span>` : ""}
+        ${femTag}${plTag}
       </div>
     </div>
     <div class="review-actions" id="reviewActions"></div>`;
