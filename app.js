@@ -57,6 +57,8 @@ const I18N = {
     btn_start: "Démarrer la conversation",
     btn_reset: "Terminer et voir le résumé",
     summary_h: "Résumé de la leçon",
+    summary_date: "Date",
+    btn_download_pdf: "Télécharger en PDF",
     summary_duration: "Durée",
     summary_exchanges: "Échanges",
     summary_new_words: "Nouveaux mots",
@@ -145,6 +147,8 @@ const I18N = {
     btn_start: "Start conversation",
     btn_reset: "Finish and see summary",
     summary_h: "Lesson summary",
+    summary_date: "Date",
+    btn_download_pdf: "Download as PDF",
     summary_duration: "Duration",
     summary_exchanges: "Exchanges",
     summary_new_words: "New words",
@@ -632,7 +636,12 @@ function showLessonSummary() {
     ? `<ul class="summary-list">${newCorrections.map((c) => `<li><strong>${escapeHtml(c.original || "")}</strong> → ${escapeHtml(c.better)}</li>`).join("")}</ul>`
     : `<p class="small muted">${t("summary_no_corrections")}</p>`;
 
+  const dateText = new Date().toLocaleDateString(state.lang === "fr" ? "fr-FR" : "en-US", {
+    day: "numeric", month: "long", year: "numeric",
+  });
+
   $("summaryBody").innerHTML = `
+    <div class="summary-row"><span class="summary-tag">${t("summary_date")}</span><span>${dateText}</span></div>
     <div class="summary-row"><span class="summary-tag">${t("summary_duration")}</span><span>${durationText}</span></div>
     <div class="summary-row"><span class="summary-tag">${t("summary_exchanges")}</span><span>${exchangeCount}</span></div>
     <h3 class="modal-subhead">${t("summary_new_words")} (${newWords.length})</h3>
@@ -644,6 +653,16 @@ function showLessonSummary() {
 }
 
 $("closeSummary").addEventListener("click", () => ($("summaryModal").hidden = true));
+
+// Export en PDF : passe par l'impression du navigateur (l'élève choisit
+// "Enregistrer en PDF" dans la fenêtre d'impression), une mise en page
+// dédiée (@media print) n'affiche que ce résumé sur le papier. Isolé dans
+// sa propre fonction pour pouvoir être remplacé plus tard par une
+// génération PDF directe (ex. jsPDF) sans toucher au reste du code.
+function exportSummaryAsPdf() {
+  window.print();
+}
+$("downloadSummaryBtn").addEventListener("click", exportSummaryAsPdf);
 
 $("startBtn").addEventListener("click", startLesson);
 $("resetBtn").addEventListener("click", () => {
