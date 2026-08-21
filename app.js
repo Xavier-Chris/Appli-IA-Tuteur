@@ -507,18 +507,28 @@ function speakBrowser(text) {
   }, 60);
 }
 
+// Un tiret entre deux nombres (ex : "25-30 minutes") est parfois lu chiffre
+// par chiffre par les moteurs vocaux, comme un code plutôt qu'une fourchette
+// naturelle. On le remplace par "à" avant de parler. Couvre aussi les tirets
+// typographiques (–, —, tiret insécable...) que l'IA utilise parfois à la
+// place d'un simple "-".
+function normalizeForSpeech(text) {
+  return String(text || "").replace(/(\d+)\s*[-‑–—−]\s*(\d+)/g, "$1 à $2");
+}
+
 function speak(text) {
+  const spoken = normalizeForSpeech(text);
   const token = ++speakToken;
   if (currentAzureAudio) { currentAzureAudio.pause(); currentAzureAudio = null; }
   if ("speechSynthesis" in window) speechSynthesis.cancel();
   if (azureReady()) {
-    speakAzure(text, token).catch((err) => {
+    speakAzure(spoken, token).catch((err) => {
       if (token !== speakToken) return;   // supplanté entre-temps, inutile de basculer sur le navigateur
       console.warn("Azure TTS a échoué, repli sur la voix du navigateur :", err);
-      speakBrowser(text);
+      speakBrowser(spoken);
     });
   } else {
-    speakBrowser(text);
+    speakBrowser(spoken);
   }
 }
 
