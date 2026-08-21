@@ -911,6 +911,19 @@ async function sendMessage(text, isSystemTrigger = false) {
 // pour pouvoir servir aussi bien la conversation principale que de
 // petites requêtes ponctuelles (ex : recherche d'un mot cliqué).
 async function callAnthropic(systemPrompt, messages) {
+  // Cache de prompt Anthropic : le système (identique à chaque message tant
+  // que le niveau/personnage/mode ne changent pas) et l'historique déjà
+  // envoyé sont mis en cache côté Anthropic, donc refacturés ~10x moins
+  // cher au lieu du plein tarif à chaque nouveau message de la leçon.
+  const cachedMessages = messages.map((m, i) => ({
+    role: m.role,
+    content: [{
+      type: "text",
+      text: m.content,
+      ...(i === messages.length - 1 ? { cache_control: { type: "ephemeral" } } : {}),
+    }],
+  }));
+
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
@@ -922,8 +935,8 @@ async function callAnthropic(systemPrompt, messages) {
     body: JSON.stringify({
       model: "claude-sonnet-5",
       max_tokens: 2000,
-      system: systemPrompt,
-      messages,
+      system: [{ type: "text", text: systemPrompt, cache_control: { type: "ephemeral" } }],
+      messages: cachedMessages,
     }),
   });
   if (!res.ok) throw new Error(await readError(res));
