@@ -401,61 +401,70 @@ function escapeSSML(s) {
 // si la clé est invalide ou l'appel échoue, pour que l'appelant puisse
 // basculer sur le navigateur.
 let currentAzureAudio = null;
+// Incrémenté à chaque appel à speak() : sert à repérer un appel devenu
+// périmé (une voix plus récente a pris le relais) pour qu'il s'arrête au
+// lieu de continuer à jouer ou de ressusciter en arrière-plan.
+let speakToken = 0;
+
+// Bascule la classe "speaking" pendant la lecture et libère l'URL objet à
+// la fin (fin normale ou erreur). Utilisé par les deux chemins de lecture
+// Azure (flux et téléchargement complet) : idempotent, peut être appelé
+// plusieurs fois sans risque.
+function wireAudioLifecycle(audio, objectUrl) {
+  audio.onplay = () => waveform.classList.add("speaking");
+  const cleanup = () => { waveform.classList.remove("speaking"); URL.revokeObjectURL(objectUrl); };
+  audio.onended = cleanup;
+  audio.onerror = cleanup;
+  return cleanup;
+}
 
 // Joue l'audio au fur et à mesure qu'il arrive (au lieu d'attendre le
 // fichier entier) pour réduire le délai avant que la voix démarre.
-// Nécessite MediaSource ; se résout dès que la lecture démarre (comme
-// audio.play(), sans attendre la fin de la lecture).
-function playAzureStream(res) {
-  return new Promise((resolve, reject) => {
-    const mediaSource = new MediaSource();
-    const objectUrl = URL.createObjectURL(mediaSource);
-    const audio = new Audio(objectUrl);
-    currentAzureAudio = audio;
-    audio.onplay = () => waveform.classList.add("speaking");
-    const cleanup = () => { waveform.classList.remove("speaking"); URL.revokeObjectURL(objectUrl); };
-    audio.onended = cleanup;
-    audio.onerror = cleanup;
+// `token` permet d'arrêter proprement (annuler la lecture réseau, libérer
+// l'URL) si une voix plus récente a été déclenchée entre-temps.
+async function playAzureStream(res, token) {
+  const mediaSource = new MediaSource();
+  const objectUrl = URL.createObjectURL(mediaSource);
+  const audio = new Audio(objectUrl);
+  const cleanup = wireAudioLifecycle(audio, objectUrl);
+  const stale = () => token !== speakToken;
 
-    let settled = false;
-    const fail = (err) => { if (!settled) { settled = true; cleanup(); reject(err); } };
-    const succeed = () => { settled = true; resolve(); };
+  await new Promise((resolve) => mediaSource.addEventListener("sourceopen", resolve, { once: true }));
+  if (stale()) { cleanup(); return; }
 
-    mediaSource.addEventListener("sourceopen", () => {
-      let sourceBuffer;
-      try {
-        sourceBuffer = mediaSource.addSourceBuffer("audio/mpeg");
-      } catch (err) { fail(err); return; }
+  const sourceBuffer = mediaSource.addSourceBuffer("audio/mpeg");
+  const reader = res.body.getReader();
+  let firstChunk = true;
 
-      const reader = res.body.getReader();
-      let firstChunk = true;
-
-      const handleChunk = ({ done, value }) => {
-        if (done) {
-          if (mediaSource.readyState === "open") {
-            try { mediaSource.endOfStream(); } catch (_) {}
-          }
-          return;
-        }
-        sourceBuffer.addEventListener("updateend", function onUpdateEnd() {
-          sourceBuffer.removeEventListener("updateend", onUpdateEnd);
-          if (firstChunk) {
-            firstChunk = false;
-            audio.play().then(succeed).catch(fail);
-          }
-          reader.read().then(handleChunk).catch(fail);
-        }, { once: true });
-        try {
-          sourceBuffer.appendBuffer(value);
-        } catch (err) { fail(err); }
-      };
-
-      reader.read().then(handleChunk).catch(fail);
-    }, { once: true });
-  });
+  try {
+    while (true) {
+      if (stale()) { reader.cancel(); cleanup(); return; }
+      const { done, value } = await reader.read();
+      if (done) {
+        // Flux vide (aucun octet reçu) : ce n'est pas un succès silencieux,
+        // sinon l'appelant ne bascule jamais sur la voix du navigateur.
+        if (firstChunk) throw new Error("Azure TTS : flux audio vide");
+        if (mediaSource.readyState === "open") { try { mediaSource.endOfStream(); } catch (_) {} }
+        return;
+      }
+      await new Promise((resolve, reject) => {
+        sourceBuffer.addEventListener("updateend", resolve, { once: true });
+        try { sourceBuffer.appendBuffer(value); } catch (err) { reject(err); }
+      });
+      if (firstChunk) {
+        firstChunk = false;
+        if (stale()) { reader.cancel(); cleanup(); return; }
+        currentAzureAudio = audio;
+        await audio.play();
+      }
+    }
+  } catch (err) {
+    cleanup();
+    throw err;
+  }
 }
 
-async function speakAzure(text) {
+async function speakAzure(text, token) {
   const ratePct = Math.round((voiceRate - 1) * 100);
   const rateAttr = ratePct >= 0 ? `+${ratePct}%` : `${ratePct}%`;
   // Les voix "Multilingual" (Vivienne, Rémy) détectent automatiquement la
@@ -478,28 +487,25 @@ async function speakAzure(text) {
     body: ssml,
   });
   if (!res.ok) throw new Error(`Azure TTS ${res.status}`);
-
-  if (currentAzureAudio) { currentAzureAudio.pause(); currentAzureAudio = null; }
+  if (token !== speakToken) return;   // une voix plus récente a déjà pris le relais
 
   // Lecture en flux si le navigateur le permet (Chrome/Edge/Firefox) : la
   // voix démarre dès les premiers octets reçus au lieu d'attendre le
   // fichier complet.
   const canStream = "MediaSource" in window && MediaSource.isTypeSupported("audio/mpeg") && !!res.body;
   if (canStream) {
-    await playAzureStream(res);
+    await playAzureStream(res, token);
     return;
   }
 
   // Repli pour les navigateurs sans flux mp3 (ex. Safari) : téléchargement
   // complet avant lecture, comportement identique à avant.
   const blob = await res.blob();
+  if (token !== speakToken) return;
   const url = URL.createObjectURL(blob);
   const audio = new Audio(url);
+  wireAudioLifecycle(audio, url);
   currentAzureAudio = audio;
-  audio.onplay = () => waveform.classList.add("speaking");
-  const cleanup = () => { waveform.classList.remove("speaking"); URL.revokeObjectURL(url); };
-  audio.onended = cleanup;
-  audio.onerror = cleanup;
   await audio.play();
 }
 
@@ -521,10 +527,12 @@ function speakBrowser(text) {
 }
 
 function speak(text) {
+  const token = ++speakToken;
   if (currentAzureAudio) { currentAzureAudio.pause(); currentAzureAudio = null; }
   if ("speechSynthesis" in window) speechSynthesis.cancel();
   if (azureReady()) {
-    speakAzure(text).catch((err) => {
+    speakAzure(text, token).catch((err) => {
+      if (token !== speakToken) return;   // supplanté entre-temps, inutile de basculer sur le navigateur
       console.warn("Azure TTS a échoué, repli sur la voix du navigateur :", err);
       speakBrowser(text);
     });
@@ -889,7 +897,10 @@ async function sendMessage(text, isSystemTrigger = false) {
     const data = parseTutorJSON(raw);
 
     if (userBubble && data.userText) userBubble.textContent = frenchSpacing(data.userText);
-    state.messages.push({ role: "assistant", content: raw });
+    // Un contenu vide dans l'historique ferait échouer le prochain appel à
+    // Claude (l'API rejette un bloc de texte vide) : on garde un espace
+    // réservé plutôt qu'une chaîne vide dans ce cas rare.
+    state.messages.push({ role: "assistant", content: raw || "…" });
     addBubble("tutor", data.reply);
     speak(data.reply);
     renderCorrection(data.correction);
@@ -911,6 +922,10 @@ async function sendMessage(text, isSystemTrigger = false) {
 // Chaque fonction accepte un system prompt et une liste de messages,
 // pour pouvoir servir aussi bien la conversation principale que de
 // petites requêtes ponctuelles (ex : recherche d'un mot cliqué).
+// Constante unique pour les 4 fournisseurs : évite qu'une future
+// augmentation de cette limite en oublie un (déjà arrivé avec Gemini).
+const MAX_TOKENS = 2000;
+
 async function callAnthropic(systemPrompt, messages) {
   // Cache de prompt Anthropic : le système (identique à chaque message tant
   // que le niveau/personnage/mode ne changent pas) et l'historique déjà
@@ -935,7 +950,7 @@ async function callAnthropic(systemPrompt, messages) {
     },
     body: JSON.stringify({
       model: "claude-sonnet-5",
-      max_tokens: 2000,
+      max_tokens: MAX_TOKENS,
       system: [{ type: "text", text: systemPrompt, cache_control: { type: "ephemeral" } }],
       messages: cachedMessages,
     }),
@@ -957,7 +972,7 @@ async function callOpenAI(systemPrompt, messages) {
     },
     body: JSON.stringify({
       model: "gpt-4o",
-      max_tokens: 2000,
+      max_tokens: MAX_TOKENS,
       response_format: { type: "json_object" },
       messages: [{ role: "system", content: systemPrompt }, ...messages],
     }),
@@ -993,7 +1008,7 @@ async function callGroq(systemPrompt, messages) {
         },
         body: JSON.stringify({
           model,
-          max_tokens: 2000,
+          max_tokens: MAX_TOKENS,
           response_format: { type: "json_object" },
           messages: fullMessages,
         }),
@@ -1039,13 +1054,16 @@ async function callGemini(systemPrompt, messages) {
       body: JSON.stringify({
         system_instruction: { parts: [{ text: systemPrompt }] },
         contents,
-        generationConfig: { responseMimeType: "application/json", maxOutputTokens: 700 },
+        generationConfig: { responseMimeType: "application/json", maxOutputTokens: MAX_TOKENS },
       }),
     }
   );
   if (!res.ok) throw new Error(await readError(res));
   const json = await res.json();
-  return json.candidates?.[0]?.content?.parts?.[0]?.text || "";
+  // Comme pour Claude : ne pas supposer que le premier "part" est le texte.
+  const parts = json.candidates?.[0]?.content?.parts || [];
+  const textPart = parts.find((p) => typeof p.text === "string");
+  return textPart?.text || "";
 }
 
 // Dispatche vers le fournisseur choisi, avec un system prompt et des
