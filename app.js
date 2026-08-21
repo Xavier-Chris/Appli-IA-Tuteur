@@ -447,7 +447,10 @@ async function speakAzure(text, token) {
   const isMultilingual = selectedVoiceName.toLowerCase().includes("multilingual");
   const body = escapeSSML(text);
   const spoken = isMultilingual ? `<lang xml:lang="fr-FR">${body}</lang>` : body;
-  const ssml = `<speak version="1.0" xml:lang="fr-FR"><voice name="${selectedVoiceName}"><prosody rate="${rateAttr}">${spoken}</prosody></voice></speak>`;
+  // Style "chat" : ton conversationnel plus naturel (moins plat, surtout
+  // sur les questions) que la lecture neutre par défaut. Si la voix ne le
+  // supporte pas, Azure l'ignore simplement sans erreur.
+  const ssml = `<speak version="1.0" xml:lang="fr-FR" xmlns:mstts="https://www.w3.org/2001/mstts"><voice name="${selectedVoiceName}"><mstts:express-as style="chat"><prosody rate="${rateAttr}">${spoken}</prosody></mstts:express-as></voice></speak>`;
 
   const res = await fetch(`https://${state.azureRegion}.tts.speech.microsoft.com/cognitiveservices/v1`, {
     method: "POST",
