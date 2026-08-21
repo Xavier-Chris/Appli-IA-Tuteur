@@ -67,6 +67,10 @@ const I18N = {
     summary_no_corrections: "Aucune faute corrigée, bien joué !",
     summary_minutes: "{n} min",
     summary_less_minute: "moins d'une minute",
+    summary_include_transcript: "Inclure la transcription complète",
+    summary_transcript: "Transcription complète",
+    summary_transcript_student: "Élève",
+    summary_transcript_tutor: "Tuteur",
     panel_corrections: "Corrections",
     panel_vocab: "Vocabulaire",
     corrections_empty: "Tes corrections apparaîtront ici après chaque réponse.",
@@ -157,6 +161,10 @@ const I18N = {
     summary_no_corrections: "No mistakes corrected, well done!",
     summary_minutes: "{n} min",
     summary_less_minute: "less than a minute",
+    summary_include_transcript: "Include full transcript",
+    summary_transcript: "Full transcript",
+    summary_transcript_student: "Student",
+    summary_transcript_tutor: "Tutor",
     panel_corrections: "Corrections",
     panel_vocab: "Vocabulary",
     corrections_empty: "Your corrections will appear here after each answer.",
@@ -629,6 +637,21 @@ function formatLessonDuration(ms) {
 let lastLessonSummary = null;
 
 function buildLessonSummaryData() {
+  // Reconstruit la conversation lisible à partir de l'historique brut :
+  // on saute le déclencheur système qui lance la leçon (jamais dit par
+  // l'élève) et on relit le JSON de chaque réponse pour n'en garder que
+  // le texte parlé ("reply"), pas le JSON complet stocké en mémoire.
+  const transcript = [];
+  state.messages.forEach((m) => {
+    if (m.role === "user") {
+      if (m.content.startsWith("[Début de la leçon")) return;
+      transcript.push({ role: "user", text: m.content });
+    } else if (m.role === "assistant") {
+      const data = parseTutorJSON(m.content);
+      if (data.reply) transcript.push({ role: "tutor", text: data.reply });
+    }
+  });
+
   return {
     dateText: new Date().toLocaleDateString(state.lang === "fr" ? "fr-FR" : "en-US", {
       day: "numeric", month: "long", year: "numeric",
@@ -637,6 +660,7 @@ function buildLessonSummaryData() {
     exchangeCount: state.messages.filter((m) => m.role === "user").length,
     newWords: savedVocab.slice(0, Math.max(0, savedVocab.length - vocabCountAtStart)),
     newCorrections: savedCorrections.slice(0, Math.max(0, savedCorrections.length - correctionsCountAtStart)),
+    transcript,
   };
 }
 
@@ -668,45 +692,70 @@ $("closeSummary").addEventListener("click", () => ($("summaryModal").hidden = tr
 // Export en PDF direct (jsPDF, chargé localement dans vendor/) : construit
 // le fichier dans le navigateur et déclenche son téléchargement en un
 // clic, sans passer par la fenêtre d'impression.
-function exportSummaryAsPdf() {
+function exportSummaryAsPdf(includeTranscript) {
   if (!lastLessonSummary || !window.jspdf) return;
-  const { dateText, durationText, exchangeCount, newWords, newCorrections } = lastLessonSummary;
+  const { dateText, durationText, exchangeCount, newWords, newCorrections, transcript } = lastLessonSummary;
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
+  const marginLeft = 15;
+  const pageWidth = doc.internal.pageSize.getWidth();
   let y = 20;
 
+  // Découpe le texte pour qu'il tienne dans la largeur de page (les
+  // répliques de conversation, contrairement aux mots de vocabulaire,
+  // peuvent être longues) et gère le passage à la page suivante.
   const addLine = (text, x, size) => {
-    if (y > 280) { doc.addPage(); y = 20; }
     doc.setFontSize(size);
-    doc.text(text, x, y);
-    y += size >= 13 ? 8 : 6;
+    const lines = doc.splitTextToSize(text, pageWidth - x - marginLeft);
+    lines.forEach((line) => {
+      if (y > 280) { doc.addPage(); y = 20; }
+      doc.text(line, x, y);
+      y += size >= 13 ? 8 : 6;
+    });
   };
 
-  addLine(t("summary_h"), 15, 16);
+  addLine(t("summary_h"), marginLeft, 16);
   y += 2;
-  addLine(`${t("summary_date")} : ${dateText}`, 15, 11);
-  addLine(`${t("summary_duration")} : ${durationText}`, 15, 11);
-  addLine(`${t("summary_exchanges")} : ${exchangeCount}`, 15, 11);
+  addLine(`${t("summary_date")} : ${dateText}`, marginLeft, 11);
+  addLine(`${t("summary_duration")} : ${durationText}`, marginLeft, 11);
+  addLine(`${t("summary_exchanges")} : ${exchangeCount}`, marginLeft, 11);
   y += 4;
 
-  addLine(`${t("summary_new_words")} (${newWords.length})`, 15, 13);
+  addLine(`${t("summary_new_words")} (${newWords.length})`, marginLeft, 13);
   if (newWords.length) {
-    newWords.forEach((v) => addLine(`- ${v.word} — ${v.translation || ""}`, 18, 11));
+    newWords.forEach((v) => addLine(`- ${v.word} — ${v.translation || ""}`, marginLeft + 3, 11));
   } else {
-    addLine(t("summary_no_new_words"), 18, 11);
+    addLine(t("summary_no_new_words"), marginLeft + 3, 11);
   }
   y += 4;
 
-  addLine(`${t("summary_corrections")} (${newCorrections.length})`, 15, 13);
+  addLine(`${t("summary_corrections")} (${newCorrections.length})`, marginLeft, 13);
   if (newCorrections.length) {
-    newCorrections.forEach((c) => addLine(`- ${c.original || ""} -> ${c.better}`, 18, 11));
+    newCorrections.forEach((c) => addLine(`- ${c.original || ""} -> ${c.better}`, marginLeft + 3, 11));
   } else {
-    addLine(t("summary_no_corrections"), 18, 11);
+    addLine(t("summary_no_corrections"), marginLeft + 3, 11);
+  }
+
+  // Transcription complète en annexe (page à part), seulement si l'élève
+  // a coché la case : ce n'est pas ce qui aide le plus à réviser, donc ça
+  // reste optionnel plutôt que systématique.
+  if (includeTranscript && transcript.length) {
+    doc.addPage();
+    y = 20;
+    addLine(t("summary_transcript"), marginLeft, 16);
+    y += 2;
+    transcript.forEach((turn) => {
+      const label = turn.role === "user" ? t("summary_transcript_student") : t("summary_transcript_tutor");
+      addLine(`${label} : ${turn.text}`, marginLeft, 11);
+      y += 2;
+    });
   }
 
   doc.save("resume-lecon.pdf");
 }
-$("downloadSummaryBtn").addEventListener("click", exportSummaryAsPdf);
+$("downloadSummaryBtn").addEventListener("click", () => {
+  exportSummaryAsPdf($("includeTranscriptCheckbox").checked);
+});
 
 $("startBtn").addEventListener("click", startLesson);
 $("resetBtn").addEventListener("click", () => {
