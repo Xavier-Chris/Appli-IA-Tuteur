@@ -623,11 +623,26 @@ function formatLessonDuration(ms) {
   return minutes < 1 ? t("summary_less_minute") : t("summary_minutes").replace("{n}", minutes);
 }
 
+// Calculée une seule fois, à l'affichage du résumé, et réutilisée pour le
+// PDF : state.messages est déjà vidé par le moment où l'élève clique sur
+// "Télécharger" (le clic sur "Terminer" fait les deux à la suite).
+let lastLessonSummary = null;
+
+function buildLessonSummaryData() {
+  return {
+    dateText: new Date().toLocaleDateString(state.lang === "fr" ? "fr-FR" : "en-US", {
+      day: "numeric", month: "long", year: "numeric",
+    }),
+    durationText: lessonStartTime ? formatLessonDuration(Date.now() - lessonStartTime) : "",
+    exchangeCount: state.messages.filter((m) => m.role === "user").length,
+    newWords: savedVocab.slice(0, Math.max(0, savedVocab.length - vocabCountAtStart)),
+    newCorrections: savedCorrections.slice(0, Math.max(0, savedCorrections.length - correctionsCountAtStart)),
+  };
+}
+
 function showLessonSummary() {
-  const durationText = lessonStartTime ? formatLessonDuration(Date.now() - lessonStartTime) : "";
-  const exchangeCount = state.messages.filter((m) => m.role === "user").length;
-  const newWords = savedVocab.slice(0, Math.max(0, savedVocab.length - vocabCountAtStart));
-  const newCorrections = savedCorrections.slice(0, Math.max(0, savedCorrections.length - correctionsCountAtStart));
+  lastLessonSummary = buildLessonSummaryData();
+  const { dateText, durationText, exchangeCount, newWords, newCorrections } = lastLessonSummary;
 
   const wordsHtml = newWords.length
     ? `<ul class="summary-list">${newWords.map((v) => `<li><strong>${escapeHtml(v.word)}</strong> — ${escapeHtml(v.translation || "")}</li>`).join("")}</ul>`
@@ -635,10 +650,6 @@ function showLessonSummary() {
   const correctionsHtml = newCorrections.length
     ? `<ul class="summary-list">${newCorrections.map((c) => `<li><strong>${escapeHtml(c.original || "")}</strong> → ${escapeHtml(c.better)}</li>`).join("")}</ul>`
     : `<p class="small muted">${t("summary_no_corrections")}</p>`;
-
-  const dateText = new Date().toLocaleDateString(state.lang === "fr" ? "fr-FR" : "en-US", {
-    day: "numeric", month: "long", year: "numeric",
-  });
 
   $("summaryBody").innerHTML = `
     <div class="summary-row"><span class="summary-tag">${t("summary_date")}</span><span>${dateText}</span></div>
@@ -654,13 +665,46 @@ function showLessonSummary() {
 
 $("closeSummary").addEventListener("click", () => ($("summaryModal").hidden = true));
 
-// Export en PDF : passe par l'impression du navigateur (l'élève choisit
-// "Enregistrer en PDF" dans la fenêtre d'impression), une mise en page
-// dédiée (@media print) n'affiche que ce résumé sur le papier. Isolé dans
-// sa propre fonction pour pouvoir être remplacé plus tard par une
-// génération PDF directe (ex. jsPDF) sans toucher au reste du code.
+// Export en PDF direct (jsPDF, chargé localement dans vendor/) : construit
+// le fichier dans le navigateur et déclenche son téléchargement en un
+// clic, sans passer par la fenêtre d'impression.
 function exportSummaryAsPdf() {
-  window.print();
+  if (!lastLessonSummary || !window.jspdf) return;
+  const { dateText, durationText, exchangeCount, newWords, newCorrections } = lastLessonSummary;
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  let y = 20;
+
+  const addLine = (text, x, size) => {
+    if (y > 280) { doc.addPage(); y = 20; }
+    doc.setFontSize(size);
+    doc.text(text, x, y);
+    y += size >= 13 ? 8 : 6;
+  };
+
+  addLine(t("summary_h"), 15, 16);
+  y += 2;
+  addLine(`${t("summary_date")} : ${dateText}`, 15, 11);
+  addLine(`${t("summary_duration")} : ${durationText}`, 15, 11);
+  addLine(`${t("summary_exchanges")} : ${exchangeCount}`, 15, 11);
+  y += 4;
+
+  addLine(`${t("summary_new_words")} (${newWords.length})`, 15, 13);
+  if (newWords.length) {
+    newWords.forEach((v) => addLine(`- ${v.word} — ${v.translation || ""}`, 18, 11));
+  } else {
+    addLine(t("summary_no_new_words"), 18, 11);
+  }
+  y += 4;
+
+  addLine(`${t("summary_corrections")} (${newCorrections.length})`, 15, 13);
+  if (newCorrections.length) {
+    newCorrections.forEach((c) => addLine(`- ${c.original || ""} -> ${c.better}`, 18, 11));
+  } else {
+    addLine(t("summary_no_corrections"), 18, 11);
+  }
+
+  doc.save("resume-lecon.pdf");
 }
 $("downloadSummaryBtn").addEventListener("click", exportSummaryAsPdf);
 
