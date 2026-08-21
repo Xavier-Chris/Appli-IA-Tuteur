@@ -862,7 +862,10 @@ async function callAnthropic(systemPrompt, messages) {
   });
   if (!res.ok) throw new Error(await readError(res));
   const json = await res.json();
-  return json.content?.[0]?.text || "";
+  // Le premier bloc de "content" n'est pas toujours le texte (il peut y
+  // avoir un bloc de réflexion avant) : on cherche le bloc de type "text".
+  const textBlock = (json.content || []).find((b) => b.type === "text");
+  return textBlock?.text || "";
 }
 
 async function callOpenAI(systemPrompt, messages) {
