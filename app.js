@@ -884,13 +884,16 @@ const LEVEL_GUIDANCE = {
     "Phrases : complexes, avec plusieurs subordonnées enchâssées. Connecteurs logiques sophistiqués : bien que, quoique, de sorte que, en dépit de, de même que. N'hésite pas aux nuances stylistiques et sous-entendus.",
 };
 
-function buildSystemPrompt() {
+// Découpé en deux prompts distincts (réponse / correction), appelés en
+// parallèle depuis sendMessage() : la voix n'attend plus que la correction,
+// souvent plus longue à écrire, ait fini d'être générée.
+function buildReplySystemPrompt() {
   const personaText = personas[state.persona];
   const intro = personaText
     ? `${personaText}
 Tu restes toujours dans ce personnage et tu peux parler librement de ta vie, de ton passé, de tes émotions et de ta personnalité.
 TRÈS IMPORTANT : exprime-toi dans un français moderne, jamais dans un style d'époque ou exagérément littéraire, car la personne apprend le français et doit te comprendre. La richesse de ton vocabulaire doit suivre le niveau de l'apprenant précisé plus bas, pas ton époque d'origine.
-Tu es aussi un professeur de français bienveillant, mais tu ne corriges JAMAIS l'apprenant dans ta réponse orale : tu continues simplement la conversation. Les corrections vont seulement dans le champ prévu, jamais dans ta réponse.`
+Tu es aussi un professeur de français bienveillant, mais tu ne corriges JAMAIS l'apprenant dans ta réponse : tu continues simplement la conversation (les corrections sont gérées ailleurs, pas ici).`
     : "Tu es un professeur de français langue étrangère, patient, encourageant, naturel et parfois drôle. Tu n'es jamais robotique.";
 
   const modeText = {
@@ -900,7 +903,6 @@ Tu es aussi un professeur de français bienveillant, mais tu ne corriges JAMAIS 
     grammaire: `Leçon de grammaire interactive sur : ${state.context || "au choix"}. Ne fais pas de longs exposés : pose des questions et guide l'apprenant vers la règle.`,
   }[state.mode];
 
-  const explLang = state.lang === "en" ? "anglais" : "français";
   const levelGuidance = LEVEL_GUIDANCE[state.level] || LEVEL_GUIDANCE.intermediaire;
 
   return `${intro}
@@ -911,17 +913,36 @@ Mode de la séance : ${modeText}
 Règles :
 - Parle UNIQUEMENT en français dans le champ "reply" (sauf une traduction courte d'un mot difficile si vraiment utile).
 - Écris toujours dans un français IMPECCABLE, naturel et idiomatique, digne d'un professeur natif expérimenté. Aucune faute, aucune tournure maladroite ou traduite.
+- Ne corrige JAMAIS et ne signale JAMAIS les erreurs de l'apprenant dans ta réponse. Réagis seulement au sens de ce qu'il dit et continue la conversation naturellement.
 - Garde tes réponses courtes et naturelles, comme à l'oral. Pose une question de suivi pour relancer.
 - Ne pose JAMAIS de question avec l'inversion sujet-verbe (comme « Rêves-tu ? », « As-tu... ? », « Aimes-tu... ? »), même avec un apprenant avancé. Utilise uniquement l'intonation (« Tu rêves ? ») ou « est-ce que » (« Est-ce que tu rêves ? »).
 
+Tu DOIS répondre EXCLUSIVEMENT avec un objet JSON valide, sans aucun texte autour, avec cette forme exacte :
+{
+  "userText": "la phrase de l'apprenant réécrite avec une ponctuation soignée : majuscule au début, virgules si besoin, et point ou point d'interrogation à la fin. Garde EXACTEMENT ses mots, ne corrige PAS la grammaire dans ce champ.",
+  "reply": "ta réponse orale en français, courte"
+}
+Ne mets rien d'autre que ce JSON.`;
+}
+
+// Analyse UNIQUEMENT le dernier message de l'apprenant (pas tout
+// l'historique) : plus rapide et moins cher, puisque rien de tout ça
+// n'a besoin du contexte des tours précédents pour juger une phrase isolée.
+function buildCorrectionSystemPrompt() {
+  const explLang = state.lang === "en" ? "anglais" : "français";
+  const modeHint = state.mode === "roleplay" && state.context
+    ? `Contexte du jeu de rôle en cours : ${state.context}. Si ce contexte impose le vouvoiement (entretien d'embauche, administration, médecin...), ne considère pas le vouvoiement de l'apprenant comme une faute, c'est attendu.`
+    : "";
+
+  return `Tu es un EXPERT de la grammaire et de l'orthographe françaises. Ta seule tâche : analyser UNE phrase dite par un apprenant de français langue étrangère et repérer ses éventuelles fautes. ${modeHint}
+
 Règle des corrections (TRÈS IMPORTANT) :
-- Dans le champ "reply", ne corrige JAMAIS et ne signale JAMAIS les erreurs de l'apprenant. Réagis seulement au sens de ce qu'il dit et continue la conversation naturellement. TOUTES les corrections vont uniquement dans le champ "correction", jamais dans "reply".
 - Ne corrige QUE les vraies fautes. Une faute, c'est une erreur de conjugaison, d'orthographe, d'accord, de genre, de vocabulaire, d'élision ou une structure vraiment incorrecte.
-- Tu es un EXPERT de la grammaire et de l'orthographe françaises. Dès qu'il y a au moins une vraie faute, "correction" ne doit JAMAIS être null.
+- Dès qu'il y a au moins une vraie faute, "correction" ne doit JAMAIS être null.
 - Vérifie SYSTÉMATIQUEMENT chaque mot de la phrase un par un, ne te contente pas d'une lecture globale rapide : les fautes discrètes (une lettre, une élision manquante, un petit mot mal accordé) sont aussi importantes à corriger que les grosses fautes.
 - Fais particulièrement attention à l'ÉLISION : "de", "le", "la", "que", "ne", "je", "me", "te", "se", "ce" doivent devenir "d'", "l'", "qu'", "n'", "j'", "m'", "t'", "s'", "c'" devant un mot commençant par une voyelle ou un h muet. Exemple de faute à corriger : « avant de être » doit devenir « avant d'être ». Autres exemples : « le enfant » → « l'enfant », « que il vient » → « qu'il vient », « je ai » → « j'ai ».
 - Fais particulièrement attention à l'ACCORD SUJET-VERBE, même dans une phrase très simple et très courte : "tu" + verbe au présent se termine TOUJOURS en "-es" ou "-s" (jamais "-e" seul), sauf "tu peux", "tu veux", "tu vas". Exemple de faute à corriger : « tu prononce » doit devenir « tu prononces ». Vérifie aussi les accords avec "il/elle" (-e), "nous" (-ons), "vous" (-ez), "ils/elles" (-ent).
-- Quand une phrase contient une ou plusieurs vraies fautes, corrige-les TOUTES d'un coup. Repère chaque erreur : conjugaison, temps verbal, accord en genre et en nombre, article, préposition, orthographe, choix du mot, syntaxe. Le champ "better" doit être la phrase ENTIÈREMENT corrigée, et "explanation" doit expliquer brièvement CHAQUE faute corrigée (une courte phrase par faute).
+- Quand la phrase contient une ou plusieurs vraies fautes, corrige-les TOUTES d'un coup. Repère chaque erreur : conjugaison, temps verbal, accord en genre et en nombre, article, préposition, orthographe, choix du mot, syntaxe. Le champ "better" doit être la phrase ENTIÈREMENT corrigée, et "explanation" doit expliquer brièvement CHAQUE faute corrigée (une courte phrase par faute).
 - Ne mentionne et NE CORRIGE JAMAIS la majuscule en début de phrase, le point final, ou l'ajout de virgules « pour la clarté » : ce sont des détails de mise en forme (gérés séparément par l'application, surtout pour la voix, qui n'a ni majuscule ni ponctuation), pas des fautes de français. Le champ "correction" doit porter UNIQUEMENT sur du contenu linguistique réel (conjugaison, orthographe, accord, élision, genre, vocabulaire, syntaxe), jamais sur la ponctuation ou les majuscules de la phrase.
 - Ne corrige JAMAIS le français familier correct de l'oral. Le registre familier n'est pas une faute.
 - Exemple : « Tu es né en quelle année ? » est CORRECT (question orale sans inversion), donc "correction" vaut null.
@@ -934,8 +955,6 @@ Règle des corrections (TRÈS IMPORTANT) :
 
 Tu DOIS répondre EXCLUSIVEMENT avec un objet JSON valide, sans aucun texte autour, avec cette forme exacte :
 {
-  "userText": "la phrase de l'apprenant réécrite avec une ponctuation soignée : majuscule au début, virgules si besoin, et point ou point d'interrogation à la fin. Garde EXACTEMENT ses mots, ne corrige PAS la grammaire dans ce champ.",
-  "reply": "ta réponse orale en français, courte",
   "correction": { "original": "ce que l'apprenant a dit", "better": "version corrigée en français", "explanation": "explication courte et simple en ${explLang}" } ou null
 }
 Ne mets rien d'autre que ce JSON.`;
@@ -1013,12 +1032,22 @@ async function sendMessage(text, isSystemTrigger = false) {
   const userBubble = isSystemTrigger ? null : addBubble("user", tidyTranscript(text));
   state.messages.push({ role: "user", content: text });
 
+  // La correction tourne dans un appel séparé, en parallèle, et ne retarde
+  // jamais la réponse parlée : elle ne porte que sur ce seul message (pas
+  // besoin de tout l'historique) et met à jour son panneau dès qu'elle est
+  // prête, même après que le tuteur ait fini de répondre.
+  if (!isSystemTrigger) {
+    callProvider(buildCorrectionSystemPrompt(), [{ role: "user", content: text }])
+      .then((raw) => renderCorrection(parseJSON(raw, { correction: null }).correction))
+      .catch((err) => console.warn("Correction indisponible :", err));
+  }
+
   state.busy = true;
   setStatus(t("thinking"));
   micBtn.disabled = true;
 
   try {
-    const raw = await callProvider(buildSystemPrompt(), state.messages);
+    const raw = await callProvider(buildReplySystemPrompt(), state.messages);
     const data = parseTutorJSON(raw);
 
     if (userBubble && data.userText) userBubble.textContent = frenchSpacing(data.userText);
@@ -1028,7 +1057,6 @@ async function sendMessage(text, isSystemTrigger = false) {
     state.messages.push({ role: "assistant", content: raw || "…" });
     addBubble("tutor", data.reply);
     speak(data.reply);
-    renderCorrection(data.correction);
     setStatus(t("your_turn"));
   } catch (err) {
     console.error(err);
