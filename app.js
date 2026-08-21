@@ -1370,10 +1370,21 @@ function adjectiveTags(v) {
     ["m.", v.masculine], ["m.pl.", v.masculinePlural],
     ["f.", v.feminine], ["f.pl.", v.femininePlural],
   ];
-  return forms
-    .filter(([, form]) => form)
-    .map(([label, form]) => `<span class="vocab-tag">${label} ${escapeHtml(form)}</span>`)
-    .join("");
+  const wordKey = (v.word || "").trim().toLowerCase();
+  const tags = [];
+  let ownLabel = null;
+  forms.forEach(([label, form]) => {
+    if (!form) return;
+    // La forme du mot déjà affiché comme "word" : juste son étiquette
+    // grammaticale, pas la peine de réécrire le mot une deuxième fois.
+    if (!ownLabel && form.trim().toLowerCase() === wordKey) {
+      ownLabel = label;
+    } else {
+      tags.push(`<span class="vocab-tag">${label} ${escapeHtml(form)}</span>`);
+    }
+  });
+  if (ownLabel) tags.unshift(`<span class="vocab-tag">${ownLabel}</span>`);
+  return tags.join("");
 }
 
 function renderVocabPanel() {
