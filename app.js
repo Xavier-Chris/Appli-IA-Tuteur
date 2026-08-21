@@ -982,9 +982,12 @@ Réponds EXCLUSIVEMENT avec un objet JSON valide, sans aucun texte autour, avec 
   "translation": "traduction en anglais, courte et naturelle, adaptée au contexte donné",
   "gender": "m" ou "f" si le mot est un nom commun (indique son genre), sinon null,
   "infinitive": "la forme infinitive" si le mot est un verbe conjugué et que sa forme diffère de l'infinitif, sinon null,
-  "feminine": "la forme féminine singulière" si le mot est un adjectif et que le féminin diffère du mot donné (ex : "beau" -> "belle"), sinon null,
-  "plural": "la forme plurielle, du même genre que le mot donné" si le mot est un adjectif et que le pluriel diffère du mot donné (ex : "beau" -> "beaux"), sinon null
+  "masculine": "la forme masculin singulier" si le mot est un adjectif, sinon null,
+  "masculinePlural": "la forme masculin pluriel" si le mot est un adjectif, sinon null,
+  "feminine": "la forme féminin singulier" si le mot est un adjectif, sinon null,
+  "femininePlural": "la forme féminin pluriel" si le mot est un adjectif, sinon null
 }
+Pour un adjectif, donne TOUJOURS les 4 formes (masculine, masculinePlural, feminine, femininePlural), même si l'une d'elles est identique au mot donné (ex : pour "rouge", masculine et feminine valent tous les deux "rouge").
 Ne mets rien d'autre que ce JSON.`;
 }
 
@@ -997,8 +1000,14 @@ async function lookupWord(word, sentenceContext, spanEl) {
     const raw = await callProvider(buildVocabLookupPrompt(), [
       { role: "user", content: `Phrase : "${sentenceContext}"\nMot ou expression cliqué : "${cleanWord}"` },
     ]);
-    const data = parseJSON(raw, { word: cleanWord, translation: "", gender: null, infinitive: null, feminine: null, plural: null });
-    addVocabItem(data.word || cleanWord, data.translation, data.gender, data.infinitive, data.feminine, data.plural);
+    const data = parseJSON(raw, {
+      word: cleanWord, translation: "", gender: null, infinitive: null,
+      masculine: null, masculinePlural: null, feminine: null, femininePlural: null,
+    });
+    addVocabItem(data.word || cleanWord, data.translation, data.gender, data.infinitive, {
+      masculine: data.masculine, masculinePlural: data.masculinePlural,
+      feminine: data.feminine, femininePlural: data.femininePlural,
+    });
     renderVocabPanel();
     spanEl.classList.add("word-added");
   } catch (err) {
@@ -1353,6 +1362,20 @@ function persistVocab() {
   localStorage.setItem("vocabBank", JSON.stringify(savedVocab));
 }
 
+// Les 4 formes d'un adjectif (masculin, masculin pluriel, féminin, féminin
+// pluriel), utilisé à la fois dans le panneau de vocabulaire et les cartes
+// de révision.
+function adjectiveTags(v) {
+  const forms = [
+    ["m.", v.masculine], ["m.pl.", v.masculinePlural],
+    ["f.", v.feminine], ["f.pl.", v.femininePlural],
+  ];
+  return forms
+    .filter(([, form]) => form)
+    .map(([label, form]) => `<span class="vocab-tag">${label} ${escapeHtml(form)}</span>`)
+    .join("");
+}
+
 function renderVocabPanel() {
   if (!savedVocab.length) {
     vocabEl.innerHTML = `<p class="small muted">${t("vocab_empty")}</p>`;
@@ -1363,10 +1386,8 @@ function renderVocabPanel() {
       el.className = "vocab-item";
       const genderTag = v.gender ? `<span class="vocab-tag">${v.gender === "f" ? "n.f." : "n.m."}</span>` : "";
       const infTag = v.infinitive ? `<span class="vocab-tag">→ ${escapeHtml(v.infinitive)}</span>` : "";
-      const femTag = v.feminine ? `<span class="vocab-tag">fém. ${escapeHtml(v.feminine)}</span>` : "";
-      const plTag = v.plural ? `<span class="vocab-tag">plur. ${escapeHtml(v.plural)}</span>` : "";
       el.innerHTML = `
-        <div class="vocab-main"><span class="word">${escapeHtml(v.word)}</span>${genderTag}${infTag}${femTag}${plTag}</div>
+        <div class="vocab-main"><span class="word">${escapeHtml(v.word)}</span>${genderTag}${infTag}${adjectiveTags(v)}</div>
         <span class="tr">${escapeHtml(v.translation || "")}</span>`;
       vocabEl.appendChild(el);
     });
@@ -1376,12 +1397,14 @@ function renderVocabPanel() {
 
 // Nouveau mot : prêt à être révisé dès maintenant (boîte 0 du système
 // de Leitner), pour encourager une première révision peu après l'ajout.
-function addVocabItem(word, translation, gender, infinitive, feminine, plural) {
+function addVocabItem(word, translation, gender, infinitive, adjForms) {
   const key = word.trim().toLowerCase();
   if (savedVocab.some((v) => v.word.trim().toLowerCase() === key)) return;
+  const forms = adjForms || {};
   savedVocab.unshift({
     word, translation: translation || "", gender: gender || null, infinitive: infinitive || null,
-    feminine: feminine || null, plural: plural || null,
+    masculine: forms.masculine || null, masculinePlural: forms.masculinePlural || null,
+    feminine: forms.feminine || null, femininePlural: forms.femininePlural || null,
     box: 0, nextReview: Date.now(),
   });
   persistVocab();
@@ -1443,8 +1466,6 @@ function renderReviewCard() {
   }
   const v = reviewQueue[reviewIndex];
   const genderTag = v.gender ? `<span class="vocab-tag">${v.gender === "f" ? "n.f." : "n.m."}</span>` : "";
-  const femTag = v.feminine ? `<span class="vocab-tag">fém. ${escapeHtml(v.feminine)}</span>` : "";
-  const plTag = v.plural ? `<span class="vocab-tag">plur. ${escapeHtml(v.plural)}</span>` : "";
   const progress = t("review_progress")
     .replace("{current}", String(reviewIndex + 1))
     .replace("{total}", String(reviewQueue.length));
@@ -1455,7 +1476,7 @@ function renderReviewCard() {
       <div class="review-answer" id="reviewAnswer" hidden>
         <span class="review-translation">${escapeHtml(v.translation || "")}</span>
         ${v.infinitive ? `<span class="vocab-tag">→ ${escapeHtml(v.infinitive)}</span>` : ""}
-        ${femTag}${plTag}
+        ${adjectiveTags(v)}
       </div>
     </div>
     <div class="review-actions" id="reviewActions"></div>`;
