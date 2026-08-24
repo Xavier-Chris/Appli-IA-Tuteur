@@ -1270,12 +1270,13 @@ async function translateBubble(text, btn, box) {
 //  Recherche d'un mot cliqué dans le chat (vocabulaire à la demande)
 // =========================================================
 function buildVocabLookupPrompt() {
-  return `Tu es un dictionnaire français-anglais expert, utilisé dans une application d'apprentissage du français.
+  const targetLang = { en: "anglais", es: "espagnol", de: "allemand" }[state.lang] || "anglais";
+  return `Tu es un dictionnaire français-${targetLang} expert, utilisé dans une application d'apprentissage du français.
 On te donne un mot ou une courte expression française, cliqué par un apprenant dans une phrase, avec la phrase complète comme contexte.
 Réponds EXCLUSIVEMENT avec un objet JSON valide, sans aucun texte autour, avec cette forme exacte :
 {
   "word": "le mot ou l'expression exactement comme on te l'a donné, sans le modifier",
-  "translation": "traduction en anglais, courte et naturelle, adaptée au contexte donné",
+  "translation": "traduction en ${targetLang}, courte et naturelle, adaptée au contexte donné",
   "gender": "m" ou "f" si le mot est un nom commun (indique son genre), sinon null,
   "infinitive": "la forme infinitive" si le mot est un verbe conjugué et que sa forme diffère de l'infinitif, sinon null,
   "masculine": "la forme masculin singulier" si le mot est un adjectif, sinon null,
