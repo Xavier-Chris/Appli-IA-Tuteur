@@ -123,6 +123,7 @@ const I18N = {
     err_bubble: "Problème technique. Détail : {msg}\n\nSi tu vois « 401 » : ta clé API est absente ou invalide (⚙️). Si tu vois « Failed to fetch » : le navigateur bloque l'appel, on lancera un serveur local.",
     c_said: "Tu as dit", c_better: "Mieux", c_why: "Pourquoi",
     replay_title: "Réécouter",
+    translate_title: "Voir la traduction",
     vocab_clear: "Vider",
     voice_default: "Voix par défaut du navigateur",
     hint_engine: "Moteur", hint_key_ok: "clé OK ✅", hint_key_missing: "clé manquante ⚠️",
@@ -219,6 +220,7 @@ const I18N = {
     err_bubble: "Technical problem. Details: {msg}\n\nIf you see \"401\": your API key is missing or invalid (⚙️). If you see \"Failed to fetch\": the browser is blocking the call, we'll set up a local server.",
     c_said: "You said", c_better: "Better", c_why: "Why",
     replay_title: "Play again",
+    translate_title: "Show translation",
     vocab_clear: "Clear",
     voice_default: "Browser default voice",
     hint_engine: "Engine", hint_key_ok: "key OK ✅", hint_key_missing: "key missing ⚠️",
@@ -315,6 +317,7 @@ const I18N = {
     err_bubble: "Problema técnico. Detalle: {msg}\n\nSi ves «401»: tu clave API falta o no es válida (⚙️). Si ves «Failed to fetch»: el navegador está bloqueando la llamada, configuraremos un servidor local.",
     c_said: "Dijiste", c_better: "Mejor", c_why: "Por qué",
     replay_title: "Volver a escuchar",
+    translate_title: "Ver la traducción",
     vocab_clear: "Borrar",
     voice_default: "Voz predeterminada del navegador",
     hint_engine: "Motor", hint_key_ok: "clave OK ✅", hint_key_missing: "clave faltante ⚠️",
@@ -411,6 +414,7 @@ const I18N = {
     err_bubble: "Technisches Problem. Details: {msg}\n\nWenn du \"401\" siehst: dein API-Schlüssel fehlt oder ist ungültig (⚙️). Wenn du \"Failed to fetch\" siehst: der Browser blockiert den Aufruf, wir richten einen lokalen Server ein.",
     c_said: "Du sagtest", c_better: "Besser", c_why: "Warum",
     replay_title: "Erneut anhören",
+    translate_title: "Übersetzung anzeigen",
     vocab_clear: "Leeren",
     voice_default: "Standardstimme des Browsers",
     hint_engine: "Engine", hint_key_ok: "Schlüssel OK ✅", hint_key_missing: "Schlüssel fehlt ⚠️",
@@ -1230,6 +1234,39 @@ Ne mets rien d'autre que ce JSON.`;
 }
 
 // =========================================================
+//  Traduction à la demande d'une réplique du tuteur (langue d'interface)
+// =========================================================
+function buildTranslatePrompt() {
+  const targetLang = { en: "anglais", es: "espagnol", de: "allemand" }[state.lang] || "anglais";
+  return `Tu es un traducteur français-${targetLang} expert, utilisé dans une application d'apprentissage du français.
+On te donne une phrase dite par un tuteur de français à un apprenant.
+Réponds EXCLUSIVEMENT avec un objet JSON valide, sans aucun texte autour, avec cette forme exacte :
+{
+  "translation": "traduction naturelle et fluide de la phrase en ${targetLang}"
+}
+Ne mets rien d'autre que ce JSON.`;
+}
+
+async function translateBubble(text, btn, box) {
+  if (box.dataset.loaded) {
+    box.hidden = !box.hidden;
+    return;
+  }
+  btn.classList.add("looking-up");
+  try {
+    const raw = await callProvider(buildTranslatePrompt(), [{ role: "user", content: text }]);
+    const data = parseJSON(raw, { translation: "" });
+    box.textContent = data.translation || "";
+    box.dataset.loaded = "1";
+    box.hidden = false;
+  } catch (err) {
+    console.warn("Traduction indisponible :", err);
+  } finally {
+    btn.classList.remove("looking-up");
+  }
+}
+
+// =========================================================
 //  Recherche d'un mot cliqué dans le chat (vocabulaire à la demande)
 // =========================================================
 function buildVocabLookupPrompt() {
@@ -1568,6 +1605,21 @@ function addBubble(who, text) {
     btn.title = t("replay_title");
     btn.addEventListener("click", () => speak(text));
     div.appendChild(btn);
+    // Traduction à la demande : utile seulement si l'apprenant lit dans une
+    // langue d'interface différente du français. Rien n'est appelé tant
+    // qu'il ne clique pas.
+    if (state.lang !== "fr") {
+      const translateBtn = document.createElement("span");
+      translateBtn.className = "speak-again";
+      translateBtn.textContent = "🌐";
+      translateBtn.title = t("translate_title");
+      const box = document.createElement("div");
+      box.className = "bubble-translation";
+      box.hidden = true;
+      translateBtn.addEventListener("click", () => translateBubble(text, translateBtn, box));
+      div.appendChild(translateBtn);
+      div.appendChild(box);
+    }
   } else {
     div.textContent = text;
   }
