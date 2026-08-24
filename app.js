@@ -920,7 +920,7 @@ function showLessonSummary() {
     ? `<ul class="summary-list">${newWords.map((v) => `<li><strong>${escapeHtml(v.word)}</strong>${escapeHtml(vocabGrammarSuffix(v))} — ${escapeHtml(v.translation || "")}</li>`).join("")}</ul>`
     : `<p class="small muted">${t("summary_no_new_words")}</p>`;
   const correctionsHtml = newCorrections.length
-    ? `<ul class="summary-list">${newCorrections.map((c) => `<li><strong>${escapeHtml(c.original || "")}</strong> → ${escapeHtml(c.better)}</li>`).join("")}</ul>`
+    ? `<ul class="summary-list">${newCorrections.map((c) => `<li><strong>${escapeHtml(c.original || "")}</strong> → ${escapeHtml(c.better)}${c.explanation ? `<br><span class="small muted">${escapeHtml(c.explanation)}</span>` : ""}</li>`).join("")}</ul>`
     : `<p class="small muted">${t("summary_no_corrections")}</p>`;
 
   $("summaryBody").innerHTML = `
@@ -979,7 +979,10 @@ function exportSummaryAsPdf(includeTranscript) {
 
   addLine(`${t("summary_corrections")} (${newCorrections.length})`, marginLeft, 13);
   if (newCorrections.length) {
-    newCorrections.forEach((c) => addLine(`- ${c.original || ""} -> ${c.better}`, marginLeft + 3, 11));
+    newCorrections.forEach((c) => {
+      addLine(`- ${c.original || ""} -> ${c.better}`, marginLeft + 3, 11);
+      if (c.explanation) addLine(c.explanation, marginLeft + 6, 10);
+    });
   } else {
     addLine(t("summary_no_corrections"), marginLeft + 3, 11);
   }
