@@ -943,7 +943,7 @@ function exportSummaryAsPdf(includeTranscript) {
 
   addLine(`${t("summary_new_words")} (${newWords.length})`, marginLeft, 13);
   if (newWords.length) {
-    newWords.forEach((v) => addLine(`- ${v.word} — ${v.translation || ""}`, marginLeft + 3, 11));
+    newWords.forEach((v) => addLine(`- ${v.word}${vocabGrammarSuffix(v)} — ${v.translation || ""}`, marginLeft + 3, 11));
   } else {
     addLine(t("summary_no_new_words"), marginLeft + 3, 11);
   }
@@ -1642,26 +1642,47 @@ function persistVocab() {
 // Les 4 formes d'un adjectif (masculin, masculin pluriel, féminin, féminin
 // pluriel), utilisé à la fois dans le panneau de vocabulaire et les cartes
 // de révision.
-function adjectiveTags(v) {
+// Repère, parmi les 4 formes d'un adjectif, celle qui correspond déjà au
+// mot affiché (pour ne pas la réécrire), et renvoie les autres à part.
+// Partagé entre l'affichage HTML (adjectiveTags) et le texte du PDF
+// (vocabGrammarSuffix).
+function computeAdjectiveForms(v) {
   const forms = [
     ["m.", v.masculine], ["m.pl.", v.masculinePlural],
     ["f.", v.feminine], ["f.pl.", v.femininePlural],
   ];
   const wordKey = (v.word || "").trim().toLowerCase();
-  const tags = [];
   let ownLabel = null;
+  const others = [];
   forms.forEach(([label, form]) => {
     if (!form) return;
-    // La forme du mot déjà affiché comme "word" : juste son étiquette
-    // grammaticale, pas la peine de réécrire le mot une deuxième fois.
     if (!ownLabel && form.trim().toLowerCase() === wordKey) {
       ownLabel = label;
     } else {
-      tags.push(`<span class="vocab-tag">${label} ${escapeHtml(form)}</span>`);
+      others.push({ label, form });
     }
   });
+  return { ownLabel, others };
+}
+
+function adjectiveTags(v) {
+  const { ownLabel, others } = computeAdjectiveForms(v);
+  const tags = others.map(({ label, form }) => `<span class="vocab-tag">${label} ${escapeHtml(form)}</span>`);
   if (ownLabel) tags.unshift(`<span class="vocab-tag">${ownLabel}</span>`);
   return tags.join("");
+}
+
+// Version texte brut (pas de HTML) des mêmes informations grammaticales,
+// pour les lister dans le PDF du résumé de leçon : genre du nom, infinitif
+// d'un verbe conjugué, ou formes d'un adjectif.
+function vocabGrammarSuffix(v) {
+  const parts = [];
+  if (v.gender) parts.push(v.gender === "f" ? "n.f." : "n.m.");
+  if (v.infinitive) parts.push(`inf. : ${v.infinitive}`);
+  const { ownLabel, others } = computeAdjectiveForms(v);
+  if (ownLabel) parts.push(ownLabel);
+  others.forEach(({ label, form }) => parts.push(`${label} ${form}`));
+  return parts.length ? ` (${parts.join(", ")})` : "";
 }
 
 function renderVocabPanel() {
