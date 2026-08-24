@@ -454,6 +454,11 @@ function applyLang() {
   updateContextField();
   refreshEngineHint();
   updateReviewButton();
+  // Ces panneaux construisent leur propre HTML avec t() au moment du rendu
+  // (pas de data-i18n statique) : il faut les redessiner explicitement au
+  // changement de langue, sinon leur texte reste figé dans l'ancienne langue.
+  renderCorrectionsPanel();
+  renderVocabPanel();
   if (!state.started) setStatus(SR ? t("status_ready") : t("no_mic"));
 }
 
