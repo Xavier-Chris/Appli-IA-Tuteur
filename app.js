@@ -511,7 +511,22 @@ function openSettings() {
 //  Choix de la leçon
 // =========================================================
 $("levelSelect").addEventListener("change", (e) => (state.level = e.target.value));
-$("personaSelect").addEventListener("change", (e) => (state.persona = e.target.value));
+$("personaSelect").addEventListener("change", (e) => {
+  state.persona = e.target.value;
+  // La voix suit automatiquement le genre du personnage historique choisi,
+  // sauf si la voix actuelle correspond déjà à ce genre (on ne casse pas un
+  // choix déjà cohérent, ex : rester sur Éloïse plutôt que forcer Vivienne
+  // pour un autre personnage féminin).
+  const requiredGender = PERSONA_GENDER[state.persona];
+  if (requiredGender && azureReady() && currentVoiceGender() !== requiredGender) {
+    const match = AZURE_VOICES.find((v) => v.gender === requiredGender);
+    if (match) {
+      selectedVoiceName = match.id;
+      localStorage.setItem("voiceNameV2", selectedVoiceName);
+      loadVoices();
+    }
+  }
+});
 $("modeSelect").addEventListener("change", (e) => {
   state.mode = e.target.value;
   updateContextField();
