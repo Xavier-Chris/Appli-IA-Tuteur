@@ -139,7 +139,7 @@ const I18N = {
     lvl_beginner: "Beginner", lvl_intermediate: "Intermediate", lvl_advanced: "Advanced",
     label_persona: "Character",
     persona_tutor: "Classic tutor",
-    persona_group_writing: "Writing", persona_group_painting: "Painting", persona_group_music: "Music",
+    persona_group_writing: "Writer", persona_group_painting: "Painter", persona_group_music: "Music",
     persona_group_science: "Science", persona_group_politics: "Politics", persona_group_sport: "Sport", persona_group_cinema: "Cinema",
     label_mode: "Mode",
     mode_libre: "Free conversation", mode_guidee: "Guided conversation",
