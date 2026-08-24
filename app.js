@@ -889,7 +889,7 @@ function showLessonSummary() {
   const { dateText, durationText, exchangeCount, newWords, newCorrections } = lastLessonSummary;
 
   const wordsHtml = newWords.length
-    ? `<ul class="summary-list">${newWords.map((v) => `<li><strong>${escapeHtml(v.word)}</strong> — ${escapeHtml(v.translation || "")}</li>`).join("")}</ul>`
+    ? `<ul class="summary-list">${newWords.map((v) => `<li><strong>${escapeHtml(v.word)}</strong>${escapeHtml(vocabGrammarSuffix(v))} — ${escapeHtml(v.translation || "")}</li>`).join("")}</ul>`
     : `<p class="small muted">${t("summary_no_new_words")}</p>`;
   const correctionsHtml = newCorrections.length
     ? `<ul class="summary-list">${newCorrections.map((c) => `<li><strong>${escapeHtml(c.original || "")}</strong> → ${escapeHtml(c.better)}</li>`).join("")}</ul>`
