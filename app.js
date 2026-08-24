@@ -126,6 +126,7 @@ const I18N = {
     translate_title: "Voir la traduction",
     vocab_clear: "Vider",
     voice_default: "Voix par défaut du navigateur",
+    grammar_noun_f: "n.f.", grammar_noun_m: "n.m.", grammar_infinitive_prefix: "inf. :",
     hint_engine: "Moteur", hint_key_ok: "clé OK ✅", hint_key_missing: "clé manquante ⚠️",
     hint_voice: "Voix", hint_mic_ok: "micro dispo 🎤", hint_mic_no: "micro indispo (utilise le texte)",
     hint_mic_brave: "micro indispo sur Brave ⚠️",
@@ -223,6 +224,7 @@ const I18N = {
     translate_title: "Show translation",
     vocab_clear: "Clear",
     voice_default: "Browser default voice",
+    grammar_noun_f: "f.", grammar_noun_m: "m.", grammar_infinitive_prefix: "inf.:",
     hint_engine: "Engine", hint_key_ok: "key OK ✅", hint_key_missing: "key missing ⚠️",
     hint_voice: "Voice", hint_mic_ok: "mic ready 🎤", hint_mic_no: "mic unavailable (type instead)",
     hint_mic_brave: "mic unavailable on Brave ⚠️",
@@ -237,7 +239,7 @@ const I18N = {
     lvl_beginner: "Principiante", lvl_intermediate: "Intermedio", lvl_advanced: "Avanzado",
     label_persona: "Personaje",
     persona_tutor: "Tutor clásico",
-    persona_group_writing: "Escritura", persona_group_painting: "Pintura", persona_group_music: "Música",
+    persona_group_writing: "Escritor", persona_group_painting: "Pintor", persona_group_music: "Música",
     persona_group_science: "Ciencia", persona_group_politics: "Política", persona_group_sport: "Deporte", persona_group_cinema: "Cine",
     label_mode: "Modo",
     mode_libre: "Conversación libre", mode_guidee: "Conversación guiada",
@@ -320,6 +322,7 @@ const I18N = {
     translate_title: "Ver la traducción",
     vocab_clear: "Borrar",
     voice_default: "Voz predeterminada del navegador",
+    grammar_noun_f: "f.", grammar_noun_m: "m.", grammar_infinitive_prefix: "inf.:",
     hint_engine: "Motor", hint_key_ok: "clave OK ✅", hint_key_missing: "clave faltante ⚠️",
     hint_voice: "Voz", hint_mic_ok: "micrófono listo 🎤", hint_mic_no: "micrófono no disponible (usa el texto)",
     hint_mic_brave: "micrófono no disponible en Brave ⚠️",
@@ -334,7 +337,7 @@ const I18N = {
     lvl_beginner: "Anfänger", lvl_intermediate: "Mittelstufe", lvl_advanced: "Fortgeschritten",
     label_persona: "Charakter",
     persona_tutor: "Klassischer Tutor",
-    persona_group_writing: "Schreiben", persona_group_painting: "Malerei", persona_group_music: "Musik",
+    persona_group_writing: "Schriftsteller", persona_group_painting: "Maler", persona_group_music: "Musik",
     persona_group_science: "Wissenschaft", persona_group_politics: "Politik", persona_group_sport: "Sport", persona_group_cinema: "Kino",
     label_mode: "Modus",
     mode_libre: "Freies Gespräch", mode_guidee: "Geführtes Gespräch",
@@ -417,6 +420,7 @@ const I18N = {
     translate_title: "Übersetzung anzeigen",
     vocab_clear: "Leeren",
     voice_default: "Standardstimme des Browsers",
+    grammar_noun_f: "f.", grammar_noun_m: "m.", grammar_infinitive_prefix: "Inf.:",
     hint_engine: "Engine", hint_key_ok: "Schlüssel OK ✅", hint_key_missing: "Schlüssel fehlt ⚠️",
     hint_voice: "Stimme", hint_mic_ok: "Mikrofon bereit 🎤", hint_mic_no: "Mikrofon nicht verfügbar (nutze den Text)",
     hint_mic_brave: "Mikrofon auf Brave nicht verfügbar ⚠️",
@@ -1750,8 +1754,8 @@ function adjectiveTags(v) {
 // d'un verbe conjugué, ou formes d'un adjectif.
 function vocabGrammarSuffix(v) {
   const parts = [];
-  if (v.gender) parts.push(v.gender === "f" ? "n.f." : "n.m.");
-  if (v.infinitive) parts.push(`inf. : ${v.infinitive}`);
+  if (v.gender) parts.push(v.gender === "f" ? t("grammar_noun_f") : t("grammar_noun_m"));
+  if (v.infinitive) parts.push(`${t("grammar_infinitive_prefix")} ${v.infinitive}`);
   const { ownLabel, others } = computeAdjectiveForms(v);
   if (ownLabel) parts.push(ownLabel);
   others.forEach(({ label, form }) => parts.push(`${label} ${form}`));
@@ -1766,7 +1770,7 @@ function renderVocabPanel() {
     savedVocab.forEach((v) => {
       const el = document.createElement("div");
       el.className = "vocab-item";
-      const genderTag = v.gender ? `<span class="vocab-tag">${v.gender === "f" ? "n.f." : "n.m."}</span>` : "";
+      const genderTag = v.gender ? `<span class="vocab-tag">${v.gender === "f" ? t("grammar_noun_f") : t("grammar_noun_m")}</span>` : "";
       const infTag = v.infinitive ? `<span class="vocab-tag">→ ${escapeHtml(v.infinitive)}</span>` : "";
       el.innerHTML = `
         <div class="vocab-main"><span class="word">${escapeHtml(v.word)}</span>${genderTag}${infTag}${adjectiveTags(v)}</div>
@@ -1847,7 +1851,7 @@ function renderReviewCard() {
     return;
   }
   const v = reviewQueue[reviewIndex];
-  const genderTag = v.gender ? `<span class="vocab-tag">${v.gender === "f" ? "n.f." : "n.m."}</span>` : "";
+  const genderTag = v.gender ? `<span class="vocab-tag">${v.gender === "f" ? t("grammar_noun_f") : t("grammar_noun_m")}</span>` : "";
   const progress = t("review_progress")
     .replace("{current}", String(reviewIndex + 1))
     .replace("{total}", String(reviewQueue.length));
