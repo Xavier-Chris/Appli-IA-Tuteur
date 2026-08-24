@@ -43,6 +43,8 @@ const I18N = {
     lvl_beginner: "Débutant", lvl_intermediate: "Intermédiaire", lvl_advanced: "Avancé",
     label_persona: "Personnage",
     persona_tutor: "Tuteur classique",
+    persona_group_writing: "Écriture", persona_group_painting: "Peinture", persona_group_music: "Musique",
+    persona_group_science: "Science", persona_group_politics: "Politique", persona_group_sport: "Sport", persona_group_cinema: "Cinéma",
     label_mode: "Mode",
     mode_libre: "Conversation libre", mode_guidee: "Conversation guidée",
     mode_roleplay: "Jeu de rôle", mode_grammaire: "Grammaire",
@@ -137,6 +139,8 @@ const I18N = {
     lvl_beginner: "Beginner", lvl_intermediate: "Intermediate", lvl_advanced: "Advanced",
     label_persona: "Character",
     persona_tutor: "Classic tutor",
+    persona_group_writing: "Writing", persona_group_painting: "Painting", persona_group_music: "Music",
+    persona_group_science: "Science", persona_group_politics: "Politics", persona_group_sport: "Sport", persona_group_cinema: "Cinema",
     label_mode: "Mode",
     mode_libre: "Free conversation", mode_guidee: "Guided conversation",
     mode_roleplay: "Role play", mode_grammaire: "Grammar",
@@ -231,6 +235,8 @@ const I18N = {
     lvl_beginner: "Principiante", lvl_intermediate: "Intermedio", lvl_advanced: "Avanzado",
     label_persona: "Personaje",
     persona_tutor: "Tutor clásico",
+    persona_group_writing: "Escritura", persona_group_painting: "Pintura", persona_group_music: "Música",
+    persona_group_science: "Ciencia", persona_group_politics: "Política", persona_group_sport: "Deporte", persona_group_cinema: "Cine",
     label_mode: "Modo",
     mode_libre: "Conversación libre", mode_guidee: "Conversación guiada",
     mode_roleplay: "Juego de rol", mode_grammaire: "Gramática",
@@ -325,6 +331,8 @@ const I18N = {
     lvl_beginner: "Anfänger", lvl_intermediate: "Mittelstufe", lvl_advanced: "Fortgeschritten",
     label_persona: "Charakter",
     persona_tutor: "Klassischer Tutor",
+    persona_group_writing: "Schreiben", persona_group_painting: "Malerei", persona_group_music: "Musik",
+    persona_group_science: "Wissenschaft", persona_group_politics: "Politik", persona_group_sport: "Sport", persona_group_cinema: "Kino",
     label_mode: "Modus",
     mode_libre: "Freies Gespräch", mode_guidee: "Geführtes Gespräch",
     mode_roleplay: "Rollenspiel", mode_grammaire: "Grammatik",
@@ -433,6 +441,9 @@ function applyLang() {
   });
   document.querySelectorAll("[data-i18n-title]").forEach((el) => {
     el.title = t(el.getAttribute("data-i18n-title"));
+  });
+  document.querySelectorAll("[data-i18n-label]").forEach((el) => {
+    el.label = t(el.getAttribute("data-i18n-label"));
   });
   $("langSelect").value = state.lang;
   // Éléments qui dépendent de l'état, pas seulement d'un attribut fixe.
