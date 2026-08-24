@@ -91,6 +91,17 @@ body {
   transition: transform .1s ease, background .2s ease;
 }
 .icon-btn:hover { transform: translateY(-1px); }
+.lang-select {
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--text);
+  height: 38px;
+  padding: 0 8px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+}
 
 /* ---- Layout ---- */
 .layout {
