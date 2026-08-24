@@ -674,7 +674,18 @@ function wireAudioLifecycle(audio, objectUrl) {
   return cleanup;
 }
 
-async function speakAzure(text, token) {
+// Découpe un texte en phrases (sur . ! ? …) pour pouvoir lancer la
+// synthèse phrase par phrase : la voix démarre dès que la première phrase
+// est prête, sans attendre que tout le texte ait été synthétisé.
+// Approximatif (une abréviation avec un point coupera à tort), mais sans
+// gravité ici : au pire une coupure de phrase un peu maladroite.
+function splitSentences(text) {
+  const matches = text.match(/[^.!?…]+(?:[.!?…]+|$)/g);
+  return (matches || [text]).map((s) => s.trim()).filter(Boolean);
+}
+
+// Synthétise une seule phrase et renvoie le blob audio, sans la jouer.
+async function fetchAzureAudioBlob(sentence) {
   const ratePct = Math.round((voiceRate - 1) * 100);
   const rateAttr = ratePct >= 0 ? `+${ratePct}%` : `${ratePct}%`;
   // Les voix "Multilingual" (Vivienne, Rémy) détectent automatiquement la
@@ -683,7 +694,7 @@ async function speakAzure(text, token) {
   // phrase autour pour donner un indice de langue. On force le français
   // avec la balise <lang> pour ces voix-là.
   const isMultilingual = selectedVoiceName.toLowerCase().includes("multilingual");
-  const body = escapeSSML(text);
+  const body = escapeSSML(sentence);
   const spoken = isMultilingual ? `<lang xml:lang="fr-FR">${body}</lang>` : body;
   // Style "chat" : ton conversationnel plus naturel (moins plat, surtout
   // sur les questions) que la lecture neutre par défaut. Si la voix ne le
@@ -700,20 +711,50 @@ async function speakAzure(text, token) {
     body: ssml,
   });
   if (!res.ok) throw new Error(`Azure TTS ${res.status}`);
-  if (token !== speakToken) return;   // une voix plus récente a déjà pris le relais
+  return res.blob();
+}
 
-  // Téléchargement complet avant lecture. La lecture en flux (démarrer dès
-  // les premiers octets) a été essayée puis retirée : elle provoquait des
-  // cas où le son restait muet malgré l'indicateur "en train de parler"
-  // actif, un problème plus grave que le petit gain de délai qu'elle
-  // apportait.
-  const blob = await res.blob();
-  if (token !== speakToken) return;
-  const url = URL.createObjectURL(blob);
-  const audio = new Audio(url);
-  wireAudioLifecycle(audio, url);
-  currentAzureAudio = audio;
-  await audio.play();
+// Joue un blob déjà synthétisé jusqu'à la fin (nécessaire pour enchaîner
+// sur la phrase suivante au bon moment). Se résout sans jouer si une voix
+// plus récente a pris le relais entre-temps (jeton périmé).
+function playAzureBlob(blob, token) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(blob);
+    if (token !== speakToken) { URL.revokeObjectURL(url); resolve(); return; }
+    const audio = new Audio(url);
+    currentAzureAudio = audio;
+    const cleanup = wireAudioLifecycle(audio, url);
+    audio.onended = () => { cleanup(); resolve(); };
+    audio.onerror = () => { cleanup(); reject(new Error("Azure audio playback error")); };
+    audio.play().catch((err) => { cleanup(); reject(err); });
+  });
+}
+
+async function speakAzure(text, token) {
+  const sentences = splitSentences(text);
+
+  // Une seule phrase : pas de gain à découper, chemin simple direct.
+  if (sentences.length <= 1) {
+    const blob = await fetchAzureAudioBlob(text);
+    if (token !== speakToken) return;
+    await playAzureBlob(blob, token);
+    return;
+  }
+
+  // Plusieurs phrases : on synthétise la suivante PENDANT que la
+  // précédente joue, pour réduire le silence avant le début et entre les
+  // phrases, sans le mécanisme de flux binaire (MediaSource) qui avait
+  // cassé le son.
+  let nextBlobPromise = fetchAzureAudioBlob(sentences[0]);
+  for (let i = 0; i < sentences.length; i++) {
+    if (token !== speakToken) return;
+    const blob = await nextBlobPromise;
+    if (token !== speakToken) return;
+    if (i + 1 < sentences.length) {
+      nextBlobPromise = fetchAzureAudioBlob(sentences[i + 1]);
+    }
+    await playAzureBlob(blob, token);
+  }
 }
 
 function speakBrowser(text) {
