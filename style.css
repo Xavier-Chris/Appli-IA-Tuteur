@@ -279,7 +279,6 @@ select:focus, input:focus { border-color: var(--primary); }
 .correction-card .said { color: var(--accent); text-decoration: line-through; }
 .correction-card .better { color: var(--good); font-weight: 600; }
 .correction-card .why { color: var(--text); }
-.correction-card .expr { font-style: italic; }
 
 .vocab-item {
   display: flex; justify-content: space-between; align-items: center; gap: 8px;
