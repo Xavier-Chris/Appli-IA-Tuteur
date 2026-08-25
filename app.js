@@ -557,6 +557,7 @@ let voiceRate = parseFloat(localStorage.getItem("voiceRate")) || 0.95;
 const AZURE_VOICES = [
   { id: "fr-FR-VivienneMultilingualNeural", label: "Vivienne ⭐ (femme, très naturelle)", gender: "f" },
   { id: "fr-FR-RemyMultilingualNeural", label: "Rémy ⭐ (homme, très naturel)", gender: "m" },
+  { id: "fr-FR-LucienMultilingualNeural", label: "Lucien ⭐ (homme, très naturel)", gender: "m" },
   { id: "fr-FR-DeniseNeural", label: "Denise (femme, naturelle)", gender: "f" },
   { id: "fr-FR-HenriNeural", label: "Henri (homme, naturel)", gender: "m" },
   { id: "fr-FR-EloiseNeural", label: "Éloïse (femme, douce)", gender: "f" },
