@@ -658,6 +658,18 @@ function escapeSSML(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;" }[c]));
 }
 
+// Le style expressif "chat" rend parfois "où" ambigu (entendu comme
+// "tout" par Xavier). On force sa prononciation exacte avec un phonème
+// IPA, plutôt que de laisser la voix deviner. Appelé sur le texte déjà
+// échappé XML : "où" ne contient aucun caractère spécial, la substitution
+// est donc sûre après coup.
+// \b ne fonctionne pas de façon fiable après "ù" : \w est limité à l'ASCII
+// en JS, donc la frontière de mot échoue juste après une lettre accentuée.
+// On délimite donc "où" à la main avec des lettres (accentuées incluses).
+function wrapPhonemes(escapedText) {
+  return escapedText.replace(/(?<![A-Za-zÀ-ÖØ-öø-ÿ])où(?![A-Za-zÀ-ÖØ-öø-ÿ])/gi, (m) => `<phoneme alphabet="ipa" ph="u">${m}</phoneme>`);
+}
+
 // Voix Azure : synthèse via l'API REST Cognitive Services. Lève une erreur
 // si la clé est invalide ou l'appel échoue, pour que l'appelant puisse
 // basculer sur le navigateur.
@@ -699,7 +711,7 @@ async function fetchAzureAudioBlob(sentence, voiceName) {
   // anglais, surtout sans phrase autour pour donner un indice de langue.
   // On force le français avec la balise <lang> pour ces voix-là.
   const isMultilingual = voiceName.toLowerCase().includes("multilingual");
-  const body = escapeSSML(sentence);
+  const body = wrapPhonemes(escapeSSML(sentence));
   const spoken = isMultilingual ? `<lang xml:lang="fr-FR">${body}</lang>` : body;
   // Style "chat" : ton conversationnel plus naturel (moins plat, surtout
   // sur les questions) que la lecture neutre par défaut. Si la voix ne le
