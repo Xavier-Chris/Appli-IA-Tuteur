@@ -6,7 +6,6 @@
 
 // ---- État global ----
 const state = {
-  provider: localStorage.getItem("provider") || "anthropic",
   apiKey: localStorage.getItem("apiKey") || "",
   azureKey: localStorage.getItem("azureKey") || "",
   azureRegion: localStorage.getItem("azureRegion") || "",
@@ -93,11 +92,9 @@ const I18N = {
     text_ph: "...ou écris ta réponse ici",
     btn_send: "Envoyer",
     settings_h: "Réglages",
-    label_provider: "Fournisseur d'IA",
-    prov_anthropic: "Claude (Anthropic)",
-    label_apikey: "Clé API",
+    label_apikey: "Clé API Claude",
     apikey_ph: "Colle ta clé ici",
-    privacy_note: "Ta clé est enregistrée uniquement dans ce navigateur (localStorage). Elle n'est jamais envoyée ailleurs qu'au fournisseur choisi.",
+    privacy_note: "Ta clé est enregistrée uniquement dans ce navigateur (localStorage). Elle n'est jamais envoyée ailleurs qu'à Claude (Anthropic).",
     azure_h: "Voix premium (optionnel)",
     azure_note: "Ajoute une clé Azure Speech pour des voix bien plus naturelles que celles du navigateur. Sans clé, l'appli garde la voix du navigateur.",
     label_azure_key: "Clé Azure Speech",
@@ -188,11 +185,9 @@ const I18N = {
     text_ph: "...or type your answer here",
     btn_send: "Send",
     settings_h: "Settings",
-    label_provider: "AI provider",
-    prov_anthropic: "Claude (Anthropic)",
-    label_apikey: "API key",
+    label_apikey: "Claude API key",
     apikey_ph: "Paste your key here",
-    privacy_note: "Your key is stored only in this browser (localStorage). It is never sent anywhere except to the provider you choose.",
+    privacy_note: "Your key is stored only in this browser (localStorage). It is never sent anywhere except to Claude (Anthropic).",
     azure_h: "Premium voice (optional)",
     azure_note: "Add an Azure Speech key for voices much more natural than the browser's. Without a key, the app keeps using the browser voice.",
     label_azure_key: "Azure Speech key",
@@ -283,11 +278,9 @@ const I18N = {
     text_ph: "...o escribe tu respuesta aquí",
     btn_send: "Enviar",
     settings_h: "Ajustes",
-    label_provider: "Proveedor de IA",
-    prov_anthropic: "Claude (Anthropic)",
-    label_apikey: "Clave API",
+    label_apikey: "Clave API de Claude",
     apikey_ph: "Pega tu clave aquí",
-    privacy_note: "Tu clave se guarda únicamente en este navegador (localStorage). Nunca se envía a ningún sitio salvo al proveedor elegido.",
+    privacy_note: "Tu clave se guarda únicamente en este navegador (localStorage). Nunca se envía a ningún sitio salvo a Claude (Anthropic).",
     azure_h: "Voz premium (opcional)",
     azure_note: "Añade una clave de Azure Speech para voces mucho más naturales que las del navegador. Sin clave, la app sigue usando la voz del navegador.",
     label_azure_key: "Clave de Azure Speech",
@@ -378,11 +371,9 @@ const I18N = {
     text_ph: "...oder schreibe deine Antwort hier",
     btn_send: "Senden",
     settings_h: "Einstellungen",
-    label_provider: "KI-Anbieter",
-    prov_anthropic: "Claude (Anthropic)",
-    label_apikey: "API-Schlüssel",
+    label_apikey: "Claude-API-Schlüssel",
     apikey_ph: "Füge deinen Schlüssel hier ein",
-    privacy_note: "Dein Schlüssel wird nur in diesem Browser gespeichert (localStorage). Er wird niemals an einen anderen Ort als den gewählten Anbieter gesendet.",
+    privacy_note: "Dein Schlüssel wird nur in diesem Browser gespeichert (localStorage). Er wird niemals an einen anderen Ort als Claude (Anthropic) gesendet.",
     azure_h: "Premium-Stimme (optional)",
     azure_note: "Füge einen Azure-Speech-Schlüssel hinzu für Stimmen, die viel natürlicher klingen als die des Browsers. Ohne Schlüssel nutzt die App weiterhin die Browserstimme.",
     label_azure_key: "Azure-Speech-Schlüssel",
@@ -474,16 +465,14 @@ $("themeBtn").addEventListener("click", () => {
 });
 
 // =========================================================
-//  Réglages (clé API + fournisseur)
+//  Réglages (clé API Claude + voix Azure)
 // =========================================================
 $("settingsBtn").addEventListener("click", openSettings);
 $("closeSettings").addEventListener("click", () => ($("settingsModal").hidden = true));
 $("saveSettings").addEventListener("click", () => {
-  state.provider = $("providerSelect").value;
   state.apiKey = $("apiKeyInput").value.trim();
   state.azureKey = $("azureKeyInput").value.trim();
   state.azureRegion = $("azureRegionInput").value.trim();
-  localStorage.setItem("provider", state.provider);
   localStorage.setItem("apiKey", state.apiKey);
   localStorage.setItem("azureKey", state.azureKey);
   localStorage.setItem("azureRegion", state.azureRegion);
@@ -492,7 +481,6 @@ $("saveSettings").addEventListener("click", () => {
   loadVoices();   // la source de voix (Azure ou navigateur) a pu changer
 });
 function openSettings() {
-  $("providerSelect").value = state.provider;
   $("apiKeyInput").value = state.apiKey;
   $("azureKeyInput").value = state.azureKey;
   $("azureRegionInput").value = state.azureRegion;
@@ -1499,131 +1487,13 @@ async function callAnthropic(systemPrompt, messages) {
   return textBlock?.text || "";
 }
 
-async function callOpenAI(systemPrompt, messages) {
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      Authorization: "Bearer " + state.apiKey,
-    },
-    body: JSON.stringify({
-      model: "gpt-4o",
-      max_tokens: MAX_TOKENS,
-      response_format: { type: "json_object" },
-      messages: [{ role: "system", content: systemPrompt }, ...messages],
-    }),
-  });
-  if (!res.ok) throw new Error(await readError(res));
-  const json = await res.json();
-  return json.choices?.[0]?.message?.content || "";
-}
-
-// Modèles Groq essayés dans l'ordre : le meilleur d'abord,
-// avec repli automatique si un modèle n'est pas disponible sur le compte.
-// Les modèles Llama ont été retirés de Groq (dépréciation 2026) ;
-// Groq recommande désormais les modèles gpt-oss.
-const GROQ_MODELS = [
-  "openai/gpt-oss-120b",
-  "openai/gpt-oss-20b",
-];
-
-async function callGroq(systemPrompt, messages) {
-  // Groq est compatible avec le format OpenAI.
-  const fullMessages = [{ role: "system", content: systemPrompt }, ...messages];
-  let lastErr;
-  for (const model of GROQ_MODELS) {
-    // Une réponse JSON mal formée (souvent coupée avant la fin) est parfois
-    // un aléa ponctuel du modèle : on retente une fois sur le même modèle
-    // avant de passer au suivant.
-    for (let attempt = 0; attempt < 2; attempt++) {
-      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-          Authorization: "Bearer " + state.apiKey,
-        },
-        body: JSON.stringify({
-          model,
-          max_tokens: MAX_TOKENS,
-          response_format: { type: "json_object" },
-          messages: fullMessages,
-        }),
-      });
-      if (res.ok) {
-        const json = await res.json();
-        return json.choices?.[0]?.message?.content || "";
-      }
-      let code = "";
-      let message = "";
-      let detail = "";
-      try {
-        const body = await res.json();
-        code = body.error?.code || "";
-        message = body.error?.message || "";
-        detail = JSON.stringify(body.error || {});
-      } catch (_) {}
-      lastErr = new Error(`${res.status} ${detail}`);
-      lastErr.status = res.status;
-      if (code === "json_validate_failed" && attempt === 0) continue;   // on retente
-      // Limite de débit temporaire (niveau gratuit Groq) : le message
-      // indique combien de temps attendre avant de retenter. On patiente ce
-      // délai puis on réessaie une fois, plutôt que d'afficher directement
-      // une erreur pour un simple pic de trafic passager (plus fréquent
-      // depuis que réponse et correction partent en parallèle).
-      if (res.status === 429 && attempt === 0) {
-        const waitMatch = message.match(/try again in ([\d.]+)s/);
-        const waitMs = Math.min(waitMatch ? parseFloat(waitMatch[1]) * 1000 : 5000, 20000);
-        await new Promise((resolve) => setTimeout(resolve, waitMs + 500));
-        continue;
-      }
-      break;
-    }
-    // 400 (modèle indisponible ou JSON invalide même après retry) / 404 /
-    // 429 (toujours limité après l'attente) : on tente le modèle suivant,
-    // qui a son propre quota séparé chez Groq. Toute autre erreur (ex :
-    // 401) arrête tout.
-    if (lastErr.status !== 400 && lastErr.status !== 404 && lastErr.status !== 429) throw lastErr;
-  }
-  throw lastErr;
-}
-
-async function callGemini(systemPrompt, messages) {
-  // Gemini utilise les rôles "user" et "model" (pas "assistant"),
-  // et la consigne système passe par un champ séparé.
-  const contents = messages.map((m) => ({
-    role: m.role === "assistant" ? "model" : "user",
-    parts: [{ text: m.content }],
-  }));
-  const res = await fetch(
-    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
-    {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        "x-goog-api-key": state.apiKey,
-      },
-      body: JSON.stringify({
-        system_instruction: { parts: [{ text: systemPrompt }] },
-        contents,
-        generationConfig: { responseMimeType: "application/json", maxOutputTokens: MAX_TOKENS },
-      }),
-    }
-  );
-  if (!res.ok) throw new Error(await readError(res));
-  const json = await res.json();
-  // Comme pour Claude : ne pas supposer que le premier "part" est le texte.
-  const parts = json.candidates?.[0]?.content?.parts || [];
-  const textPart = parts.find((p) => typeof p.text === "string");
-  return textPart?.text || "";
-}
-
-// Dispatche vers le fournisseur choisi, avec un system prompt et des
-// messages fournis par l'appelant (conversation ou recherche ponctuelle).
+// Point d'entrée unique pour tous les appels IA (conversation ou recherche
+// ponctuelle). Un seul fournisseur (Claude) est proposé dans les réglages ;
+// les fournisseurs Groq/OpenAI/Gemini, initialement supportés, ont été
+// retirés pour simplifier le code après qu'ils ne soient plus accessibles
+// depuis l'interface.
 async function callProvider(systemPrompt, messages) {
-  return state.provider === "openai" ? await callOpenAI(systemPrompt, messages) :
-    state.provider === "gemini" ? await callGemini(systemPrompt, messages) :
-    state.provider === "groq" ? await callGroq(systemPrompt, messages) :
-    await callAnthropic(systemPrompt, messages);
+  return callAnthropic(systemPrompt, messages);
 }
 
 async function readError(res) {
@@ -1948,11 +1818,7 @@ function setStatus(msg) { statusLine.textContent = msg; }
 //  Indice sur le moteur configuré
 // =========================================================
 function refreshEngineHint() {
-  const engine =
-    state.provider === "openai" ? "OpenAI (GPT)" :
-    state.provider === "gemini" ? "Google Gemini" :
-    state.provider === "groq" ? "Groq" :
-    "Claude";
+  const engine = "Claude";
   const key = state.apiKey ? t("hint_key_ok") : t("hint_key_missing");
   const voice = !SR ? t("hint_mic_no") : isBraveBrowser ? t("hint_mic_brave") : t("hint_mic_ok");
   $("engineHint").innerHTML = `${t("hint_engine")} : ${engine} · ${key}<br/>${t("hint_voice")} : ${voice}`;
