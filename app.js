@@ -1367,7 +1367,8 @@ Réponds EXCLUSIVEMENT avec un objet JSON valide, sans aucun texte autour, avec 
   "masculinePlural": "la forme masculin pluriel" si le mot est un adjectif, sinon null,
   "feminine": "la forme féminin singulier" si le mot est un adjectif, sinon null,
   "femininePlural": "la forme féminin pluriel" si le mot est un adjectif, sinon null,
-  "example": "une phrase simple et naturelle en français utilisant ce mot, différente de la phrase donnée en contexte"
+  "example": "une phrase simple et naturelle en français utilisant ce mot, différente de la phrase donnée en contexte",
+  "exampleTranslation": "traduction naturelle de cette phrase d'exemple en ${targetLang}"
 }
 Pour un adjectif, donne TOUJOURS les 4 formes (masculine, masculinePlural, feminine, femininePlural), même si l'une d'elles est identique au mot donné (ex : pour "rouge", masculine et feminine valent tous les deux "rouge").
 Un mot ne peut appartenir qu'à UNE SEULE catégorie à la fois (nom commun / verbe / adjectif), jamais plusieurs en même temps. Certains mots en "-ant" comme "surprenant" ou "intéressant" peuvent être soit un participe présent (verbe, invariable), soit un adjectif (variable en genre et en nombre) : regarde la PHRASE donnée en contexte pour trancher.
@@ -1391,12 +1392,13 @@ async function lookupWord(word, sentenceContext, spanEl) {
     ]);
     const data = parseJSON(raw, {
       word: cleanWord, translation: "", gender: null, infinitive: null,
-      masculine: null, masculinePlural: null, feminine: null, femininePlural: null, example: null,
+      masculine: null, masculinePlural: null, feminine: null, femininePlural: null,
+      example: null, exampleTranslation: null,
     });
     addVocabItem(data.word || cleanWord, data.translation, data.gender, data.infinitive, {
       masculine: data.masculine, masculinePlural: data.masculinePlural,
       feminine: data.feminine, femininePlural: data.femininePlural,
-    }, data.example);
+    }, data.example, data.exampleTranslation);
     renderVocabPanel();
     spanEl.classList.add("word-added");
   } catch (err) {
@@ -1731,7 +1733,7 @@ function renderVocabPanel() {
 
 // Nouveau mot : prêt à être révisé dès maintenant (boîte 0 du système
 // de Leitner), pour encourager une première révision peu après l'ajout.
-function addVocabItem(word, translation, gender, infinitive, adjForms, example) {
+function addVocabItem(word, translation, gender, infinitive, adjForms, example, exampleTranslation) {
   const key = word.trim().toLowerCase();
   if (savedVocab.some((v) => v.word.trim().toLowerCase() === key)) return;
   const forms = adjForms || {};
@@ -1739,7 +1741,7 @@ function addVocabItem(word, translation, gender, infinitive, adjForms, example) 
     word, translation: translation || "", gender: gender || null, infinitive: infinitive || null,
     masculine: forms.masculine || null, masculinePlural: forms.masculinePlural || null,
     feminine: forms.feminine || null, femininePlural: forms.femininePlural || null,
-    example: example || null,
+    example: example || null, exampleTranslation: exampleTranslation || null,
     box: 0, nextReview: Date.now(),
   });
   persistVocab();
@@ -1856,6 +1858,7 @@ function renderReviewCard() {
         ${v.infinitive ? `<span class="vocab-tag">→ ${escapeHtml(v.infinitive)}</span>` : ""}
         ${adjectiveTags(v)}
         ${v.example ? `<p class="review-example">${escapeHtml(v.example)}</p>` : ""}
+        ${v.exampleTranslation ? `<p class="review-example-translation">${escapeHtml(v.exampleTranslation)}</p>` : ""}
       </div>
     </div>
     <div class="review-actions" id="reviewActions"></div>`;
