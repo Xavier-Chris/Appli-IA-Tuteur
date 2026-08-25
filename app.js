@@ -1208,7 +1208,7 @@ Tu es aussi un professeur de français bienveillant, mais tu ne corriges JAMAIS 
   const modeText = {
     libre: "Conversation libre sur le sujet que l'apprenant veut.",
     guidee: `Conversation guidée sur le thème : ${state.context || "au choix"}. Rends la difficulté progressive.`,
-    roleplay: `Jeu de rôle. Scénario : ${state.context || "au choix"}. Joue pleinement ton personnage.`,
+    roleplay: `Jeu de rôle. Scénario : ${state.context || "au choix"}. Joue pleinement ton personnage, en suivant un déroulé réaliste et dans l'ordre logique de la vraie vie pour cette situation, étape par étape (par exemple, au restaurant : demander d'abord s'il y a une réservation, puis le nombre de personnes, avant d'installer les clients et de présenter le menu). Ne saute pas d'étapes et ne pars pas dans une autre direction avant d'avoir naturellement progressé dans la situation.`,
     grammaire: `Leçon de grammaire interactive sur : ${state.context || "au choix"}. Ne fais pas de longs exposés : pose des questions et guide l'apprenant vers la règle.`,
   }[state.mode];
 
