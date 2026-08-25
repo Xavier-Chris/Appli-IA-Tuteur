@@ -300,6 +300,8 @@ select:focus, input:focus { border-color: var(--primary); }
   padding: 1px 6px;
 }
 
+.vocab-stats { margin: -4px 0 8px; }
+
 /* ---- Révision (flashcards) ---- */
 .review-progress { font-size: 12px; color: var(--muted); margin-bottom: 12px; text-align: center; }
 .review-card {
@@ -312,9 +314,12 @@ select:focus, input:focus { border-color: var(--primary); }
   gap: 10px;
   text-align: center;
 }
+.review-word-row { display: flex; align-items: center; justify-content: center; gap: 6px; }
 .review-word { font-size: 22px; font-weight: 700; }
+.review-listen-btn { font-size: 15px; width: 30px; height: 30px; }
 .review-answer { display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .review-translation { font-size: 16px; color: var(--text); }
+.review-example { font-size: 13px; color: var(--muted); font-style: italic; margin: 4px 0 0; }
 .review-actions { margin-top: 18px; display: flex; gap: 10px; justify-content: center; }
 .review-actions .btn { flex: 1; max-width: 180px; }
 .review-empty { text-align: center; color: var(--muted); padding: 20px 0; }

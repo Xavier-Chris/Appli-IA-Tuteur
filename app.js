@@ -76,12 +76,14 @@ const I18N = {
     panel_vocab: "Vocabulaire",
     corrections_empty: "Tes corrections apparaîtront ici après chaque réponse.",
     vocab_empty: "Clique sur un mot dans la réponse du tuteur pour l'ajouter ici.",
+    vocab_stats: "{mastered} maîtrisé(s) · {due} à réviser · 🔥 {streak} j. de suite",
     corrections_clear: "Vider",
     review_btn: "Réviser",
     review_h: "Révision du vocabulaire",
     review_empty_novocab: "Ajoute d'abord des mots en cliquant dessus dans une réponse du tuteur.",
     review_empty_nothing_due: "Rien à réviser pour l'instant. Reviens plus tard !",
     review_show_answer: "Afficher la réponse",
+    review_listen: "Écouter",
     review_knew: "Je savais 👍",
     review_didnt_know: "À revoir 👎",
     review_done: "Révision terminée ! Tu as revu {n} mot(s).",
@@ -113,6 +115,7 @@ const I18N = {
     error_prefix: "Erreur : ",
     start_first: "Clique d'abord sur Démarrer la conversation.",
     no_mic: "Ton navigateur ne gère pas le micro. Utilise Chrome/Edge ou écris tes réponses.",
+    no_mic_ios: "Le micro n'est pas disponible sur iPhone/iPad, quel que soit le navigateur (limitation d'iOS). Écris tes réponses.",
     reset_ready: "Nouvelle leçon prête. Clique sur <strong>Démarrer la conversation</strong>.",
     err_bubble: "Problème technique. Détail : {msg}\n\nSi tu vois « 401 » : ta clé API est absente ou invalide (⚙️). Si tu vois « Failed to fetch » : le navigateur bloque l'appel, on lancera un serveur local.",
     c_said: "Tu as dit", c_better: "Mieux", c_why: "Pourquoi",
@@ -123,6 +126,7 @@ const I18N = {
     grammar_noun_f: "n.f.", grammar_noun_m: "n.m.", grammar_infinitive_prefix: "inf. :",
     hint_engine: "Moteur", hint_key_ok: "clé OK ✅", hint_key_missing: "clé manquante ⚠️",
     hint_voice: "Voix", hint_mic_ok: "micro dispo 🎤", hint_mic_no: "micro indispo (utilise le texte)",
+    hint_mic_ios: "micro indispo sur iPhone/iPad (utilise le texte)",
     hint_mic_brave: "micro indispo sur Brave ⚠️",
     brave_warning: "⚠️ <strong>Tu utilises Brave</strong> : la reconnaissance vocale ne fonctionne pas dans ce navigateur (limitation volontaire de Brave, pas un bug de l'app). Utilise Chrome ou Edge pour parler au micro, ou écris tes réponses en attendant.",
   },
@@ -169,12 +173,14 @@ const I18N = {
     panel_vocab: "Vocabulary",
     corrections_empty: "Your corrections will appear here after each answer.",
     vocab_empty: "Click a word in the tutor's reply to add it here.",
+    vocab_stats: "{mastered} mastered · {due} to review · 🔥 {streak}-day streak",
     corrections_clear: "Clear",
     review_btn: "Review",
     review_h: "Vocabulary review",
     review_empty_novocab: "Add words first by clicking them in a tutor reply.",
     review_empty_nothing_due: "Nothing to review right now. Come back later!",
     review_show_answer: "Show answer",
+    review_listen: "Listen",
     review_knew: "I knew it 👍",
     review_didnt_know: "Needs more practice 👎",
     review_done: "Review complete! You reviewed {n} word(s).",
@@ -206,6 +212,7 @@ const I18N = {
     error_prefix: "Error: ",
     start_first: "Click Start conversation first.",
     no_mic: "Your browser doesn't support the mic. Use Chrome/Edge or type your answers.",
+    no_mic_ios: "The mic isn't available on iPhone/iPad, in any browser (an iOS limitation). Type your answers instead.",
     reset_ready: "New lesson ready. Click <strong>Start conversation</strong>.",
     err_bubble: "Technical problem. Details: {msg}\n\nIf you see \"401\": your API key is missing or invalid (⚙️). If you see \"Failed to fetch\": the browser is blocking the call, we'll set up a local server.",
     c_said: "You said", c_better: "Better", c_why: "Why",
@@ -216,6 +223,7 @@ const I18N = {
     grammar_noun_f: "f.", grammar_noun_m: "m.", grammar_infinitive_prefix: "inf.:",
     hint_engine: "Engine", hint_key_ok: "key OK ✅", hint_key_missing: "key missing ⚠️",
     hint_voice: "Voice", hint_mic_ok: "mic ready 🎤", hint_mic_no: "mic unavailable (type instead)",
+    hint_mic_ios: "mic unavailable on iPhone/iPad (type instead)",
     hint_mic_brave: "mic unavailable on Brave ⚠️",
     brave_warning: "⚠️ <strong>You're using Brave</strong>: voice recognition doesn't work in this browser (a deliberate Brave limitation, not an app bug). Use Chrome or Edge to talk with the mic, or type your answers instead.",
   },
@@ -262,12 +270,14 @@ const I18N = {
     panel_vocab: "Vocabulario",
     corrections_empty: "Tus correcciones aparecerán aquí después de cada respuesta.",
     vocab_empty: "Haz clic en una palabra de la respuesta del tutor para añadirla aquí.",
+    vocab_stats: "{mastered} dominada(s) · {due} para repasar · 🔥 racha de {streak} día(s)",
     corrections_clear: "Borrar",
     review_btn: "Repasar",
     review_h: "Repaso de vocabulario",
     review_empty_novocab: "Primero añade palabras haciendo clic en ellas en una respuesta del tutor.",
     review_empty_nothing_due: "Nada que repasar por ahora. ¡Vuelve más tarde!",
     review_show_answer: "Mostrar la respuesta",
+    review_listen: "Escuchar",
     review_knew: "Lo sabía 👍",
     review_didnt_know: "A repasar 👎",
     review_done: "¡Repaso terminado! Has repasado {n} palabra(s).",
@@ -299,6 +309,7 @@ const I18N = {
     error_prefix: "Error: ",
     start_first: "Primero haz clic en Empezar la conversación.",
     no_mic: "Tu navegador no admite el micrófono. Usa Chrome/Edge o escribe tus respuestas.",
+    no_mic_ios: "El micrófono no está disponible en iPhone/iPad, en ningún navegador (una limitación de iOS). Escribe tus respuestas.",
     reset_ready: "Nueva lección lista. Haz clic en <strong>Empezar la conversación</strong>.",
     err_bubble: "Problema técnico. Detalle: {msg}\n\nSi ves «401»: tu clave API falta o no es válida (⚙️). Si ves «Failed to fetch»: el navegador está bloqueando la llamada, configuraremos un servidor local.",
     c_said: "Dijiste", c_better: "Mejor", c_why: "Por qué",
@@ -309,6 +320,7 @@ const I18N = {
     grammar_noun_f: "f.", grammar_noun_m: "m.", grammar_infinitive_prefix: "inf.:",
     hint_engine: "Motor", hint_key_ok: "clave OK ✅", hint_key_missing: "clave faltante ⚠️",
     hint_voice: "Voz", hint_mic_ok: "micrófono listo 🎤", hint_mic_no: "micrófono no disponible (usa el texto)",
+    hint_mic_ios: "micrófono no disponible en iPhone/iPad (usa el texto)",
     hint_mic_brave: "micrófono no disponible en Brave ⚠️",
     brave_warning: "⚠️ <strong>Estás usando Brave</strong>: el reconocimiento de voz no funciona en este navegador (una limitación deliberada de Brave, no un error de la app). Usa Chrome o Edge para hablar por el micrófono, o escribe tus respuestas mientras tanto.",
   },
@@ -355,12 +367,14 @@ const I18N = {
     panel_vocab: "Wortschatz",
     corrections_empty: "Deine Korrekturen erscheinen hier nach jeder Antwort.",
     vocab_empty: "Klicke auf ein Wort in der Antwort des Tutors, um es hier hinzuzufügen.",
+    vocab_stats: "{mastered} gemeistert · {due} zu wiederholen · 🔥 {streak} Tage in Folge",
     corrections_clear: "Leeren",
     review_btn: "Wiederholen",
     review_h: "Wortschatzwiederholung",
     review_empty_novocab: "Füge zuerst Wörter hinzu, indem du sie in einer Antwort des Tutors anklickst.",
     review_empty_nothing_due: "Gerade nichts zu wiederholen. Komm später wieder!",
     review_show_answer: "Antwort anzeigen",
+    review_listen: "Anhören",
     review_knew: "Wusste ich 👍",
     review_didnt_know: "Muss ich üben 👎",
     review_done: "Wiederholung abgeschlossen! Du hast {n} Wort/Wörter wiederholt.",
@@ -392,6 +406,7 @@ const I18N = {
     error_prefix: "Fehler: ",
     start_first: "Klicke zuerst auf Gespräch starten.",
     no_mic: "Dein Browser unterstützt das Mikrofon nicht. Nutze Chrome/Edge oder schreibe deine Antworten.",
+    no_mic_ios: "Das Mikrofon ist auf iPhone/iPad in keinem Browser verfügbar (eine Einschränkung von iOS). Schreibe deine Antworten.",
     reset_ready: "Neue Lektion bereit. Klicke auf <strong>Gespräch starten</strong>.",
     err_bubble: "Technisches Problem. Details: {msg}\n\nWenn du \"401\" siehst: dein API-Schlüssel fehlt oder ist ungültig (⚙️). Wenn du \"Failed to fetch\" siehst: der Browser blockiert den Aufruf, wir richten einen lokalen Server ein.",
     c_said: "Du sagtest", c_better: "Besser", c_why: "Warum",
@@ -402,6 +417,7 @@ const I18N = {
     grammar_noun_f: "f.", grammar_noun_m: "m.", grammar_infinitive_prefix: "Inf.:",
     hint_engine: "Engine", hint_key_ok: "Schlüssel OK ✅", hint_key_missing: "Schlüssel fehlt ⚠️",
     hint_voice: "Stimme", hint_mic_ok: "Mikrofon bereit 🎤", hint_mic_no: "Mikrofon nicht verfügbar (nutze den Text)",
+    hint_mic_ios: "Mikrofon auf iPhone/iPad nicht verfügbar (nutze den Text)",
     hint_mic_brave: "Mikrofon auf Brave nicht verfügbar ⚠️",
     brave_warning: "⚠️ <strong>Du nutzt Brave</strong>: Die Spracherkennung funktioniert in diesem Browser nicht (eine bewusste Einschränkung von Brave, kein App-Fehler). Nutze Chrome oder Edge, um mit dem Mikrofon zu sprechen, oder schreibe stattdessen deine Antworten.",
   },
@@ -442,7 +458,7 @@ function applyLang() {
   // changement de langue, sinon leur texte reste figé dans l'ancienne langue.
   renderCorrectionsPanel();
   renderVocabPanel();
-  if (!state.started) setStatus(SR ? t("status_ready") : t("no_mic"));
+  if (!state.started) setStatus(SR ? t("status_ready") : isIOSDevice ? t("no_mic_ios") : t("no_mic"));
 }
 
 $("langSelect").addEventListener("change", (e) => {
@@ -809,6 +825,11 @@ document.getElementById("rateSelect").addEventListener("change", (e) => {
 //  Reconnaissance vocale (l'apprenant parle)
 // =========================================================
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+// Sur iOS (iPhone/iPad), aucun navigateur ne supporte la reconnaissance vocale
+// (Safari, Chrome et Edge y utilisent tous le moteur WebKit d'Apple) : changer
+// de navigateur ne résout rien, contrairement à Brave sur ordinateur.
+const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent)
+  || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 let recognition = null;
 let listening = false;
 
@@ -1332,7 +1353,8 @@ Réponds EXCLUSIVEMENT avec un objet JSON valide, sans aucun texte autour, avec 
   "masculine": "la forme masculin singulier" si le mot est un adjectif, sinon null,
   "masculinePlural": "la forme masculin pluriel" si le mot est un adjectif, sinon null,
   "feminine": "la forme féminin singulier" si le mot est un adjectif, sinon null,
-  "femininePlural": "la forme féminin pluriel" si le mot est un adjectif, sinon null
+  "femininePlural": "la forme féminin pluriel" si le mot est un adjectif, sinon null,
+  "example": "une phrase simple et naturelle en français utilisant ce mot, différente de la phrase donnée en contexte"
 }
 Pour un adjectif, donne TOUJOURS les 4 formes (masculine, masculinePlural, feminine, femininePlural), même si l'une d'elles est identique au mot donné (ex : pour "rouge", masculine et feminine valent tous les deux "rouge").
 Un mot ne peut appartenir qu'à UNE SEULE catégorie à la fois (nom commun / verbe / adjectif), jamais plusieurs en même temps. Certains mots en "-ant" comme "surprenant" ou "intéressant" peuvent être soit un participe présent (verbe, invariable), soit un adjectif (variable en genre et en nombre) : regarde la PHRASE donnée en contexte pour trancher.
@@ -1352,12 +1374,12 @@ async function lookupWord(word, sentenceContext, spanEl) {
     ]);
     const data = parseJSON(raw, {
       word: cleanWord, translation: "", gender: null, infinitive: null,
-      masculine: null, masculinePlural: null, feminine: null, femininePlural: null,
+      masculine: null, masculinePlural: null, feminine: null, femininePlural: null, example: null,
     });
     addVocabItem(data.word || cleanWord, data.translation, data.gender, data.infinitive, {
       masculine: data.masculine, masculinePlural: data.masculinePlural,
       feminine: data.feminine, femininePlural: data.femininePlural,
-    });
+    }, data.example);
     renderVocabPanel();
     spanEl.classList.add("word-added");
   } catch (err) {
@@ -1686,12 +1708,13 @@ function renderVocabPanel() {
       vocabEl.appendChild(el);
     });
   }
+  renderVocabStats();
   updateReviewButton();
 }
 
 // Nouveau mot : prêt à être révisé dès maintenant (boîte 0 du système
 // de Leitner), pour encourager une première révision peu après l'ajout.
-function addVocabItem(word, translation, gender, infinitive, adjForms) {
+function addVocabItem(word, translation, gender, infinitive, adjForms, example) {
   const key = word.trim().toLowerCase();
   if (savedVocab.some((v) => v.word.trim().toLowerCase() === key)) return;
   const forms = adjForms || {};
@@ -1699,6 +1722,7 @@ function addVocabItem(word, translation, gender, infinitive, adjForms) {
     word, translation: translation || "", gender: gender || null, infinitive: infinitive || null,
     masculine: forms.masculine || null, masculinePlural: forms.masculinePlural || null,
     feminine: forms.feminine || null, femininePlural: forms.femininePlural || null,
+    example: example || null,
     box: 0, nextReview: Date.now(),
   });
   persistVocab();
@@ -1723,6 +1747,46 @@ function dueVocab() {
   // Les mots sauvegardés avant l'ajout de la révision n'ont pas de
   // date : on les considère prêts à réviser dès aujourd'hui.
   return savedVocab.filter((v) => !v.nextReview || v.nextReview <= now);
+}
+
+// Un mot "maîtrisé" a atteint la dernière boîte du système de Leitner
+// (16 jours d'intervalle), le signe qu'il est bien retenu.
+function masteredVocab() {
+  return savedVocab.filter((v) => (v.box || 0) >= LEITNER_INTERVALS_DAYS.length - 1);
+}
+
+// Clé du jour en heure locale (pas toISOString, qui utilise l'UTC et
+// pourrait faire changer de "jour" trop tôt ou trop tard selon le fuseau).
+function todayKey(offsetDays = 0) {
+  const d = new Date();
+  d.setDate(d.getDate() + offsetDays);
+  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+}
+
+let reviewStreak = { count: 0, lastDay: null };
+try {
+  reviewStreak = JSON.parse(localStorage.getItem("reviewStreak")) || reviewStreak;
+} catch (_) { /* valeur par défaut conservée */ }
+
+// Appelée à chaque carte notée : incrémente la série si la dernière
+// révision remonte à hier, la remet à 1 sinon (et ne double-compte pas
+// une deuxième carte revue le même jour).
+function bumpStreak() {
+  const today = todayKey();
+  if (reviewStreak.lastDay === today) return;
+  reviewStreak.count = reviewStreak.lastDay === todayKey(-1) ? reviewStreak.count + 1 : 1;
+  reviewStreak.lastDay = today;
+  localStorage.setItem("reviewStreak", JSON.stringify(reviewStreak));
+}
+
+function renderVocabStats() {
+  const el = $("vocabStats");
+  if (!el) return;
+  if (!savedVocab.length) { el.textContent = ""; return; }
+  el.textContent = t("vocab_stats")
+    .replace("{mastered}", String(masteredVocab().length))
+    .replace("{due}", String(dueVocab().length))
+    .replace("{streak}", String(reviewStreak.count));
 }
 
 function updateReviewButton() {
@@ -1766,14 +1830,20 @@ function renderReviewCard() {
   body.innerHTML = `
     <p class="review-progress">${progress}</p>
     <div class="review-card">
-      <span class="review-word">${escapeHtml(v.word)}</span>${genderTag}
+      <div class="review-word-row">
+        <span class="review-word">${escapeHtml(v.word)}</span>${genderTag}
+        <button type="button" class="icon-btn review-listen-btn" id="reviewListenBtn" title="${t("review_listen")}">🔊</button>
+      </div>
       <div class="review-answer" id="reviewAnswer" hidden>
         <span class="review-translation">${escapeHtml(v.translation || "")}</span>
         ${v.infinitive ? `<span class="vocab-tag">→ ${escapeHtml(v.infinitive)}</span>` : ""}
         ${adjectiveTags(v)}
+        ${v.example ? `<p class="review-example">${escapeHtml(v.example)}</p>` : ""}
       </div>
     </div>
     <div class="review-actions" id="reviewActions"></div>`;
+
+  $("reviewListenBtn").addEventListener("click", () => speak(v.word));
 
   const actions = $("reviewActions");
   const showBtn = document.createElement("button");
@@ -1800,6 +1870,8 @@ function gradeCard(v, knew) {
   v.box = knew ? Math.min((v.box || 0) + 1, LEITNER_INTERVALS_DAYS.length - 1) : 0;
   v.nextReview = Date.now() + LEITNER_INTERVALS_DAYS[v.box] * DAY_MS;
   persistVocab();
+  bumpStreak();
+  renderVocabStats();
   reviewAnswered++;
   reviewIndex++;
   renderReviewCard();
@@ -1820,7 +1892,7 @@ function setStatus(msg) { statusLine.textContent = msg; }
 function refreshEngineHint() {
   const engine = "Claude";
   const key = state.apiKey ? t("hint_key_ok") : t("hint_key_missing");
-  const voice = !SR ? t("hint_mic_no") : isBraveBrowser ? t("hint_mic_brave") : t("hint_mic_ok");
+  const voice = !SR ? (isIOSDevice ? t("hint_mic_ios") : t("hint_mic_no")) : isBraveBrowser ? t("hint_mic_brave") : t("hint_mic_ok");
   $("engineHint").innerHTML = `${t("hint_engine")} : ${engine} · ${key}<br/>${t("hint_voice")} : ${voice}`;
 }
 
