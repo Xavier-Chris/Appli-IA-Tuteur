@@ -659,15 +659,16 @@ function escapeSSML(s) {
 }
 
 // Le style expressif "chat" rend parfois "où" ambigu (entendu comme
-// "tout" par Xavier). On force sa prononciation exacte avec un phonème
-// IPA, plutôt que de laisser la voix deviner. Appelé sur le texte déjà
-// échappé XML : "où" ne contient aucun caractère spécial, la substitution
-// est donc sûre après coup.
+// "tout" par Xavier). Un phonème IPA brut (<phoneme>) a corrigé le
+// problème sur les voix Multilingual (Rémy) mais pas sur les autres :
+// le support du phonème IPA varie selon la voix chez Azure. La balise
+// <sub> est mieux supportée partout : on fait lire "ou" à la place de
+// "où" (même prononciation, aucune voix ne le rate).
 // \b ne fonctionne pas de façon fiable après "ù" : \w est limité à l'ASCII
 // en JS, donc la frontière de mot échoue juste après une lettre accentuée.
 // On délimite donc "où" à la main avec des lettres (accentuées incluses).
 function wrapPhonemes(escapedText) {
-  return escapedText.replace(/(?<![A-Za-zÀ-ÖØ-öø-ÿ])où(?![A-Za-zÀ-ÖØ-öø-ÿ])/gi, (m) => `<phoneme alphabet="ipa" ph="u">${m}</phoneme>`);
+  return escapedText.replace(/(?<![A-Za-zÀ-ÖØ-öø-ÿ])où(?![A-Za-zÀ-ÖØ-öø-ÿ])/gi, (m) => `<sub alias="ou">${m}</sub>`);
 }
 
 // Voix Azure : synthèse via l'API REST Cognitive Services. Lève une erreur
