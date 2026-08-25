@@ -686,21 +686,21 @@ function splitSentences(text) {
 }
 
 // Synthétise une seule phrase et renvoie le blob audio, sans la jouer.
-async function fetchAzureAudioBlob(sentence) {
+async function fetchAzureAudioBlob(sentence, voiceName) {
   const ratePct = Math.round((voiceRate - 1) * 100);
   const rateAttr = ratePct >= 0 ? `+${ratePct}%` : `${ratePct}%`;
-  // Les voix "Multilingual" (Vivienne, Rémy) détectent automatiquement la
-  // langue mot par mot. Un mot isolé qui existe aussi en anglais (ex :
-  // "aspect") peut alors être prononcé avec un accent anglais, surtout sans
-  // phrase autour pour donner un indice de langue. On force le français
-  // avec la balise <lang> pour ces voix-là.
-  const isMultilingual = selectedVoiceName.toLowerCase().includes("multilingual");
+  // Les voix "Multilingual" (Vivienne, Rémy, Lucien) détectent
+  // automatiquement la langue mot par mot. Un mot isolé qui existe aussi
+  // en anglais (ex : "aspect") peut alors être prononcé avec un accent
+  // anglais, surtout sans phrase autour pour donner un indice de langue.
+  // On force le français avec la balise <lang> pour ces voix-là.
+  const isMultilingual = voiceName.toLowerCase().includes("multilingual");
   const body = escapeSSML(sentence);
   const spoken = isMultilingual ? `<lang xml:lang="fr-FR">${body}</lang>` : body;
   // Style "chat" : ton conversationnel plus naturel (moins plat, surtout
   // sur les questions) que la lecture neutre par défaut. Si la voix ne le
   // supporte pas, Azure l'ignore simplement sans erreur.
-  const ssml = `<speak version="1.0" xml:lang="fr-FR" xmlns:mstts="https://www.w3.org/2001/mstts"><voice name="${selectedVoiceName}"><mstts:express-as style="chat"><prosody rate="${rateAttr}">${spoken}</prosody></mstts:express-as></voice></speak>`;
+  const ssml = `<speak version="1.0" xml:lang="fr-FR" xmlns:mstts="https://www.w3.org/2001/mstts"><voice name="${voiceName}"><mstts:express-as style="chat"><prosody rate="${rateAttr}">${spoken}</prosody></mstts:express-as></voice></speak>`;
 
   const res = await fetch(`https://${state.azureRegion}.tts.speech.microsoft.com/cognitiveservices/v1`, {
     method: "POST",
@@ -732,11 +732,16 @@ function playAzureBlob(blob, token) {
 }
 
 async function speakAzure(text, token) {
+  // Figée une seule fois pour toute la réponse : si la voix sélectionnée
+  // changeait entre deux phrases (ex : rechargement de la liste des voix
+  // pendant la lecture), chaque phrase suivante aurait pu repartir avec
+  // une voix différente de la première.
+  const voiceName = selectedVoiceName;
   const sentences = splitSentences(text);
 
   // Une seule phrase : pas de gain à découper, chemin simple direct.
   if (sentences.length <= 1) {
-    const blob = await fetchAzureAudioBlob(text);
+    const blob = await fetchAzureAudioBlob(text, voiceName);
     if (token !== speakToken) return;
     await playAzureBlob(blob, token);
     return;
@@ -746,13 +751,13 @@ async function speakAzure(text, token) {
   // précédente joue, pour réduire le silence avant le début et entre les
   // phrases, sans le mécanisme de flux binaire (MediaSource) qui avait
   // cassé le son.
-  let nextBlobPromise = fetchAzureAudioBlob(sentences[0]);
+  let nextBlobPromise = fetchAzureAudioBlob(sentences[0], voiceName);
   for (let i = 0; i < sentences.length; i++) {
     if (token !== speakToken) return;
     const blob = await nextBlobPromise;
     if (token !== speakToken) return;
     if (i + 1 < sentences.length) {
-      nextBlobPromise = fetchAzureAudioBlob(sentences[i + 1]);
+      nextBlobPromise = fetchAzureAudioBlob(sentences[i + 1], voiceName);
     }
     await playAzureBlob(blob, token);
   }
