@@ -1346,7 +1346,7 @@ function buildVocabLookupPrompt() {
 On te donne un mot ou une courte expression française, cliqué par un apprenant dans une phrase, avec la phrase complète comme contexte.
 Réponds EXCLUSIVEMENT avec un objet JSON valide, sans aucun texte autour, avec cette forme exacte :
 {
-  "word": "le mot ou l'expression exactement comme on te l'a donné, sans le modifier",
+  "word": "le mot ou l'expression exactement comme on te l'a donné, sans le modifier (SAUF cas du verbe pronominal, voir règle plus bas)",
   "translation": "traduction en ${targetLang}, courte et naturelle, adaptée au contexte donné",
   "gender": "m" ou "f" si le mot est un nom commun (indique son genre), sinon null,
   "infinitive": "la forme infinitive" si le mot est un verbe conjugué et que sa forme diffère de l'infinitif, sinon null,
@@ -1360,6 +1360,10 @@ Pour un adjectif, donne TOUJOURS les 4 formes (masculine, masculinePlural, femin
 Un mot ne peut appartenir qu'à UNE SEULE catégorie à la fois (nom commun / verbe / adjectif), jamais plusieurs en même temps. Certains mots en "-ant" comme "surprenant" ou "intéressant" peuvent être soit un participe présent (verbe, invariable), soit un adjectif (variable en genre et en nombre) : regarde la PHRASE donnée en contexte pour trancher.
 - S'il fonctionne comme un ADJECTIF dans cette phrase (il décrit un nom, il pourrait varier en genre/nombre) : remplis UNIQUEMENT masculine/masculinePlural/feminine/femininePlural. Laisse "gender" et "infinitive" à null.
 - S'il fonctionne comme un VERBE conjugué dans cette phrase : remplis UNIQUEMENT "infinitive". Laisse "gender", masculine, masculinePlural, feminine et femininePlural à null.
+Cas du verbe pronominal (réfléchi) : un verbe est pronominal quand le pronom qui l'accompagne (me/m', te/t', se/s', nous, vous) désigne LA MÊME PERSONNE que le sujet du verbe (ex : "je me lave" → "me" = "je", pronominal ; à l'inverse "il me lave" → "me" ≠ "il", PAS pronominal, "me" est un simple complément d'objet). Si le mot cliqué est un verbe pronominal dans la phrase donnée, OU si le mot cliqué est lui-même ce pronom réfléchi :
+- "word" doit inclure le pronom réfléchi avec le verbe, jamais le verbe seul (ex : clique sur "passe" dans "il se passe quelque chose" → "word" = "se passe", PAS "passe" ; clique sur "se" au même endroit → même résultat "se passe")
+- "infinitive" est la forme pronominale complète "se/s' + infinitif" (ex : "se passer", "se lever", "s'appeler"), jamais l'infinitif seul : le sens change complètement entre les deux formes (ex : "passer" = to pass/spend time, mais "se passer" = to happen ; "appeler" = to call, mais "s'appeler" = to be named)
+- "translation" doit refléter le sens de la forme PRONOMINALE, jamais celui du verbe simple
 Ne mets rien d'autre que ce JSON.`;
 }
 
