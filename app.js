@@ -560,7 +560,7 @@ function applyLang() {
   // changement de langue, sinon leur texte reste figé dans l'ancienne langue.
   renderCorrectionsPanel();
   renderVocabPanel();
-  if (!state.started) setStatus(SR ? t("status_ready") : isIOSDevice ? t("no_mic_ios") : t("no_mic"));
+  if (!state.started) setStatus(micAvailable() ? t("status_ready") : isIOSDevice ? t("no_mic_ios") : t("no_mic"));
 }
 
 $("langSelect").addEventListener("change", (e) => {
@@ -939,76 +939,184 @@ document.getElementById("rateSelect").addEventListener("change", (e) => {
 // =========================================================
 //  Reconnaissance vocale (l'apprenant parle)
 // =========================================================
+// Deux moteurs possibles, avec repli automatique du premier vers le second :
+// - Azure Speech (prioritaire si une clé est configurée) : plus robuste
+//   sur les accents étrangers, et fonctionne même sur iOS (simple accès
+//   micro, pas de dépendance au moteur propriétaire du navigateur).
+// - Le moteur du navigateur (Web Speech API), gratuit mais absent sur iOS
+//   (Safari, Chrome et Edge y utilisent tous le moteur WebKit d'Apple).
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-// Sur iOS (iPhone/iPad), aucun navigateur ne supporte la reconnaissance vocale
-// (Safari, Chrome et Edge y utilisent tous le moteur WebKit d'Apple) : changer
-// de navigateur ne résout rien, contrairement à Brave sur ordinateur.
 const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent)
   || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-let recognition = null;
+
 let listening = false;
+let usingAzureStt = false;
+let azureRecognizer = null;
+let azureFinalText = "";
+// Passe à true dès qu'Azure échoue une fois (quota des 5h gratuites dépassé,
+// clé invalide, etc.) : on ne le retente plus pour le reste de la session,
+// repli définitif et silencieux sur le moteur du navigateur.
+let azureSttBroken = false;
 
+function hasAzureKey() {
+  return !!(state.azureKey && state.azureRegion);
+}
+function canUseAzureStt() {
+  return hasAzureKey() && !azureSttBroken && !!window.SpeechSDK;
+}
+function micAvailable() {
+  return canUseAzureStt() || !!SR;
+}
+
+function finishListening(text) {
+  listening = false;
+  usingAzureStt = false;
+  micBtn.classList.remove("listening");
+  waveform.classList.remove("active");
+  const trimmed = (text || "").trim();
+  if (trimmed) sendMessage(trimmed, false, true);
+  else setStatus(t("status_ready"));
+}
+
+// ---- Repli : moteur du navigateur ----
+// Fusionne un nouveau segment final avec le texte déjà accumulé. Sur
+// certains moteurs vocaux (Android notamment), chaque "segment final"
+// n'est pas un nouveau bout de phrase : c'est une réémission de TOUT
+// l'énoncé depuis le début, de plus en plus long ("bonjour" -> "bonjour,
+// je" -> "bonjour, je sais" -> "bonjour, je sais pas"). Les additionner
+// donnait un texte dupliqué en boucle. On remplace quand le nouveau
+// segment prolonge (ou est prolongé par) l'existant, et on additionne
+// seulement s'il s'agit d'un morceau vraiment distinct (comparaison
+// insensible à la casse, car la reprise n'a pas toujours la même
+// majuscule initiale que le premier envoi). Azure segmente proprement et
+// n'a pas ce défaut, donc ce correctif ne concerne que ce moteur-ci.
+function mergeFinalSegment(current, incoming) {
+  if (!current) return incoming;
+  if (!incoming) return current;
+  const curLower = current.toLowerCase();
+  const incLower = incoming.toLowerCase();
+  if (incLower.startsWith(curLower)) return incoming;
+  if (curLower.startsWith(incLower)) return current;
+  return current + incoming;
+}
+
+let browserRecognition = null;
 if (SR) {
-  recognition = new SR();
-  recognition.lang = "fr-FR";
-  recognition.continuous = true;   // enregistre jusqu'au prochain clic
-  recognition.interimResults = true;
+  browserRecognition = new SR();
+  browserRecognition.lang = "fr-FR";
+  browserRecognition.continuous = true;   // enregistre jusqu'au prochain clic
+  browserRecognition.interimResults = true;
 
-  // Fusionne un nouveau segment final avec le texte déjà accumulé. Sur
-  // certains moteurs vocaux (Android notamment), chaque "segment final"
-  // n'est pas un nouveau bout de phrase : c'est une réémission de TOUT
-  // l'énoncé depuis le début, de plus en plus long ("bonjour" -> "bonjour,
-  // je" -> "bonjour, je sais" -> "bonjour, je sais pas"). Les additionner
-  // donnait un texte dupliqué en boucle. On remplace quand le nouveau
-  // segment prolonge (ou est prolongé par) l'existant, et on additionne
-  // seulement s'il s'agit d'un morceau vraiment distinct (comparaison
-  // insensible à la casse, car la reprise n'a pas toujours la même
-  // majuscule initiale que le premier envoi).
-  function mergeFinalSegment(current, incoming) {
-    if (!current) return incoming;
-    if (!incoming) return current;
-    const curLower = current.toLowerCase();
-    const incLower = incoming.toLowerCase();
-    if (incLower.startsWith(curLower)) return incoming;
-    if (curLower.startsWith(incLower)) return current;
-    return current + incoming;
-  }
-
-  let finalText = "";
-  recognition.onstart = () => {
+  let browserFinalText = "";
+  browserRecognition.onstart = () => {
     listening = true;
-    finalText = "";
+    usingAzureStt = false;
+    browserFinalText = "";
     micBtn.classList.add("listening");
     waveform.classList.add("active");
     setStatus(t("status_listening"));
   };
-  recognition.onresult = (e) => {
+  browserRecognition.onresult = (e) => {
     let interim = "";
     for (let i = 0; i < e.results.length; i++) {
-      if (e.results[i].isFinal) finalText = mergeFinalSegment(finalText, e.results[i][0].transcript);
+      if (e.results[i].isFinal) browserFinalText = mergeFinalSegment(browserFinalText, e.results[i][0].transcript);
       else interim += e.results[i][0].transcript;
     }
-    setStatus(interim || finalText || "...");
+    setStatus(interim || browserFinalText || "...");
   };
-  recognition.onerror = (e) => {
-    console.error("Erreur reconnaissance vocale :", e.error);
+  browserRecognition.onerror = (e) => {
+    console.error("Erreur reconnaissance vocale (navigateur) :", e.error);
     setStatus(e.error === "not-allowed" ? t("mic_denied") : `${t("mic_problem")} (${e.error})`);
   };
-  recognition.onend = () => {
-    listening = false;
-    micBtn.classList.remove("listening");
-    waveform.classList.remove("active");
-    const text = finalText.trim();
-    if (text) sendMessage(text, false, true);
-    else setStatus(t("status_ready"));
+  browserRecognition.onend = () => finishListening(browserFinalText);
+}
+
+function startBrowserRecognition() {
+  usingAzureStt = false;
+  if (!browserRecognition) return;
+  try { browserRecognition.start(); } catch (_) {}
+}
+
+// ---- Prioritaire : Azure Speech-to-Text ----
+function startAzureRecognition() {
+  const speechConfig = SpeechSDK.SpeechConfig.fromSubscription(state.azureKey, state.azureRegion);
+  speechConfig.speechRecognitionLanguage = "fr-FR";
+  const audioConfig = SpeechSDK.AudioConfig.fromDefaultMicrophoneInput();
+  const recognizer = new SpeechSDK.SpeechRecognizer(speechConfig, audioConfig);
+  azureRecognizer = recognizer;
+  azureFinalText = "";
+
+  recognizer.recognizing = (_s, e) => {
+    const preview = azureFinalText ? `${azureFinalText} ${e.result.text}` : e.result.text;
+    setStatus(preview || t("status_listening"));
   };
+  recognizer.recognized = (_s, e) => {
+    if (e.result.reason === SpeechSDK.ResultReason.RecognizedSpeech && e.result.text) {
+      azureFinalText = azureFinalText ? `${azureFinalText} ${e.result.text}` : e.result.text;
+    }
+  };
+  recognizer.canceled = (_s, e) => {
+    if (azureRecognizer !== recognizer) return;   // déjà arrêté/remplacé par ailleurs, cet événement tardif ne concerne plus l'écoute en cours
+    if (e.reason !== SpeechSDK.CancellationReason.Error) return;   // arrêt normal (clic sur le micro), pas une erreur
+    console.error("Erreur reconnaissance vocale (Azure) :", e.errorCode, e.errorDetails);
+    azureSttBroken = true;
+    azureRecognizer = null;
+    recognizer.close();
+    // On repasse au moteur du navigateur sans couper l'élève : s'il avait
+    // déjà commencé à parler, on envoie ce qui a été compris jusque-là ;
+    // sinon on relance directement l'écoute avec le moteur de secours.
+    if (azureFinalText.trim() || !SR) {
+      finishListening(azureFinalText);
+    } else {
+      startBrowserRecognition();
+    }
+  };
+
+  recognizer.startContinuousRecognitionAsync(
+    () => {
+      // Condition de course possible : sur un échec de connexion rapide (clé
+      // invalide, quota dépassé...), l'événement "canceled" peut arriver
+      // AVANT ce callback de succès (qui ne confirme que le démarrage local,
+      // pas la connexion réseau réelle). Si ce recognizer a déjà été
+      // invalidé entre-temps (repli déjà enclenché), on ignore ce callback
+      // tardif pour ne pas écraser l'état déjà remis à zéro.
+      if (azureRecognizer !== recognizer) return;
+      listening = true;
+      usingAzureStt = true;
+      micBtn.classList.add("listening");
+      waveform.classList.add("active");
+      setStatus(t("status_listening"));
+    },
+    (err) => {
+      if (azureRecognizer !== recognizer) return;
+      console.error("Échec démarrage Azure STT :", err);
+      azureSttBroken = true;
+      recognizer.close();
+      azureRecognizer = null;
+      if (SR) startBrowserRecognition();
+      else setStatus(`${t("mic_problem")} (Azure)`);
+    }
+  );
 }
 
 micBtn.addEventListener("click", () => {
-  if (!recognition) return;
-  if (listening) { recognition.stop(); return; }
+  if (!micAvailable()) return;
+  if (listening) {
+    if (usingAzureStt && azureRecognizer) {
+      const recognizer = azureRecognizer;
+      azureRecognizer = null;
+      recognizer.stopContinuousRecognitionAsync(
+        () => { recognizer.close(); finishListening(azureFinalText); },
+        (err) => { console.error("Erreur à l'arrêt Azure STT :", err); recognizer.close(); finishListening(azureFinalText); }
+      );
+    } else if (browserRecognition) {
+      browserRecognition.stop();
+    }
+    return;
+  }
   speechSynthesis.cancel();          // on ne parle pas par-dessus le tuteur
-  try { recognition.start(); } catch (_) {}
+  if (canUseAzureStt()) startAzureRecognition();
+  else startBrowserRecognition();
 });
 
 // =========================================================
@@ -1076,7 +1184,7 @@ function showLessonSummary() {
   const { dateText, durationText, exchangeCount, newWords, newCorrections } = lastLessonSummary;
 
   const wordsHtml = newWords.length
-    ? `<ul class="summary-list">${newWords.map((v) => `<li><strong>${escapeHtml(v.word)}</strong>${escapeHtml(vocabGrammarSuffix(v))} — ${escapeHtml(v.translation || "")}</li>`).join("")}</ul>`
+    ? `<ul class="summary-list">${newWords.map((v) => `<li><strong>${escapeHtml(v.word)}</strong>${escapeHtml(vocabGrammarSuffix(v))} — ${escapeHtml(v.translation || "")}${v.example ? `<br><span class="small muted">${escapeHtml(v.example)}${v.exampleTranslation ? ` — ${escapeHtml(v.exampleTranslation)}` : ""}</span>` : ""}</li>`).join("")}</ul>`
     : `<p class="small muted">${t("summary_no_new_words")}</p>`;
   const correctionsHtml = newCorrections.length
     ? `<ul class="summary-list">${newCorrections.map((c) => `<li><strong>${escapeHtml(c.original || "")}</strong> → ${escapeHtml(c.better)}${c.explanation ? `<br><span class="small muted">${escapeHtml(c.explanation)}</span>` : ""}</li>`).join("")}</ul>`
@@ -1130,7 +1238,10 @@ function exportSummaryAsPdf(includeTranscript) {
 
   addLine(`${t("summary_new_words")} (${newWords.length})`, marginLeft, 13);
   if (newWords.length) {
-    newWords.forEach((v) => addLine(`- ${v.word}${vocabGrammarSuffix(v)} — ${v.translation || ""}`, marginLeft + 3, 11));
+    newWords.forEach((v) => {
+      addLine(`- ${v.word}${vocabGrammarSuffix(v)} — ${v.translation || ""}`, marginLeft + 3, 11);
+      if (v.example) addLine(`${v.example}${v.exampleTranslation ? ` — ${v.exampleTranslation}` : ""}`, marginLeft + 6, 10);
+    });
   } else {
     addLine(t("summary_no_new_words"), marginLeft + 3, 11);
   }
@@ -1191,7 +1302,7 @@ async function startLesson() {
   vocabCountAtStart = savedVocab.length;
   correctionsCountAtStart = savedCorrections.length;
   transcriptEl.innerHTML = "";
-  micBtn.disabled = !recognition;
+  micBtn.disabled = !micAvailable();
   setStatus(t("preparing"));
   // Premier tour : on demande au tuteur de saluer et de lancer le sujet.
   await sendMessage("[Début de la leçon. Salue l'apprenant et lance la conversation.]", true);
@@ -1586,7 +1697,7 @@ async function sendMessage(text, isSystemTrigger = false, fromVoice = false) {
     addBubble("tutor", t("err_bubble").replace("{msg}", msg));
   } finally {
     state.busy = false;
-    micBtn.disabled = !recognition;
+    micBtn.disabled = !micAvailable();
   }
 }
 
@@ -2052,7 +2163,9 @@ function setStatus(msg) { statusLine.textContent = msg; }
 function refreshEngineHint() {
   const engine = "Claude";
   const key = state.apiKey ? t("hint_key_ok") : t("hint_key_missing");
-  const voice = !SR ? (isIOSDevice ? t("hint_mic_ios") : t("hint_mic_no")) : isBraveBrowser ? t("hint_mic_brave") : t("hint_mic_ok");
+  const voice = canUseAzureStt() ? t("hint_mic_ok")
+    : !SR ? (isIOSDevice ? t("hint_mic_ios") : t("hint_mic_no"))
+    : isBraveBrowser ? t("hint_mic_brave") : t("hint_mic_ok");
   $("engineHint").innerHTML = `${t("hint_engine")} : ${engine} · ${key}<br/>${t("hint_voice")} : ${voice}`;
 }
 
@@ -2068,7 +2181,7 @@ function addWarningBanner(i18nKey) {
   (lastBanner || document.querySelector(".topbar")).insertAdjacentElement("afterend", banner);
 }
 
-if (isIOSDevice) addWarningBanner("ios_warning");
+if (isIOSDevice && !canUseAzureStt()) addWarningBanner("ios_warning");
 
 let isBraveBrowser = false;
 (async () => {
