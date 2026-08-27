@@ -1259,11 +1259,11 @@ Respecte STRICTEMENT ces repères de niveau à chaque réponse, aussi bien dans 
 Mode de la séance : ${modeText}
 
 Règles :
+- RÈGLE LA PLUS IMPORTANTE, à vérifier avant d'envoyer ta réponse : ne pose JAMAIS de question avec l'inversion sujet-verbe (comme « Rêves-tu ? », « As-tu... ? », « Aimes-tu... ? », « Veux-tu... ? », « Peux-tu... ? », « Aime-t-il... ? »), même avec un apprenant avancé. C'est un registre soutenu et littéraire que les francophones n'utilisent presque jamais à l'oral : ça sonnerait artificiel venant de toi. Utilise TOUJOURS soit l'intonation simple, sujet avant le verbe (« Tu rêves ? », « Tu veux... ? »), soit « est-ce que » (« Est-ce que tu rêves ? », « Est-ce que tu veux... ? »). Avant d'écrire un point d'interrogation, relis ta phrase et vérifie qu'aucun verbe n'est suivi d'un tiret puis d'un pronom (tu/vous/il/elle/on/nous/ils/elles) : si c'est le cas, réécris la question avec le sujet placé avant le verbe.
 - Parle UNIQUEMENT en français dans le champ "reply" (sauf une traduction courte d'un mot difficile si vraiment utile).
 - Écris toujours dans un français IMPECCABLE, naturel et idiomatique, digne d'un professeur natif expérimenté. Aucune faute, aucune tournure maladroite ou traduite.${genderHint}
 - Ne corrige JAMAIS et ne signale JAMAIS les erreurs de l'apprenant dans ta réponse. Réagis seulement au sens de ce qu'il dit et continue la conversation naturellement.
 - Garde tes réponses courtes et naturelles, comme à l'oral. Pose une question de suivi pour relancer.
-- Ne pose JAMAIS de question avec l'inversion sujet-verbe (comme « Rêves-tu ? », « As-tu... ? », « Aimes-tu... ? »), même avec un apprenant avancé. Utilise uniquement l'intonation (« Tu rêves ? ») ou « est-ce que » (« Est-ce que tu rêves ? »).
 
 Tu DOIS répondre EXCLUSIVEMENT avec un objet JSON valide, sans aucun texte autour, avec cette forme exacte :
 {
@@ -1467,6 +1467,7 @@ async function sendMessage(text, isSystemTrigger = false, fromVoice = false) {
     // Claude (l'API rejette un bloc de texte vide) : on garde un espace
     // réservé plutôt qu'une chaîne vide dans ce cas rare.
     state.messages.push({ role: "assistant", content: raw || "…" });
+    data.reply = fixInversionQuestions(data.reply);
     addBubble("tutor", data.reply);
     speak(data.reply);
     setStatus(t("your_turn"));
@@ -1607,6 +1608,30 @@ function addBubble(who, text) {
 // Ajoute une espace avant ? et ! (typographie française).
 function frenchSpacing(s) {
   return (s || "").replace(/\s*([!?]+)/g, " $1");
+}
+
+// Filet de sécurité : le prompt interdit déjà l'inversion sujet-verbe dans
+// les questions du tuteur ("As-tu... ?"), mais un modèle de langage ne suit
+// jamais une consigne "jamais" à 100 %. On rattrape ici les cas qui
+// passeraient quand même, en réordonnant "Verbe-tu" en "Tu verbe" (et
+// "Verbe-t-il/-elle/-on" en "Il/Elle/On verbe"), avant que la phrase soit
+// affichée ou lue à voix haute.
+const INVERSION_EUPHONIC_RE = /\b(\p{L}+)-t-(il|elle|on)\b/giu;
+const INVERSION_DIRECT_RE = /\b(\p{L}+)-(tu|vous|il|elle|on|nous|ils|elles)\b/giu;
+
+function fixInversionQuestions(text) {
+  if (!text) return text;
+  const reorder = (_match, verb, pronoun) => {
+    const wasCapitalized = /^[A-ZÀ-Þ]/.test(verb);
+    const lowerVerb = wasCapitalized ? verb.charAt(0).toLowerCase() + verb.slice(1) : verb;
+    const properPronoun = wasCapitalized
+      ? pronoun.charAt(0).toUpperCase() + pronoun.slice(1)
+      : pronoun.toLowerCase();
+    return `${properPronoun} ${lowerVerb}`;
+  };
+  return text
+    .replace(INVERSION_EUPHONIC_RE, reorder)
+    .replace(INVERSION_DIRECT_RE, reorder);
 }
 
 function tidyTranscript(text) {
