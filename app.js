@@ -425,16 +425,16 @@ const I18N = {
     brand: "Your French Tutor",
     theme_title: "Alternar claro / escuro",
     settings_title: "Configurações",
-    panel_lesson: "A tua lição",
+    panel_lesson: "Sua lição",
     label_level: "Nível",
-    lvl_beginner: "Iniciante", lvl_intermediate: "Intermédio", lvl_upper_intermediate: "Intermédio avançado", lvl_advanced: "Avançado",
+    lvl_beginner: "Iniciante", lvl_intermediate: "Intermediário", lvl_upper_intermediate: "Intermediário avançado", lvl_advanced: "Avançado",
     label_persona: "Personagem",
     persona_tutor: "Tutor clássico",
     persona_group_writing: "Escritor", persona_group_painting: "Pintor", persona_group_music: "Música",
-    persona_group_science: "Ciência", persona_group_politics: "Política", persona_group_sport: "Desporto", persona_group_cinema: "Cinema",
+    persona_group_science: "Ciência", persona_group_politics: "Política", persona_group_sport: "Esporte", persona_group_cinema: "Cinema",
     label_mode: "Modo",
     mode_libre: "Conversa livre", mode_guidee: "Conversa guiada",
-    mode_roleplay: "Encenação", mode_grammaire: "Gramática",
+    mode_roleplay: "Simulação", mode_grammaire: "Gramática",
     ctx_subject: "Tema", ctx_scenario: "Cenário", ctx_grammar: "Ponto de gramática",
     ctx_ph_default: "Ex: viagem, restaurante...",
     ctx_ph_subject: "Ex: viagem, trabalho, universidade...",
@@ -447,7 +447,7 @@ const I18N = {
     btn_reset: "Terminar e ver o resumo",
     summary_h: "Resumo da lição",
     summary_date: "Data",
-    btn_download_pdf: "Descarregar em PDF",
+    btn_download_pdf: "Baixar em PDF",
     summary_duration: "Duração",
     summary_exchanges: "Trocas",
     summary_new_words: "Palavras novas",
@@ -462,66 +462,66 @@ const I18N = {
     summary_transcript_tutor: "Tutor",
     panel_corrections: "Correções",
     panel_vocab: "Vocabulário",
-    corrections_empty: "As tuas correções vão aparecer aqui depois de cada resposta.",
-    vocab_empty: "Clica numa palavra na resposta do tutor para a adicionar aqui.",
-    vocab_stats: "{mastered} dominada(s) · {due} para rever · 🔥 sequência de {streak} dia(s)",
+    corrections_empty: "Suas correções vão aparecer aqui depois de cada resposta.",
+    vocab_empty: "Clique em uma palavra na resposta do tutor para adicioná-la aqui.",
+    vocab_stats: "{mastered} dominada(s) · {due} para revisar · 🔥 sequência de {streak} dia(s)",
     corrections_clear: "Limpar",
-    review_btn: "Rever",
+    review_btn: "Revisar",
     review_h: "Revisão de vocabulário",
-    review_empty_novocab: "Adiciona palavras primeiro, clicando nelas numa resposta do tutor.",
-    review_empty_nothing_due: "Nada para rever por agora. Volta mais tarde!",
+    review_empty_novocab: "Adicione palavras primeiro, clicando nelas em uma resposta do tutor.",
+    review_empty_nothing_due: "Nada para revisar por agora. Volte mais tarde!",
     review_show_answer: "Mostrar a resposta",
     review_listen: "Ouvir",
     review_knew: "Eu sabia 👍",
-    review_didnt_know: "Preciso de rever 👎",
-    review_done: "Revisão concluída! Reviste {n} palavra(s).",
+    review_didnt_know: "Preciso revisar 👎",
+    review_done: "Revisão concluída! Você revisou {n} palavra(s).",
     review_progress: "Cartão {current} / {total}",
-    empty_1: "Escolhe o teu nível e o teu modo, depois clica em <strong>Começar a conversa</strong>.",
-    empty_2: "O teu tutor vai falar em francês e corrigir as tuas respostas.",
+    empty_1: "Escolha seu nível e seu modo, depois clique em <strong>Começar a conversa</strong>.",
+    empty_2: "Seu tutor vai falar em francês e corrigir suas respostas.",
     mic_title: "Falar",
-    text_ph: "...ou escreve a tua resposta aqui",
+    text_ph: "...ou escreva sua resposta aqui",
     btn_send: "Enviar",
     settings_h: "Configurações",
     label_apikey: "Chave API da Claude",
-    apikey_ph: "Cola a tua chave aqui",
-    privacy_note: "A tua chave é guardada apenas neste navegador (localStorage). Nunca é enviada para nenhum outro lugar além da Claude (Anthropic).",
+    apikey_ph: "Cole sua chave aqui",
+    privacy_note: "Sua chave é guardada apenas neste navegador (localStorage). Nunca é enviada para nenhum outro lugar além da Claude (Anthropic).",
     azure_h: "Voz premium (opcional)",
-    azure_note: "Adiciona uma chave Azure Speech para vozes muito mais naturais do que as do navegador. Sem chave, a app continua a usar a voz do navegador.",
+    azure_note: "Adicione uma chave Azure Speech para vozes muito mais naturais do que as do navegador. Sem chave, o app continua usando a voz do navegador.",
     label_azure_key: "Chave Azure Speech",
-    azure_key_ph: "Cola a tua chave Azure aqui",
+    azure_key_ph: "Cole sua chave Azure aqui",
     label_azure_region: "Região Azure",
     azure_region_ph: "ex: francecentral",
-    btn_save: "Guardar",
+    btn_save: "Salvar",
     status_ready: "Pronto",
-    status_listening: "Estou a ouvir...",
-    mic_denied: "Microfone recusado. Permite o microfone ou escreve a tua resposta.",
-    mic_problem: "Problema com o microfone. Podes escrever a tua resposta.",
-    need_key: "Adiciona a tua chave API para começar.",
-    preparing: "O tutor está a preparar a lição...",
-    thinking: "O tutor está a pensar...",
-    your_turn: "A tua vez. Clica no microfone ou escreve.",
+    status_listening: "Estou ouvindo...",
+    mic_denied: "Microfone recusado. Permita o microfone ou escreva sua resposta.",
+    mic_problem: "Problema com o microfone. Você pode escrever sua resposta.",
+    need_key: "Adicione sua chave API para começar.",
+    preparing: "O tutor está preparando a lição...",
+    thinking: "O tutor está pensando...",
+    your_turn: "Sua vez. Clique no microfone ou escreva.",
     error_prefix: "Erro: ",
-    start_first: "Clica primeiro em Começar a conversa.",
-    no_mic: "O teu navegador não suporta o microfone. Usa o Chrome/Edge ou escreve as tuas respostas.",
-    no_mic_ios: "O microfone não está disponível em iPhone/iPad, em nenhum navegador (uma limitação do iOS). Escreve as tuas respostas.",
-    reset_ready: "Nova lição pronta. Clica em <strong>Começar a conversa</strong>.",
-    err_bubble: "Problema técnico. Detalhe: {msg}\n\nSe vires «401»: a tua chave API está em falta ou é inválida (⚙️). Se vires «Failed to fetch»: o navegador está a bloquear o pedido, vamos configurar um servidor local.",
-    c_said: "Disseste", c_better: "Melhor", c_why: "Porquê",
+    start_first: "Clique primeiro em Começar a conversa.",
+    no_mic: "Seu navegador não suporta o microfone. Use o Chrome/Edge ou escreva suas respostas.",
+    no_mic_ios: "O microfone não está disponível em iPhone/iPad, em nenhum navegador (uma limitação do iOS). Escreva suas respostas.",
+    reset_ready: "Nova lição pronta. Clique em <strong>Começar a conversa</strong>.",
+    err_bubble: "Problema técnico. Detalhe: {msg}\n\nSe você vir \"401\": sua chave API está faltando ou é inválida (⚙️). Se você vir \"Failed to fetch\": o navegador está bloqueando o pedido, vamos configurar um servidor local.",
+    c_said: "Você disse", c_better: "Melhor", c_why: "Por quê",
     replay_title: "Ouvir novamente",
     translate_title: "Ver a tradução",
     vocab_clear: "Limpar",
-    voice_default: "Voz predefinida do navegador",
+    voice_default: "Voz padrão do navegador",
     grammar_noun_f: "f.", grammar_noun_m: "m.", grammar_infinitive_prefix: "inf.:",
-    hint_engine: "Motor", hint_key_ok: "chave OK ✅", hint_key_missing: "chave em falta ⚠️",
-    hint_voice: "Voz", hint_mic_ok: "microfone pronto 🎤", hint_mic_no: "microfone indisponível (usa o texto)",
-    hint_mic_ios: "microfone indisponível em iPhone/iPad (usa o texto)",
+    hint_engine: "Motor", hint_key_ok: "chave OK ✅", hint_key_missing: "chave faltando ⚠️",
+    hint_voice: "Voz", hint_mic_ok: "microfone pronto 🎤", hint_mic_no: "microfone indisponível (use o texto)",
+    hint_mic_ios: "microfone indisponível em iPhone/iPad (use o texto)",
     hint_mic_brave: "microfone indisponível no Brave ⚠️",
-    brave_warning: "⚠️ <strong>Estás a usar o Brave</strong>: o reconhecimento de voz não funciona neste navegador (uma limitação deliberada do Brave, não é um erro da app). Usa o Chrome ou o Edge para falar com o microfone, ou escreve as tuas respostas entretanto.",
+    brave_warning: "⚠️ <strong>Você está usando o Brave</strong>: o reconhecimento de voz não funciona neste navegador (uma limitação deliberada do Brave, não é um erro do app). Use o Chrome ou o Edge para falar com o microfone, ou escreva suas respostas enquanto isso.",
   },
 };
 
 // Pour le format de date du résumé de leçon (toLocaleDateString).
-const DATE_LOCALES = { fr: "fr-FR", en: "en-US", es: "es-ES", de: "de-DE", pt: "pt-PT" };
+const DATE_LOCALES = { fr: "fr-FR", en: "en-US", es: "es-ES", de: "de-DE", pt: "pt-BR" };
 
 function t(key) {
   const dict = I18N[state.lang] || I18N.fr;
@@ -1379,7 +1379,7 @@ Ne mets rien d'autre que ce JSON.`;
 // l'historique) : plus rapide et moins cher, puisque rien de tout ça
 // n'a besoin du contexte des tours précédents pour juger une phrase isolée.
 function buildCorrectionSystemPrompt(fromVoice) {
-  const explLang = { en: "anglais", es: "espagnol", de: "allemand", pt: "portugais" }[state.lang] || "français";
+  const explLang = { en: "anglais", es: "espagnol", de: "allemand", pt: "portugais brésilien" }[state.lang] || "français";
   const modeHint = state.mode === "roleplay" && state.context
     ? `Contexte du jeu de rôle en cours : ${state.context}. Si ce contexte impose le vouvoiement (entretien d'embauche, administration, médecin...), ne considère pas le vouvoiement de l'apprenant comme une faute, c'est attendu.`
     : "";
@@ -1423,7 +1423,7 @@ Ne mets rien d'autre que ce JSON.`;
 //  Traduction à la demande d'une réplique du tuteur (langue d'interface)
 // =========================================================
 function buildTranslatePrompt() {
-  const targetLang = { en: "anglais", es: "espagnol", de: "allemand", pt: "portugais" }[state.lang] || "anglais";
+  const targetLang = { en: "anglais", es: "espagnol", de: "allemand", pt: "portugais brésilien" }[state.lang] || "anglais";
   return `Tu es un traducteur français-${targetLang} expert, utilisé dans une application d'apprentissage du français.
 On te donne une phrase dite par un tuteur de français à un apprenant.
 Réponds EXCLUSIVEMENT avec un objet JSON valide, sans aucun texte autour, avec cette forme exacte :
@@ -1456,7 +1456,7 @@ async function translateBubble(text, btn, box) {
 //  Recherche d'un mot cliqué dans le chat (vocabulaire à la demande)
 // =========================================================
 function buildVocabLookupPrompt() {
-  const targetLang = { en: "anglais", es: "espagnol", de: "allemand", pt: "portugais" }[state.lang] || "anglais";
+  const targetLang = { en: "anglais", es: "espagnol", de: "allemand", pt: "portugais brésilien" }[state.lang] || "anglais";
   return `Tu es un dictionnaire français-${targetLang} expert, utilisé dans une application d'apprentissage du français.
 On te donne un mot ou une courte expression française, cliqué par un apprenant dans une phrase, avec la phrase complète comme contexte.
 Réponds EXCLUSIVEMENT avec un objet JSON valide, sans aucun texte autour, avec cette forme exacte :
