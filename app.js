@@ -129,6 +129,7 @@ const I18N = {
     hint_mic_ios: "micro indispo sur iPhone/iPad (utilise le texte)",
     hint_mic_brave: "micro indispo sur Brave ⚠️",
     brave_warning: "⚠️ <strong>Tu utilises Brave</strong> : la reconnaissance vocale ne fonctionne pas dans ce navigateur (limitation volontaire de Brave, pas un bug de l'app). Utilise Chrome ou Edge pour parler au micro, ou écris tes réponses en attendant.",
+    ios_warning: "⚠️ <strong>Tu es sur iPhone/iPad</strong> : le micro ne fonctionne dans aucun navigateur sur iOS (limitation du système, pas un bug de l'app). Écris tes réponses en attendant, ou utilise un ordinateur ou un appareil Android pour parler au micro.",
   },
   en: {
     brand: "Your French Tutor",
@@ -226,6 +227,7 @@ const I18N = {
     hint_mic_ios: "mic unavailable on iPhone/iPad (type instead)",
     hint_mic_brave: "mic unavailable on Brave ⚠️",
     brave_warning: "⚠️ <strong>You're using Brave</strong>: voice recognition doesn't work in this browser (a deliberate Brave limitation, not an app bug). Use Chrome or Edge to talk with the mic, or type your answers instead.",
+    ios_warning: "⚠️ <strong>You're on iPhone/iPad</strong>: the mic doesn't work in any browser on iOS (a system limitation, not an app bug). Type your answers instead, or use a computer or Android device to talk with the mic.",
   },
   es: {
     brand: "Your French Tutor",
@@ -323,6 +325,7 @@ const I18N = {
     hint_mic_ios: "micrófono no disponible en iPhone/iPad (usa el texto)",
     hint_mic_brave: "micrófono no disponible en Brave ⚠️",
     brave_warning: "⚠️ <strong>Estás usando Brave</strong>: el reconocimiento de voz no funciona en este navegador (una limitación deliberada de Brave, no un error de la app). Usa Chrome o Edge para hablar por el micrófono, o escribe tus respuestas mientras tanto.",
+    ios_warning: "⚠️ <strong>Estás en iPhone/iPad</strong>: el micrófono no funciona en ningún navegador en iOS (una limitación del sistema, no un error de la app). Escribe tus respuestas mientras tanto, o usa un ordenador o un dispositivo Android para hablar por el micrófono.",
   },
   de: {
     brand: "Your French Tutor",
@@ -420,6 +423,7 @@ const I18N = {
     hint_mic_ios: "Mikrofon auf iPhone/iPad nicht verfügbar (nutze den Text)",
     hint_mic_brave: "Mikrofon auf Brave nicht verfügbar ⚠️",
     brave_warning: "⚠️ <strong>Du nutzt Brave</strong>: Die Spracherkennung funktioniert in diesem Browser nicht (eine bewusste Einschränkung von Brave, kein App-Fehler). Nutze Chrome oder Edge, um mit dem Mikrofon zu sprechen, oder schreibe stattdessen deine Antworten.",
+    ios_warning: "⚠️ <strong>Du bist auf iPhone/iPad</strong>: Das Mikrofon funktioniert in keinem Browser unter iOS (eine Systemeinschränkung, kein App-Fehler). Schreibe stattdessen deine Antworten, oder nutze einen Computer oder ein Android-Gerät, um mit dem Mikrofon zu sprechen.",
   },
   pt: {
     brand: "Your French Tutor",
@@ -517,6 +521,7 @@ const I18N = {
     hint_mic_ios: "microfone indisponível em iPhone/iPad (use o texto)",
     hint_mic_brave: "microfone indisponível no Brave ⚠️",
     brave_warning: "⚠️ <strong>Você está usando o Brave</strong>: o reconhecimento de voz não funciona neste navegador (uma limitação deliberada do Brave, não é um erro do app). Use o Chrome ou o Edge para falar com o microfone, ou escreva suas respostas enquanto isso.",
+    ios_warning: "⚠️ <strong>Você está no iPhone/iPad</strong>: o microfone não funciona em nenhum navegador no iOS (uma limitação do sistema, não um erro do app). Escreva suas respostas por enquanto, ou use um computador ou um aparelho Android para falar no microfone.",
   },
 };
 
@@ -2044,17 +2049,24 @@ function refreshEngineHint() {
 }
 
 // =========================================================
-//  Avertissement Brave (la reconnaissance vocale n'y fonctionne pas)
+//  Avertissements navigateur/appareil (micro indisponible)
 // =========================================================
+function addWarningBanner(i18nKey) {
+  const banner = document.createElement("div");
+  banner.className = "browser-warning";
+  banner.innerHTML = `<span data-i18n-html="${i18nKey}">${t(i18nKey)}</span><button class="close-warning" title="✕">✕</button>`;
+  banner.querySelector(".close-warning").addEventListener("click", () => banner.remove());
+  const lastBanner = document.querySelector(".browser-warning:last-of-type");
+  (lastBanner || document.querySelector(".topbar")).insertAdjacentElement("afterend", banner);
+}
+
+if (isIOSDevice) addWarningBanner("ios_warning");
+
 let isBraveBrowser = false;
 (async () => {
   isBraveBrowser = !!(navigator.brave && (await navigator.brave.isBrave()));
   if (!isBraveBrowser) return;
-  const banner = document.createElement("div");
-  banner.className = "browser-warning";
-  banner.innerHTML = `<span data-i18n-html="brave_warning">${t("brave_warning")}</span><button class="close-warning" title="✕">✕</button>`;
-  banner.querySelector(".close-warning").addEventListener("click", () => banner.remove());
-  document.querySelector(".topbar").insertAdjacentElement("afterend", banner);
+  addWarningBanner("brave_warning");
   refreshEngineHint();
 })();
 
