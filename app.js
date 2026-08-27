@@ -39,7 +39,7 @@ const I18N = {
     settings_title: "Réglages",
     panel_lesson: "Ta leçon",
     label_level: "Niveau",
-    lvl_beginner: "Débutant", lvl_intermediate: "Intermédiaire", lvl_advanced: "Avancé",
+    lvl_beginner: "Débutant", lvl_intermediate: "Intermédiaire", lvl_upper_intermediate: "Intermédiaire avancé", lvl_advanced: "Avancé",
     label_persona: "Personnage",
     persona_tutor: "Tuteur classique",
     persona_group_writing: "Écriture", persona_group_painting: "Peinture", persona_group_music: "Musique",
@@ -136,7 +136,7 @@ const I18N = {
     settings_title: "Settings",
     panel_lesson: "Your lesson",
     label_level: "Level",
-    lvl_beginner: "Beginner", lvl_intermediate: "Intermediate", lvl_advanced: "Advanced",
+    lvl_beginner: "Beginner", lvl_intermediate: "Intermediate", lvl_upper_intermediate: "Upper Intermediate", lvl_advanced: "Advanced",
     label_persona: "Character",
     persona_tutor: "Classic tutor",
     persona_group_writing: "Writer", persona_group_painting: "Painter", persona_group_music: "Music",
@@ -233,7 +233,7 @@ const I18N = {
     settings_title: "Ajustes",
     panel_lesson: "Tu lección",
     label_level: "Nivel",
-    lvl_beginner: "Principiante", lvl_intermediate: "Intermedio", lvl_advanced: "Avanzado",
+    lvl_beginner: "Principiante", lvl_intermediate: "Intermedio", lvl_upper_intermediate: "Intermedio avanzado", lvl_advanced: "Avanzado",
     label_persona: "Personaje",
     persona_tutor: "Tutor clásico",
     persona_group_writing: "Escritor", persona_group_painting: "Pintor", persona_group_music: "Música",
@@ -330,7 +330,7 @@ const I18N = {
     settings_title: "Einstellungen",
     panel_lesson: "Deine Lektion",
     label_level: "Niveau",
-    lvl_beginner: "Anfänger", lvl_intermediate: "Mittelstufe", lvl_advanced: "Fortgeschritten",
+    lvl_beginner: "Anfänger", lvl_intermediate: "Mittelstufe", lvl_upper_intermediate: "Obere Mittelstufe", lvl_advanced: "Fortgeschritten",
     label_persona: "Charakter",
     persona_tutor: "Klassischer Tutor",
     persona_group_writing: "Schriftsteller", persona_group_painting: "Maler", persona_group_music: "Musik",
@@ -1210,10 +1210,15 @@ const LEVEL_GUIDANCE = {
     "Temps verbaux : présent de l'indicatif, futur proche (aller + infinitif), passé composé avec des verbes courants, impératif simple. N'utilise JAMAIS le subjonctif, le conditionnel complexe ou la voix passive. " +
     "Phrases : courtes et simples (sujet-verbe-complément), pas ou très peu de subordination. Connecteurs simples uniquement : et, mais, parce que, alors, ou.",
   intermediaire:
-    "Niveau intermédiaire (B1-B2). " +
-    "Vocabulaire : plus large, avec des mots abstraits courants, des expressions usuelles, des nuances de sentiments et d'opinions. " +
-    "Temps verbaux : passé composé et imparfait en contraste, plus-que-parfait, futur simple, conditionnel présent, et début du subjonctif présent dans des tournures courantes (« il faut que », « je voudrais que », « je ne pense pas que »). " +
-    "Phrases : plus longues, avec des subordonnées relatives (qui, que, où) et causales (parce que, car, comme). Connecteurs logiques variés : cependant, donc, par contre, ensuite, en revanche, du coup.",
+    "Niveau intermédiaire (B1). " +
+    "Vocabulaire : plus large que le débutant, avec des mots abstraits simples et des expressions usuelles de la vie courante. Pas encore d'expressions idiomatiques. " +
+    "Temps verbaux : passé composé et imparfait en contraste, futur simple, conditionnel présent pour la politesse et les hypothèses simples, et le subjonctif présent UNIQUEMENT dans des tournures figées très courantes (« il faut que », « je voudrais que », « je ne pense pas que »). " +
+    "Phrases : de longueur moyenne, avec des subordonnées relatives simples (qui, que, où). Connecteurs de base : donc, parce que, ensuite, cependant, mais.",
+  intermediaire_avance:
+    "Niveau intermédiaire avancé (B2). " +
+    "Vocabulaire : large, avec des mots abstraits variés, des nuances de sentiments et d'opinions, et quelques expressions idiomatiques courantes. " +
+    "Temps verbaux : plus-que-parfait, subjonctif présent plus librement (pas seulement dans des tournures figées), conditionnel passé simple, début de concordance des temps. " +
+    "Phrases : plus longues, avec des subordonnées causales et concessives simples (bien que). Connecteurs logiques variés : par contre, en revanche, du coup, en effet, malgré tout.",
   avance:
     "Niveau avancé (C1-C2). " +
     "Vocabulaire : riche et nuancé, expressions idiomatiques, registre soutenu quand le contexte s'y prête, mots précis ou spécialisés selon le sujet abordé. " +
