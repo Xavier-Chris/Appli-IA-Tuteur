@@ -1395,7 +1395,8 @@ function buildCorrectionSystemPrompt(fromVoice) {
   // injustifiée reste une vraie faute à corriger (erreur fréquente chez les
   // anglophones sur les noms de langue).
   const voiceHint = fromVoice
-    ? `\n- Ce message vient de la reconnaissance vocale du navigateur, pas du clavier : elle capitalise parfois par erreur un mot ordinaire au milieu de la phrase (ex : "le Français" au lieu de "le français"), même si l'apprenant ne l'a pas prononcé avec une majuscule. NE corrige PAS une majuscule inattendue sur un mot par ailleurs bien orthographié : ce n'est pas une faute de l'apprenant, mais un artefact de la transcription. Continue bien sûr à corriger toutes les vraies fautes de langue (conjugaison, accord, élision, orthographe, vocabulaire).`
+    ? `\n- Ce message vient de la reconnaissance vocale du navigateur, pas du clavier : elle capitalise parfois par erreur un mot ordinaire au milieu de la phrase (ex : "le Français" au lieu de "le français"), même si l'apprenant ne l'a pas prononcé avec une majuscule. NE corrige PAS une majuscule inattendue sur un mot par ailleurs bien orthographié : ce n'est pas une faute de l'apprenant, mais un artefact de la transcription. Continue bien sûr à corriger toutes les vraies fautes de langue (conjugaison, accord, élision, orthographe, vocabulaire).
+- Autre artefact possible de la reconnaissance vocale : un mot ou un groupe de mots répété consécutivement à l'identique sans raison (ex : "je voudrais je voudrais un café", "un café un café"), causé par le moteur de transcription, pas par l'apprenant. NE traite JAMAIS cette répétition comme une faute de langue. Si la phrase, une fois la répétition ignorée, est par ailleurs correcte, mets "correction" à null.`
     : "";
 
   return `Tu es un EXPERT de la grammaire et de l'orthographe françaises. Ta seule tâche : analyser UNE phrase dite par un apprenant de français langue étrangère et repérer ses éventuelles fautes. ${modeHint}${voiceHint}
