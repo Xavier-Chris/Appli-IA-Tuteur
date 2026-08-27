@@ -1496,7 +1496,7 @@ async function lookupWord(word, sentenceContext, spanEl) {
   try {
     const raw = await callProvider(buildVocabLookupPrompt(), [
       { role: "user", content: `Phrase : "${sentenceContext}"\nMot ou expression cliqué : "${cleanWord}"` },
-    ]);
+    ], MODEL_FAST);
     const data = parseJSON(raw, {
       word: cleanWord, translation: "", gender: null, infinitive: null,
       masculine: null, masculinePlural: null, feminine: null, femininePlural: null,
@@ -1556,7 +1556,7 @@ async function sendMessage(text, isSystemTrigger = false, fromVoice = false) {
   // besoin de tout l'historique) et met à jour son panneau dès qu'elle est
   // prête, même après que le tuteur ait fini de répondre.
   if (!isSystemTrigger) {
-    callProvider(buildCorrectionSystemPrompt(fromVoice), [{ role: "user", content: text }])
+    callProvider(buildCorrectionSystemPrompt(fromVoice), [{ role: "user", content: text }], MODEL_FAST)
       .then((raw) => renderCorrection(parseJSON(raw, { correction: null }).correction))
       .catch((err) => console.warn("Correction indisponible :", err));
   }
@@ -1599,7 +1599,14 @@ async function sendMessage(text, isSystemTrigger = false, fromVoice = false) {
 // augmentation de cette limite en oublie un (déjà arrivé avec Gemini).
 const MAX_TOKENS = 2000;
 
-async function callAnthropic(systemPrompt, messages) {
+// Sonnet pour la conversation principale (qualité maximale attendue) ;
+// Haiku, nettement moins cher et plus rapide, pour les tâches annexes
+// bien cadrées (correction d'une phrase, recherche d'un mot) où sa
+// qualité s'est révélée identique à celle de Sonnet lors de tests comparatifs.
+const MODEL_MAIN = "claude-sonnet-5";
+const MODEL_FAST = "claude-haiku-4-5-20251001";
+
+async function callAnthropic(systemPrompt, messages, model = MODEL_MAIN) {
   // Cache de prompt Anthropic : le système (identique à chaque message tant
   // que le niveau/personnage/mode ne changent pas) et l'historique déjà
   // envoyé sont mis en cache côté Anthropic, donc refacturés ~10x moins
@@ -1622,7 +1629,7 @@ async function callAnthropic(systemPrompt, messages) {
       "anthropic-dangerous-direct-browser-access": "true",
     },
     body: JSON.stringify({
-      model: "claude-sonnet-5",
+      model,
       max_tokens: MAX_TOKENS,
       system: [{ type: "text", text: systemPrompt, cache_control: { type: "ephemeral" } }],
       messages: cachedMessages,
@@ -1641,8 +1648,8 @@ async function callAnthropic(systemPrompt, messages) {
 // les fournisseurs Groq/OpenAI/Gemini, initialement supportés, ont été
 // retirés pour simplifier le code après qu'ils ne soient plus accessibles
 // depuis l'interface.
-async function callProvider(systemPrompt, messages) {
-  return callAnthropic(systemPrompt, messages);
+async function callProvider(systemPrompt, messages, model) {
+  return callAnthropic(systemPrompt, messages, model);
 }
 
 async function readError(res) {
