@@ -990,7 +990,6 @@ document.getElementById("voiceSelect").addEventListener("change", (e) => {
 document.getElementById("rateSelect").addEventListener("change", (e) => {
   voiceRate = parseFloat(e.target.value);
   localStorage.setItem("voiceRate", String(voiceRate));
-  speak("Voici ma nouvelle vitesse.");
 });
 
 // =========================================================
