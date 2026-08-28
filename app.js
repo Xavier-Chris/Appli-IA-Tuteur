@@ -860,11 +860,18 @@ async function fetchAzureAudioBlob(sentence, voiceName, mood) {
   // réglage reste sans danger si l'élève garde ce personnage en changeant
   // manuellement de voix.
   const isParisianSnob = state.persona === "parisien";
+  const supportsStyles = voiceSupportsStyles(voiceName);
   const ratePct = Math.round((voiceRate * (isParisianSnob ? 0.88 : 1) - 1) * 100);
   const rateAttr = ratePct >= 0 ? `+${ratePct}%` : `${ratePct}%`;
   // Humeur dynamique du tuteur classique (voir buildReplySystemPrompt) :
-  // n'a d'effet audible que sur une voix qui sait jouer des styles.
-  const ttsStyle = isParisianSnob ? "disgusted" : (mood && voiceSupportsStyles(voiceName) ? mood : "chat");
+  // n'a d'effet audible que sur une voix qui sait jouer des styles. Le style
+  // "chat" (ton par défaut des voix Neural classiques) N'EST PAS supporté
+  // par Marc/Soleil : contrairement aux voix Neural, Azure ne l'ignore pas
+  // silencieusement sur cette voix, il renvoie une erreur 502, ce qui
+  // faisait basculer TOUTE réponse sans humeur marquée sur la voix robotique
+  // du navigateur. Sur Marc/Soleil sans humeur valable, on omet donc le
+  // style plutôt que de forcer "chat".
+  const ttsStyle = isParisianSnob ? "disgusted" : (mood && supportsStyles ? mood : (supportsStyles ? null : "chat"));
   // Les voix "Multilingual" (Vivienne, Rémy, Lucien) détectent
   // automatiquement la langue mot par mot. Un mot isolé qui existe aussi
   // en anglais (ex : "aspect") peut alors être prononcé avec un accent
@@ -873,10 +880,10 @@ async function fetchAzureAudioBlob(sentence, voiceName, mood) {
   const isMultilingual = voiceName.toLowerCase().includes("multilingual");
   const body = wrapPhonemes(escapeSSML(sentence));
   const spoken = isMultilingual ? `<lang xml:lang="fr-FR">${body}</lang>` : body;
-  // Style "chat" : ton conversationnel plus naturel (moins plat, surtout
-  // sur les questions) que la lecture neutre par défaut. Si la voix ne le
-  // supporte pas, Azure l'ignore simplement sans erreur.
-  const ssml = `<speak version="1.0" xml:lang="fr-FR" xmlns:mstts="https://www.w3.org/2001/mstts"><voice name="${voiceName}"><mstts:express-as style="${ttsStyle}"><prosody rate="${rateAttr}">${spoken}</prosody></mstts:express-as></voice></speak>`;
+  const voiceInner = ttsStyle
+    ? `<mstts:express-as style="${ttsStyle}"><prosody rate="${rateAttr}">${spoken}</prosody></mstts:express-as>`
+    : `<prosody rate="${rateAttr}">${spoken}</prosody>`;
+  const ssml = `<speak version="1.0" xml:lang="fr-FR" xmlns:mstts="https://www.w3.org/2001/mstts"><voice name="${voiceName}">${voiceInner}</voice></speak>`;
 
   const res = await fetch(`https://${state.azureRegion}.tts.speech.microsoft.com/cognitiveservices/v1`, {
     method: "POST",
