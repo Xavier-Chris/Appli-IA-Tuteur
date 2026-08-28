@@ -968,7 +968,25 @@ function micAvailable() {
   return canUseAzureStt() || !!SR;
 }
 
+// Arrêt automatique après un silence : évite d'obliger l'élève à recliquer
+// pour envoyer sa réponse. Le délai est volontairement généreux (pas le
+// silence court d'une détection "agressive") pour laisser le temps à un
+// apprenant de réfléchir en pleine phrase sans être coupé, au prix d'un
+// petit temps mort après une réponse déjà terminée. Le clic manuel reste
+// possible pour arrêter plus tôt.
+const SILENCE_AUTO_STOP_MS = 5500;
+let silenceTimer = null;
+function resetSilenceTimer() {
+  clearTimeout(silenceTimer);
+  silenceTimer = setTimeout(() => stopListening(), SILENCE_AUTO_STOP_MS);
+}
+function clearSilenceTimer() {
+  clearTimeout(silenceTimer);
+  silenceTimer = null;
+}
+
 function finishListening(text) {
+  clearSilenceTimer();
   listening = false;
   usingAzureStt = false;
   micBtn.classList.remove("listening");
@@ -976,6 +994,20 @@ function finishListening(text) {
   const trimmed = (text || "").trim();
   if (trimmed) sendMessage(trimmed, false, true);
   else setStatus(t("status_ready"));
+}
+
+// Arrêt manuel (clic) ou automatique (silence) : les deux passent par ici.
+function stopListening() {
+  if (usingAzureStt && azureRecognizer) {
+    const recognizer = azureRecognizer;
+    azureRecognizer = null;
+    recognizer.stopContinuousRecognitionAsync(
+      () => { recognizer.close(); finishListening(azureFinalText); },
+      (err) => { console.error("Erreur à l'arrêt Azure STT :", err); recognizer.close(); finishListening(azureFinalText); }
+    );
+  } else if (browserRecognition) {
+    browserRecognition.stop();
+  }
 }
 
 // ---- Repli : moteur du navigateur ----
@@ -1004,7 +1036,11 @@ let browserRecognition = null;
 if (SR) {
   browserRecognition = new SR();
   browserRecognition.lang = "fr-FR";
-  browserRecognition.continuous = true;   // enregistre jusqu'au prochain clic
+  // "continuous" laisse plusieurs segments s'enchaîner (une courte pause
+  // entre deux phrases ne coupe pas l'écoute) : c'est notre propre minuteur
+  // de silence (voir SILENCE_AUTO_STOP_MS) qui décide quand arrêter pour de
+  // bon, pas ce moteur, pour garder le même délai généreux que pour Azure.
+  browserRecognition.continuous = true;
   browserRecognition.interimResults = true;
 
   let browserFinalText = "";
@@ -1015,6 +1051,7 @@ if (SR) {
     micBtn.classList.add("listening");
     waveform.classList.add("active");
     setStatus(t("status_listening"));
+    resetSilenceTimer();
   };
   browserRecognition.onresult = (e) => {
     let interim = "";
@@ -1023,6 +1060,7 @@ if (SR) {
       else interim += e.results[i][0].transcript;
     }
     setStatus(interim || browserFinalText || "...");
+    resetSilenceTimer();
   };
   browserRecognition.onerror = (e) => {
     console.error("Erreur reconnaissance vocale (navigateur) :", e.error);
@@ -1049,11 +1087,13 @@ function startAzureRecognition() {
   recognizer.recognizing = (_s, e) => {
     const preview = azureFinalText ? `${azureFinalText} ${e.result.text}` : e.result.text;
     setStatus(preview || t("status_listening"));
+    resetSilenceTimer();
   };
   recognizer.recognized = (_s, e) => {
     if (e.result.reason === SpeechSDK.ResultReason.RecognizedSpeech && e.result.text) {
       azureFinalText = azureFinalText ? `${azureFinalText} ${e.result.text}` : e.result.text;
     }
+    resetSilenceTimer();
   };
   recognizer.canceled = (_s, e) => {
     if (azureRecognizer !== recognizer) return;   // déjà arrêté/remplacé par ailleurs, cet événement tardif ne concerne plus l'écoute en cours
@@ -1086,6 +1126,7 @@ function startAzureRecognition() {
       micBtn.classList.add("listening");
       waveform.classList.add("active");
       setStatus(t("status_listening"));
+      resetSilenceTimer();
     },
     (err) => {
       if (azureRecognizer !== recognizer) return;
@@ -1101,19 +1142,7 @@ function startAzureRecognition() {
 
 micBtn.addEventListener("click", () => {
   if (!micAvailable()) return;
-  if (listening) {
-    if (usingAzureStt && azureRecognizer) {
-      const recognizer = azureRecognizer;
-      azureRecognizer = null;
-      recognizer.stopContinuousRecognitionAsync(
-        () => { recognizer.close(); finishListening(azureFinalText); },
-        (err) => { console.error("Erreur à l'arrêt Azure STT :", err); recognizer.close(); finishListening(azureFinalText); }
-      );
-    } else if (browserRecognition) {
-      browserRecognition.stop();
-    }
-    return;
-  }
+  if (listening) { stopListening(); return; }
   speechSynthesis.cancel();          // on ne parle pas par-dessus le tuteur
   if (canUseAzureStt()) startAzureRecognition();
   else startBrowserRecognition();
