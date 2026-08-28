@@ -613,14 +613,17 @@ function openSettings() {
 // =========================================================
 //  Choix de la leçon
 // =========================================================
-$("levelSelect").addEventListener("change", (e) => (state.level = e.target.value));
-$("personaSelect").addEventListener("change", (e) => {
-  state.persona = e.target.value;
-  // Le Parisien snob a besoin de SA voix précise (Marc, seule à supporter le
-  // style "disgusted" utilisé pour son ton blasé) : on la force à chaque
-  // fois qu'on choisit ce personnage, contrairement à la règle générale
-  // ci-dessous qui se contente de "une voix du bon genre".
-  if (state.persona === "parisien" && azureReady()) {
+// Choisit automatiquement une voix adaptée au personnage actuel, selon 3
+// règles dans cet ordre : le Parisien snob impose Marc (seul à savoir jouer
+// son ton méprisant), le tuteur classique impose une voix expressive
+// (Marc/Soleil, pour que son humeur dynamique s'entende), et les autres
+// personnages suivent juste le genre requis. Ne casse jamais un choix déjà
+// cohérent (ex : reste sur Éloïse pour un autre personnage féminin, ou sur
+// Marc/Soleil si déjà là pour le tuteur classique). Appelée au changement de
+// personnage ET au chargement de la page, pour s'appliquer par défaut.
+function applyPersonaVoice() {
+  if (!azureReady()) return;
+  if (state.persona === "parisien") {
     const marc = AZURE_VOICES.find((v) => v.id.includes("Marc"));
     if (marc && selectedVoiceName !== marc.id) {
       selectedVoiceName = marc.id;
@@ -629,12 +632,20 @@ $("personaSelect").addEventListener("change", (e) => {
     }
     return;
   }
-  // La voix suit automatiquement le genre du personnage historique choisi,
-  // sauf si la voix actuelle correspond déjà à ce genre (on ne casse pas un
-  // choix déjà cohérent, ex : rester sur Éloïse plutôt que forcer Vivienne
-  // pour un autre personnage féminin).
+  if (state.persona === "tuteur") {
+    if (voiceSupportsStyles(selectedVoiceName)) return;
+    const preferredGender = currentVoiceGender() || "m";
+    const expressive = AZURE_VOICES.find((v) => voiceSupportsStyles(v.id) && v.gender === preferredGender)
+      || AZURE_VOICES.find((v) => voiceSupportsStyles(v.id));
+    if (expressive) {
+      selectedVoiceName = expressive.id;
+      localStorage.setItem("voiceNameV2", selectedVoiceName);
+      loadVoices();
+    }
+    return;
+  }
   const requiredGender = PERSONA_GENDER[state.persona];
-  if (requiredGender && azureReady() && currentVoiceGender() !== requiredGender) {
+  if (requiredGender && currentVoiceGender() !== requiredGender) {
     const match = AZURE_VOICES.find((v) => v.gender === requiredGender);
     if (match) {
       selectedVoiceName = match.id;
@@ -642,6 +653,12 @@ $("personaSelect").addEventListener("change", (e) => {
       loadVoices();
     }
   }
+}
+
+$("levelSelect").addEventListener("change", (e) => (state.level = e.target.value));
+$("personaSelect").addEventListener("change", (e) => {
+  state.persona = e.target.value;
+  applyPersonaVoice();
 });
 $("modeSelect").addEventListener("change", (e) => {
   state.mode = e.target.value;
@@ -685,8 +702,21 @@ const AZURE_VOICES = [
   { id: "fr-FR-DeniseNeural", label: "Denise (femme, naturelle)", gender: "f" },
   { id: "fr-FR-HenriNeural", label: "Henri (homme, naturel)", gender: "m" },
   { id: "fr-FR-EloiseNeural", label: "Éloïse (femme, douce)", gender: "f" },
-  { id: "fr-FR-Marc:MAI-Voice-2-Flash", label: "Marc (homme, expressif, snob 🙄)", gender: "m" },
+  { id: "fr-FR-Marc:MAI-Voice-2-Flash", label: "Marc (homme, très expressif)", gender: "m" },
+  { id: "fr-FR-Soleil:MAI-Voice-2-Flash", label: "Soleil (femme, très expressive)", gender: "f" },
 ];
+
+// Sous-ensemble des styles Azure disponibles sur Marc/Soleil (voir liste
+// complète dans le catalogue Azure), filtré aux humeurs adaptées à un
+// tuteur bienveillant. "disgusted" est volontairement exclu d'ici : réservé
+// au personnage du Parisien snob, jamais choisi dynamiquement.
+const VALID_MOODS = [
+  "happy", "joyful", "excited", "hopeful", "surprised",
+  "sad", "regretful", "determined", "softvoice", "confused",
+];
+function voiceSupportsStyles(voiceName) {
+  return /marc|soleil/i.test(voiceName || "");
+}
 
 function azureReady() {
   return !!(state.azureKey && state.azureRegion);
@@ -824,7 +854,7 @@ function splitSentences(text) {
 }
 
 // Synthétise une seule phrase et renvoie le blob audio, sans la jouer.
-async function fetchAzureAudioBlob(sentence, voiceName) {
+async function fetchAzureAudioBlob(sentence, voiceName, mood) {
   // Le Parisien snob parle plus lentement et avec un ton méprisant
   // ("disgusted", seul style dispo qui s'en approche), pour l'effet blasé.
   // Azure ignore un style non supporté par la voix sans erreur, donc ce
@@ -833,7 +863,9 @@ async function fetchAzureAudioBlob(sentence, voiceName) {
   const isParisianSnob = state.persona === "parisien";
   const ratePct = Math.round((voiceRate * (isParisianSnob ? 0.88 : 1) - 1) * 100);
   const rateAttr = ratePct >= 0 ? `+${ratePct}%` : `${ratePct}%`;
-  const ttsStyle = isParisianSnob ? "disgusted" : "chat";
+  // Humeur dynamique du tuteur classique (voir buildReplySystemPrompt) :
+  // n'a d'effet audible que sur une voix qui sait jouer des styles.
+  const ttsStyle = isParisianSnob ? "disgusted" : (mood && voiceSupportsStyles(voiceName) ? mood : "chat");
   // Les voix "Multilingual" (Vivienne, Rémy, Lucien) détectent
   // automatiquement la langue mot par mot. Un mot isolé qui existe aussi
   // en anglais (ex : "aspect") peut alors être prononcé avec un accent
@@ -876,7 +908,7 @@ function playAzureBlob(blob, token) {
   });
 }
 
-async function speakAzure(text, token) {
+async function speakAzure(text, token, mood) {
   // Figée une seule fois pour toute la réponse : si la voix sélectionnée
   // changeait entre deux phrases (ex : rechargement de la liste des voix
   // pendant la lecture), chaque phrase suivante aurait pu repartir avec
@@ -886,7 +918,7 @@ async function speakAzure(text, token) {
 
   // Une seule phrase : pas de gain à découper, chemin simple direct.
   if (sentences.length <= 1) {
-    const blob = await fetchAzureAudioBlob(text, voiceName);
+    const blob = await fetchAzureAudioBlob(text, voiceName, mood);
     if (token !== speakToken) return;
     await playAzureBlob(blob, token);
     return;
@@ -896,13 +928,13 @@ async function speakAzure(text, token) {
   // précédente joue, pour réduire le silence avant le début et entre les
   // phrases, sans le mécanisme de flux binaire (MediaSource) qui avait
   // cassé le son.
-  let nextBlobPromise = fetchAzureAudioBlob(sentences[0], voiceName);
+  let nextBlobPromise = fetchAzureAudioBlob(sentences[0], voiceName, mood);
   for (let i = 0; i < sentences.length; i++) {
     if (token !== speakToken) return;
     const blob = await nextBlobPromise;
     if (token !== speakToken) return;
     if (i + 1 < sentences.length) {
-      nextBlobPromise = fetchAzureAudioBlob(sentences[i + 1], voiceName);
+      nextBlobPromise = fetchAzureAudioBlob(sentences[i + 1], voiceName, mood);
     }
     await playAzureBlob(blob, token);
   }
@@ -934,13 +966,13 @@ function normalizeForSpeech(text) {
   return String(text || "").replace(/(\d+)\s*[-‑–—−]\s*(\d+)/g, "$1 à $2");
 }
 
-function speak(text) {
+function speak(text, mood) {
   const spoken = normalizeForSpeech(text);
   const token = ++speakToken;
   if (currentAzureAudio) { currentAzureAudio.pause(); currentAzureAudio = null; }
   if ("speechSynthesis" in window) speechSynthesis.cancel();
   if (azureReady()) {
-    speakAzure(spoken, token).catch((err) => {
+    speakAzure(spoken, token, mood).catch((err) => {
       if (token !== speakToken) return;   // supplanté entre-temps, inutile de basculer sur le navigateur
       console.warn("Azure TTS a échoué, repli sur la voix du navigateur :", err);
       speakBrowser(spoken);
@@ -1530,6 +1562,16 @@ Tu es aussi un professeur de français bienveillant, mais tu ne corriges JAMAIS 
     ? "\n- Tu es un homme : accorde TOUJOURS au masculin tout ce qui te concerne personnellement (adjectifs, participes passés), par exemple « je suis content », « je suis né », « je suis fatigué »."
     : "";
 
+  // Humeur dynamique de la voix, réservée au tuteur classique (les autres
+  // personnages ont un ton fixe défini par leur personnalité, ex : le
+  // Parisien snob reste toujours "disgusted"). Field optionnel dans le
+  // JSON : la synthèse vocale l'ignore silencieusement sur une voix qui ne
+  // sait pas jouer de style (voir voiceSupportsStyles).
+  const moodField = state.persona === "tuteur"
+    ? `,
+  "mood": "l'humeur qui correspond le mieux au TON de ta réponse (pas son contenu ni le niveau de langue), à choisir UNIQUEMENT parmi : neutral, ${VALID_MOODS.join(", ")}. Choisis \\"neutral\\" la plupart du temps : ne choisis une humeur marquée que quand le ton de ta réponse le justifie vraiment (une bonne nouvelle, une question surprenante de l'apprenant, un encouragement chaleureux, une petite déception...). Ne force jamais une émotion artificielle."`
+    : "";
+
   return `${intro}
 ${levelGuidance}
 Respecte STRICTEMENT ces repères de niveau à chaque réponse, aussi bien dans ton vocabulaire que dans la construction de tes phrases.
@@ -1545,7 +1587,7 @@ Règles :
 Tu DOIS répondre EXCLUSIVEMENT avec un objet JSON valide, sans aucun texte autour, avec cette forme exacte :
 {
   "userText": "la phrase de l'apprenant réécrite avec une ponctuation soignée : majuscule au début, virgules si besoin, et point ou point d'interrogation à la fin. Garde EXACTEMENT ses mots, ne corrige PAS la grammaire dans ce champ.",
-  "reply": "ta réponse orale en français, courte"
+  "reply": "ta réponse orale en français, courte"${moodField}
 }
 Ne mets rien d'autre que ce JSON.`;
 }
@@ -1747,7 +1789,11 @@ async function sendMessage(text, isSystemTrigger = false, fromVoice = false) {
     state.messages.push({ role: "assistant", content: raw || "…" });
     data.reply = fixInversionQuestions(data.reply);
     addBubble("tutor", data.reply);
-    speak(data.reply);
+    // Réservé au tuteur classique : un "mood" resté dans l'historique (si
+    // l'élève a changé de personnage en cours de route) ou halluciné par
+    // erreur ne doit jamais s'appliquer à un autre personnage.
+    const mood = state.persona === "tuteur" && VALID_MOODS.includes(data.mood) ? data.mood : null;
+    speak(data.reply, mood);
     setStatus(t("your_turn"));
   } catch (err) {
     console.error(err);
@@ -1846,7 +1892,7 @@ function parseJSON(raw, fallback) {
 }
 
 function parseTutorJSON(raw) {
-  return parseJSON(raw, { userText: null, reply: raw || "…", correction: null });
+  return parseJSON(raw, { userText: null, reply: raw || "…", correction: null, mood: null });
 }
 
 // =========================================================
@@ -2253,6 +2299,7 @@ let isBraveBrowser = false;
 // ---- Init ----
 applyTheme();
 document.getElementById("rateSelect").value = String(voiceRate);
+applyPersonaVoice();   // bascule sur une voix expressive par défaut pour le tuteur classique (humeur dynamique)
 applyLang();   // applique la langue (met aussi à jour l'indice moteur et le statut)
 renderVocabPanel();   // affiche le vocabulaire sauvegardé des sessions précédentes
 renderCorrectionsPanel();   // affiche les corrections sauvegardées des sessions précédentes
