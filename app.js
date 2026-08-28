@@ -42,6 +42,7 @@ const I18N = {
     lvl_beginner: "Débutant", lvl_intermediate: "Intermédiaire", lvl_upper_intermediate: "Intermédiaire avancé", lvl_advanced: "Avancé",
     label_persona: "Personnage",
     persona_tutor: "Tuteur classique",
+    persona_parisien: "Le Parisien snob",
     persona_group_writing: "Écriture", persona_group_painting: "Peinture", persona_group_music: "Musique",
     persona_group_science: "Science", persona_group_politics: "Politique", persona_group_sport: "Sport", persona_group_cinema: "Cinéma",
     label_mode: "Mode",
@@ -140,6 +141,7 @@ const I18N = {
     lvl_beginner: "Beginner", lvl_intermediate: "Intermediate", lvl_upper_intermediate: "Upper Intermediate", lvl_advanced: "Advanced",
     label_persona: "Character",
     persona_tutor: "Classic tutor",
+    persona_parisien: "The snobby Parisian",
     persona_group_writing: "Writer", persona_group_painting: "Painter", persona_group_music: "Music",
     persona_group_science: "Science", persona_group_politics: "Politics", persona_group_sport: "Sport", persona_group_cinema: "Cinema",
     label_mode: "Mode",
@@ -238,6 +240,7 @@ const I18N = {
     lvl_beginner: "Principiante", lvl_intermediate: "Intermedio", lvl_upper_intermediate: "Intermedio avanzado", lvl_advanced: "Avanzado",
     label_persona: "Personaje",
     persona_tutor: "Tutor clásico",
+    persona_parisien: "El parisino esnob",
     persona_group_writing: "Escritor", persona_group_painting: "Pintor", persona_group_music: "Música",
     persona_group_science: "Ciencia", persona_group_politics: "Política", persona_group_sport: "Deporte", persona_group_cinema: "Cine",
     label_mode: "Modo",
@@ -336,6 +339,7 @@ const I18N = {
     lvl_beginner: "Anfänger", lvl_intermediate: "Mittelstufe", lvl_upper_intermediate: "Obere Mittelstufe", lvl_advanced: "Fortgeschritten",
     label_persona: "Charakter",
     persona_tutor: "Klassischer Tutor",
+    persona_parisien: "Der versnobte Pariser",
     persona_group_writing: "Schriftsteller", persona_group_painting: "Maler", persona_group_music: "Musik",
     persona_group_science: "Wissenschaft", persona_group_politics: "Politik", persona_group_sport: "Sport", persona_group_cinema: "Kino",
     label_mode: "Modus",
@@ -434,6 +438,7 @@ const I18N = {
     lvl_beginner: "Iniciante", lvl_intermediate: "Intermediário", lvl_upper_intermediate: "Intermediário avançado", lvl_advanced: "Avançado",
     label_persona: "Personagem",
     persona_tutor: "Tutor clássico",
+    persona_parisien: "O parisiense esnobe",
     persona_group_writing: "Escritor", persona_group_painting: "Pintor", persona_group_music: "Música",
     persona_group_science: "Ciência", persona_group_politics: "Política", persona_group_sport: "Esporte", persona_group_cinema: "Cinema",
     label_mode: "Modo",
@@ -611,6 +616,19 @@ function openSettings() {
 $("levelSelect").addEventListener("change", (e) => (state.level = e.target.value));
 $("personaSelect").addEventListener("change", (e) => {
   state.persona = e.target.value;
+  // Le Parisien snob a besoin de SA voix précise (Marc, seule à supporter le
+  // style "disgusted" utilisé pour son ton blasé) : on la force à chaque
+  // fois qu'on choisit ce personnage, contrairement à la règle générale
+  // ci-dessous qui se contente de "une voix du bon genre".
+  if (state.persona === "parisien" && azureReady()) {
+    const marc = AZURE_VOICES.find((v) => v.id.includes("Marc"));
+    if (marc && selectedVoiceName !== marc.id) {
+      selectedVoiceName = marc.id;
+      localStorage.setItem("voiceNameV2", selectedVoiceName);
+      loadVoices();
+    }
+    return;
+  }
   // La voix suit automatiquement le genre du personnage historique choisi,
   // sauf si la voix actuelle correspond déjà à ce genre (on ne casse pas un
   // choix déjà cohérent, ex : rester sur Éloïse plutôt que forcer Vivienne
@@ -667,6 +685,7 @@ const AZURE_VOICES = [
   { id: "fr-FR-DeniseNeural", label: "Denise (femme, naturelle)", gender: "f" },
   { id: "fr-FR-HenriNeural", label: "Henri (homme, naturel)", gender: "m" },
   { id: "fr-FR-EloiseNeural", label: "Éloïse (femme, douce)", gender: "f" },
+  { id: "fr-FR-Marc:MAI-Voice-2-Flash", label: "Marc (homme, expressif, snob 🙄)", gender: "m" },
 ];
 
 function azureReady() {
@@ -806,8 +825,15 @@ function splitSentences(text) {
 
 // Synthétise une seule phrase et renvoie le blob audio, sans la jouer.
 async function fetchAzureAudioBlob(sentence, voiceName) {
-  const ratePct = Math.round((voiceRate - 1) * 100);
+  // Le Parisien snob parle plus lentement et avec un ton méprisant
+  // ("disgusted", seul style dispo qui s'en approche), pour l'effet blasé.
+  // Azure ignore un style non supporté par la voix sans erreur, donc ce
+  // réglage reste sans danger si l'élève garde ce personnage en changeant
+  // manuellement de voix.
+  const isParisianSnob = state.persona === "parisien";
+  const ratePct = Math.round((voiceRate * (isParisianSnob ? 0.88 : 1) - 1) * 100);
   const rateAttr = ratePct >= 0 ? `+${ratePct}%` : `${ratePct}%`;
+  const ttsStyle = isParisianSnob ? "disgusted" : "chat";
   // Les voix "Multilingual" (Vivienne, Rémy, Lucien) détectent
   // automatiquement la langue mot par mot. Un mot isolé qui existe aussi
   // en anglais (ex : "aspect") peut alors être prononcé avec un accent
@@ -819,7 +845,7 @@ async function fetchAzureAudioBlob(sentence, voiceName) {
   // Style "chat" : ton conversationnel plus naturel (moins plat, surtout
   // sur les questions) que la lecture neutre par défaut. Si la voix ne le
   // supporte pas, Azure l'ignore simplement sans erreur.
-  const ssml = `<speak version="1.0" xml:lang="fr-FR" xmlns:mstts="https://www.w3.org/2001/mstts"><voice name="${voiceName}"><mstts:express-as style="chat"><prosody rate="${rateAttr}">${spoken}</prosody></mstts:express-as></voice></speak>`;
+  const ssml = `<speak version="1.0" xml:lang="fr-FR" xmlns:mstts="https://www.w3.org/2001/mstts"><voice name="${voiceName}"><mstts:express-as style="${ttsStyle}"><prosody rate="${rateAttr}">${spoken}</prosody></mstts:express-as></voice></speak>`;
 
   const res = await fetch(`https://${state.azureRegion}.tts.speech.microsoft.com/cognitiveservices/v1`, {
     method: "POST",
@@ -1430,6 +1456,10 @@ const personas = {
     "et ton entrée à l'Académie française en 2008, puis ton entrée au Panthéon en 2018, aux côtés de ton mari Antoine, pour l'ensemble de ton engagement politique et humain. " +
     "Tu disais que la loi sur l'avortement était nécessaire mais que tu ne l'avais jamais votée « de gaîté de cœur », et tu as consacré une grande partie de ta vie à la mémoire de la Shoah. " +
     "Tu es droite, courageuse, déterminée et directe, capable de tenir tête à l'hostilité, et profondément marquée par ce que tu as vécu et vu pendant la guerre.",
+  parisien:
+    "Tu incarnes un Parisien pur jus, snob et blasé, persuadé que Paris est le centre du monde et que tout le reste manque cruellement de raffinement : la province, les touristes, la nourriture ailleurs, les files d'attente, le tourisme de masse... tout t'ennuie profondément ou t'exaspère un peu, sauf peut-être un bon café en terrasse ou une remarque bien sentie. " +
+    "Tu soupires facilement, tu lèves les yeux au ciel, tu as un avis tranché et définitif sur (presque) tout : la mode, la gastronomie, l'art, les autres quartiers de Paris que tu juges déjà inférieurs au tien. Tu ne rates jamais une occasion de placer une remarque piquante ou un trait d'humour cinglant sur un sujet de conversation. " +
+    "IMPORTANT : ton dédain porte UNIQUEMENT sur des sujets généraux (la nourriture, la météo, les tendances, la vie moderne...), JAMAIS sur l'apprenant lui-même ni sur son niveau de français : tu ne te moques jamais de lui, tu restes même secrètement bienveillant derrière ta façade blasée. C'est un personnage comique et exagéré, jamais une vraie méchanceté ni de la condescendance envers la personne en face de toi.",
 };
 
 // Genre réel de chaque personnage historique, pour que l'accord grammatical
@@ -1439,7 +1469,7 @@ const personas = {
 const PERSONA_GENDER = {
   hugo: "m", vangogh: "m", stromae: "m",
   curie: "f", napoleon: "m", zidane: "m", guetta: "m", bardot: "f",
-  louis16: "m", veil: "f",
+  louis16: "m", veil: "f", parisien: "m",
 };
 
 // Repères du CECRL (cadre européen commun de référence pour les langues) :
