@@ -109,7 +109,7 @@ const I18N = {
     status_listening: "Je t'écoute...",
     mic_denied: "Micro refusé. Autorise le micro ou écris ta réponse.",
     mic_problem: "Souci micro. Tu peux écrire ta réponse.",
-    need_key: "Ajoute ta clé API pour commencer.",
+    need_key: "Connecte-toi pour commencer.",
     preparing: "Le tuteur prépare la leçon...",
     thinking: "Le tuteur réfléchit...",
     your_turn: "À toi. Clique sur le micro ou écris.",
@@ -125,7 +125,7 @@ const I18N = {
     vocab_clear: "Vider",
     voice_default: "Voix par défaut du navigateur",
     grammar_noun_f: "n.f.", grammar_noun_m: "n.m.", grammar_infinitive_prefix: "inf. :",
-    hint_engine: "Moteur", hint_key_ok: "clé OK ✅", hint_key_missing: "clé manquante ⚠️",
+    hint_engine: "Moteur", hint_key_ok: "connecté ✅", hint_key_missing: "non connecté ⚠️",
     hint_voice: "Voix", hint_mic_ok: "micro dispo 🎤", hint_mic_no: "micro indispo (utilise le texte)",
     hint_mic_ios: "micro indispo sur iPhone/iPad (utilise le texte)",
     hint_mic_brave: "micro indispo sur Brave ⚠️",
@@ -239,7 +239,7 @@ const I18N = {
     status_listening: "I'm listening...",
     mic_denied: "Microphone denied. Allow the mic or type your answer.",
     mic_problem: "Mic problem. You can type your answer.",
-    need_key: "Add your API key to start.",
+    need_key: "Sign in to start.",
     preparing: "The tutor is preparing the lesson...",
     thinking: "The tutor is thinking...",
     your_turn: "Your turn. Click the mic or type.",
@@ -255,7 +255,7 @@ const I18N = {
     vocab_clear: "Clear",
     voice_default: "Browser default voice",
     grammar_noun_f: "f.", grammar_noun_m: "m.", grammar_infinitive_prefix: "inf.:",
-    hint_engine: "Engine", hint_key_ok: "key OK ✅", hint_key_missing: "key missing ⚠️",
+    hint_engine: "Engine", hint_key_ok: "signed in ✅", hint_key_missing: "not signed in ⚠️",
     hint_voice: "Voice", hint_mic_ok: "mic ready 🎤", hint_mic_no: "mic unavailable (type instead)",
     hint_mic_ios: "mic unavailable on iPhone/iPad (type instead)",
     hint_mic_brave: "mic unavailable on Brave ⚠️",
@@ -369,7 +369,7 @@ const I18N = {
     status_listening: "Te escucho...",
     mic_denied: "Micrófono denegado. Permite el micrófono o escribe tu respuesta.",
     mic_problem: "Problema con el micrófono. Puedes escribir tu respuesta.",
-    need_key: "Añade tu clave API para empezar.",
+    need_key: "Inicia sesión para empezar.",
     preparing: "El tutor está preparando la lección...",
     thinking: "El tutor está pensando...",
     your_turn: "Tu turno. Haz clic en el micrófono o escribe.",
@@ -385,7 +385,7 @@ const I18N = {
     vocab_clear: "Borrar",
     voice_default: "Voz predeterminada del navegador",
     grammar_noun_f: "f.", grammar_noun_m: "m.", grammar_infinitive_prefix: "inf.:",
-    hint_engine: "Motor", hint_key_ok: "clave OK ✅", hint_key_missing: "clave faltante ⚠️",
+    hint_engine: "Motor", hint_key_ok: "conectado ✅", hint_key_missing: "no conectado ⚠️",
     hint_voice: "Voz", hint_mic_ok: "micrófono listo 🎤", hint_mic_no: "micrófono no disponible (usa el texto)",
     hint_mic_ios: "micrófono no disponible en iPhone/iPad (usa el texto)",
     hint_mic_brave: "micrófono no disponible en Brave ⚠️",
@@ -499,7 +499,7 @@ const I18N = {
     status_listening: "Ich höre zu...",
     mic_denied: "Mikrofon abgelehnt. Erlaube das Mikrofon oder schreibe deine Antwort.",
     mic_problem: "Mikrofonproblem. Du kannst deine Antwort schreiben.",
-    need_key: "Füge deinen API-Schlüssel hinzu, um zu starten.",
+    need_key: "Melde dich an, um zu beginnen.",
     preparing: "Der Tutor bereitet die Lektion vor...",
     thinking: "Der Tutor denkt nach...",
     your_turn: "Du bist dran. Klicke auf das Mikrofon oder schreibe.",
@@ -515,7 +515,7 @@ const I18N = {
     vocab_clear: "Leeren",
     voice_default: "Standardstimme des Browsers",
     grammar_noun_f: "f.", grammar_noun_m: "m.", grammar_infinitive_prefix: "Inf.:",
-    hint_engine: "Engine", hint_key_ok: "Schlüssel OK ✅", hint_key_missing: "Schlüssel fehlt ⚠️",
+    hint_engine: "Engine", hint_key_ok: "angemeldet ✅", hint_key_missing: "nicht angemeldet ⚠️",
     hint_voice: "Stimme", hint_mic_ok: "Mikrofon bereit 🎤", hint_mic_no: "Mikrofon nicht verfügbar (nutze den Text)",
     hint_mic_ios: "Mikrofon auf iPhone/iPad nicht verfügbar (nutze den Text)",
     hint_mic_brave: "Mikrofon auf Brave nicht verfügbar ⚠️",
@@ -629,7 +629,7 @@ const I18N = {
     status_listening: "Estou ouvindo...",
     mic_denied: "Microfone recusado. Permita o microfone ou escreva sua resposta.",
     mic_problem: "Problema com o microfone. Você pode escrever sua resposta.",
-    need_key: "Adicione sua chave API para começar.",
+    need_key: "Entre para começar.",
     preparing: "O tutor está preparando a lição...",
     thinking: "O tutor está pensando...",
     your_turn: "Sua vez. Clique no microfone ou escreva.",
@@ -645,7 +645,7 @@ const I18N = {
     vocab_clear: "Limpar",
     voice_default: "Voz padrão do navegador",
     grammar_noun_f: "f.", grammar_noun_m: "m.", grammar_infinitive_prefix: "inf.:",
-    hint_engine: "Motor", hint_key_ok: "chave OK ✅", hint_key_missing: "chave faltando ⚠️",
+    hint_engine: "Motor", hint_key_ok: "conectado ✅", hint_key_missing: "não conectado ⚠️",
     hint_voice: "Voz", hint_mic_ok: "microfone pronto 🎤", hint_mic_no: "microfone indisponível (use o texto)",
     hint_mic_ios: "microfone indisponível em iPhone/iPad (use o texto)",
     hint_mic_brave: "microfone indisponível no Brave ⚠️",
@@ -860,14 +860,26 @@ $("signOutBtn").addEventListener("click", async () => {
   $("authModal").hidden = true;
 });
 
+// Session courante, tenue à jour en continu : les appels IA (ai-chat) sont
+// gardés par la connexion Supabase, plus par la présence d'une clé API
+// collée à la main, donc plusieurs endroits du code doivent savoir si
+// l'élève est connecté sans refaire un appel réseau à chaque fois.
+let currentSession = null;
+supabaseClient.auth.getSession().then(({ data: { session } }) => {
+  currentSession = session;
+  refreshEngineHint();
+});
+
 // Supabase renvoie l'élève sur l'appli avec un jeton spécial après un clic
 // sur le lien "mot de passe oublié" : cet évènement ouvre directement la vue
 // de saisie du nouveau mot de passe, plutôt que l'écran de connexion normal.
-supabaseClient.auth.onAuthStateChange((event) => {
+supabaseClient.auth.onAuthStateChange((event, session) => {
+  currentSession = session;
   if (event === "PASSWORD_RECOVERY") {
     openAuthModal();
     showAuthView("authResetView");
   }
+  refreshEngineHint();
 });
 
 // =========================================================
@@ -1666,8 +1678,9 @@ $("resetBtn").addEventListener("click", () => {
 });
 
 async function startLesson() {
-  if (!state.apiKey) {
-    openSettings();
+  if (!currentSession) {
+    openAuthModal();
+    showAuthView("authSignInView");
     setStatus(t("need_key"));
     return;
   }
@@ -1991,7 +2004,7 @@ Ne mets rien d'autre que ce JSON.`;
 
 async function lookupWord(word, sentenceContext, spanEl) {
   const cleanWord = (word || "").trim();
-  if (!cleanWord || !state.apiKey) return;
+  if (!cleanWord || !currentSession) return;
   speak(cleanWord);   // prononce le mot cliqué, en plus de sa traduction
   spanEl.classList.add("looking-up");
   try {
@@ -2047,7 +2060,7 @@ function makeWordsClickable(text, container) {
 async function sendMessage(text, isSystemTrigger = false, fromVoice = false) {
   if (state.busy) return;
   if (!state.started) { setStatus(t("start_first")); return; }
-  if (!state.apiKey) { openSettings(); return; }
+  if (!currentSession) { openAuthModal(); showAuthView("authSignInView"); return; }
 
   const userBubble = isSystemTrigger ? null : addBubble("user", tidyTranscript(text));
   state.messages.push({ role: "user", content: text });
@@ -2100,52 +2113,23 @@ async function sendMessage(text, isSystemTrigger = false, fromVoice = false) {
 // Chaque fonction accepte un system prompt et une liste de messages,
 // pour pouvoir servir aussi bien la conversation principale que de
 // petites requêtes ponctuelles (ex : recherche d'un mot cliqué).
-// Constante unique pour les 4 fournisseurs : évite qu'une future
-// augmentation de cette limite en oublie un (déjà arrivé avec Gemini).
-const MAX_TOKENS = 2000;
-
-// Sonnet pour la conversation principale (qualité maximale attendue) ;
-// Haiku, nettement moins cher et plus rapide, pour les tâches annexes
-// bien cadrées (correction d'une phrase, recherche d'un mot) où sa
+// L'appli n'appelle plus Claude directement : elle passe par la fonction
+// serveur "ai-chat" (clé Claude cachée côté Supabase). Seuls ces deux
+// alias sont envoyés, jamais un vrai nom de modèle : la fonction serveur
+// fait la traduction, un élève ne peut donc jamais forcer un modèle plus
+// cher que prévu. Sonnet pour la conversation principale (qualité maximale
+// attendue) ; Haiku, nettement moins cher et plus rapide, pour les tâches
+// annexes bien cadrées (correction d'une phrase, recherche d'un mot) où sa
 // qualité s'est révélée identique à celle de Sonnet lors de tests comparatifs.
-const MODEL_MAIN = "claude-sonnet-5";
-const MODEL_FAST = "claude-haiku-4-5-20251001";
+const MODEL_MAIN = "main";
+const MODEL_FAST = "fast";
 
 async function callAnthropic(systemPrompt, messages, model = MODEL_MAIN) {
-  // Cache de prompt Anthropic : le système (identique à chaque message tant
-  // que le niveau/personnage/mode ne changent pas) et l'historique déjà
-  // envoyé sont mis en cache côté Anthropic, donc refacturés ~10x moins
-  // cher au lieu du plein tarif à chaque nouveau message de la leçon.
-  const cachedMessages = messages.map((m, i) => ({
-    role: m.role,
-    content: [{
-      type: "text",
-      text: m.content,
-      ...(i === messages.length - 1 ? { cache_control: { type: "ephemeral" } } : {}),
-    }],
-  }));
-
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      "x-api-key": state.apiKey,
-      "anthropic-version": "2023-06-01",
-      "anthropic-dangerous-direct-browser-access": "true",
-    },
-    body: JSON.stringify({
-      model,
-      max_tokens: MAX_TOKENS,
-      system: [{ type: "text", text: systemPrompt, cache_control: { type: "ephemeral" } }],
-      messages: cachedMessages,
-    }),
+  const { data, error } = await supabaseClient.functions.invoke("ai-chat", {
+    body: { systemPrompt, messages, model },
   });
-  if (!res.ok) throw new Error(await readError(res));
-  const json = await res.json();
-  // Le premier bloc de "content" n'est pas toujours le texte (il peut y
-  // avoir un bloc de réflexion avant) : on cherche le bloc de type "text".
-  const textBlock = (json.content || []).find((b) => b.type === "text");
-  return textBlock?.text || "";
+  if (error) throw new Error(await readFunctionError(error));
+  return data?.text || "";
 }
 
 // Point d'entrée unique pour tous les appels IA (conversation ou recherche
@@ -2157,10 +2141,19 @@ async function callProvider(systemPrompt, messages, model) {
   return callAnthropic(systemPrompt, messages, model);
 }
 
-async function readError(res) {
-  let detail = "";
-  try { detail = JSON.stringify((await res.json()).error || {}); } catch (_) {}
-  return `${res.status} ${detail}`;
+// supabase-js n'inclut pas automatiquement le message JSON qu'une Edge
+// Function renvoie sur une erreur (juste un statut HTTP par défaut) : on va
+// le rechercher dans la réponse brute encore disponible sur l'erreur, pour
+// garder des messages utiles (ex : "Claude 429 ...") plutôt qu'un générique
+// "non-2xx status code".
+async function readFunctionError(error) {
+  try {
+    if (error?.context?.json) {
+      const body = await error.context.json();
+      if (body?.error) return body.error;
+    }
+  } catch (_) { /* on garde le message générique ci-dessous */ }
+  return error?.message || String(error);
 }
 
 // Parse une réponse JSON de l'IA avec tolérance (au cas où du texte
@@ -2555,7 +2548,7 @@ function setStatus(msg) { statusLine.textContent = msg; }
 // =========================================================
 function refreshEngineHint() {
   const engine = "Claude";
-  const key = state.apiKey ? t("hint_key_ok") : t("hint_key_missing");
+  const key = currentSession ? t("hint_key_ok") : t("hint_key_missing");
   const voice = canUseAzureStt() ? t("hint_mic_ok")
     : !SR ? (isIOSDevice ? t("hint_mic_ios") : t("hint_mic_no"))
     : isBraveBrowser ? t("hint_mic_brave") : t("hint_mic_ok");
