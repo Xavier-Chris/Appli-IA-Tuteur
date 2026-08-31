@@ -350,6 +350,8 @@ select:focus, input:focus { border-color: var(--primary); }
 .summary-list li { font-size: 14px; }
 .summary-checkbox { display: flex; align-items: center; gap: 8px; margin-top: 16px; font-size: 14px; color: var(--muted); cursor: pointer; }
 .modal-actions { margin-top: 16px; display: flex; justify-content: flex-end; }
+.auth-error { color: var(--accent); margin: 0 0 12px; }
+.auth-success { color: var(--good); margin: 0 0 12px; }
 
 /* ---- Responsive ---- */
 @media (max-width: 900px) {

@@ -22,6 +22,7 @@
         <option value="pt">PT</option>
       </select>
       <button id="themeBtn" class="icon-btn" data-i18n-title="theme_title" title="Basculer clair / sombre">🌙</button>
+      <button id="authBtn" class="icon-btn" data-i18n-title="account_title" title="Compte">👤</button>
       <button id="settingsBtn" class="icon-btn" data-i18n-title="settings_title" title="Réglages">⚙️</button>
     </div>
   </header>
@@ -155,6 +156,80 @@
     </aside>
   </main>
 
+  <!-- Fenêtre de compte (connexion / inscription / mot de passe) -->
+  <div id="authModal" class="modal" hidden>
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2 id="authTitle">Connexion</h2>
+        <button id="closeAuth" class="icon-btn">✕</button>
+      </div>
+
+      <p id="authError" class="small auth-error" hidden></p>
+      <p id="authSuccess" class="small auth-success" hidden></p>
+
+      <div id="authSignInView">
+        <label class="field">
+          <span data-i18n="label_email">Email</span>
+          <input id="signInEmail" type="email" autocomplete="email" />
+        </label>
+        <label class="field">
+          <span data-i18n="label_password">Mot de passe</span>
+          <input id="signInPassword" type="password" autocomplete="current-password" />
+        </label>
+        <div class="modal-actions">
+          <button id="signInBtn" class="btn btn-primary" data-i18n="btn_signin">Se connecter</button>
+        </div>
+        <p class="small"><button type="button" class="link-btn" id="showForgotBtn" data-i18n="auth_forgot_link">Mot de passe oublié ?</button></p>
+        <p class="small"><span data-i18n="auth_no_account">Pas encore de compte ?</span> <button type="button" class="link-btn" id="showSignUpBtn" data-i18n="auth_signup_link">Créer un compte</button></p>
+      </div>
+
+      <div id="authSignUpView" hidden>
+        <label class="field">
+          <span data-i18n="label_email">Email</span>
+          <input id="signUpEmail" type="email" autocomplete="email" />
+        </label>
+        <label class="field">
+          <span data-i18n="label_password">Mot de passe</span>
+          <input id="signUpPassword" type="password" autocomplete="new-password" />
+        </label>
+        <div class="modal-actions">
+          <button id="signUpBtn" class="btn btn-primary" data-i18n="btn_signup">Créer mon compte</button>
+        </div>
+        <p class="small"><span data-i18n="auth_have_account">Déjà un compte ?</span> <button type="button" class="link-btn" id="showSignInFromSignUpBtn" data-i18n="auth_signin_link">Se connecter</button></p>
+      </div>
+
+      <div id="authForgotView" hidden>
+        <p class="small muted" data-i18n="auth_forgot_note">Indique ton email, tu recevras un lien pour choisir un nouveau mot de passe.</p>
+        <label class="field">
+          <span data-i18n="label_email">Email</span>
+          <input id="forgotEmail" type="email" autocomplete="email" />
+        </label>
+        <div class="modal-actions">
+          <button id="forgotBtn" class="btn btn-primary" data-i18n="btn_send_reset">Envoyer le lien</button>
+        </div>
+        <p class="small"><button type="button" class="link-btn" id="showSignInFromForgotBtn" data-i18n="auth_signin_link">Se connecter</button></p>
+      </div>
+
+      <div id="authResetView" hidden>
+        <p class="small muted" data-i18n="auth_reset_note">Choisis ton nouveau mot de passe.</p>
+        <label class="field">
+          <span data-i18n="label_new_password">Nouveau mot de passe</span>
+          <input id="resetPassword" type="password" autocomplete="new-password" />
+        </label>
+        <div class="modal-actions">
+          <button id="resetPasswordBtn" class="btn btn-primary" data-i18n="btn_reset_password">Enregistrer le mot de passe</button>
+        </div>
+      </div>
+
+      <div id="authAccountView" hidden>
+        <p class="small" id="accountEmailLine"></p>
+        <div class="modal-actions">
+          <button id="signOutBtn" class="btn btn-ghost" data-i18n="btn_signout">Se déconnecter</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Fenêtre des réglages -->
   <div id="settingsModal" class="modal" hidden>
     <div class="modal-card">
@@ -224,6 +299,7 @@
 
   <script src="vendor/jspdf.umd.min.js"></script>
   <script src="vendor/azure-speech-sdk.min.js"></script>
+  <script src="vendor/supabase-js.min.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

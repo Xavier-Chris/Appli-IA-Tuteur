@@ -131,6 +131,37 @@ const I18N = {
     hint_mic_brave: "micro indispo sur Brave ⚠️",
     brave_warning: "⚠️ <strong>Tu utilises Brave</strong> : la reconnaissance vocale ne fonctionne pas dans ce navigateur (limitation volontaire de Brave, pas un bug de l'app). Utilise Chrome ou Edge pour parler au micro, ou écris tes réponses en attendant.",
     ios_warning: "⚠️ <strong>Tu es sur iPhone/iPad</strong> : le micro ne fonctionne dans aucun navigateur sur iOS (limitation du système, pas un bug de l'app). Écris tes réponses en attendant, ou utilise un ordinateur ou un appareil Android pour parler au micro.",
+    account_title: "Compte",
+    label_email: "Email",
+    label_password: "Mot de passe",
+    label_new_password: "Nouveau mot de passe",
+    btn_signin: "Se connecter",
+    btn_signup: "Créer mon compte",
+    btn_send_reset: "Envoyer le lien",
+    btn_reset_password: "Enregistrer le mot de passe",
+    btn_signout: "Se déconnecter",
+    auth_signin_h: "Connexion",
+    auth_signup_h: "Créer un compte",
+    auth_forgot_h: "Mot de passe oublié",
+    auth_reset_h: "Nouveau mot de passe",
+    auth_account_h: "Mon compte",
+    auth_forgot_link: "Mot de passe oublié ?",
+    auth_no_account: "Pas encore de compte ?",
+    auth_signup_link: "Créer un compte",
+    auth_have_account: "Déjà un compte ?",
+    auth_signin_link: "Se connecter",
+    auth_forgot_note: "Indique ton email, tu recevras un lien pour choisir un nouveau mot de passe.",
+    auth_reset_note: "Choisis ton nouveau mot de passe.",
+    auth_check_email: "Compte créé ! Vérifie ta boîte mail et clique sur le lien pour confirmer ton adresse, puis reviens te connecter.",
+    auth_reset_sent: "Email envoyé ! Vérifie ta boîte mail pour le lien de réinitialisation.",
+    auth_password_updated: "Mot de passe mis à jour !",
+    auth_err_missing: "Remplis tous les champs.",
+    auth_err_password_short: "Le mot de passe doit contenir au moins 6 caractères.",
+    auth_err_invalid_credentials: "Email ou mot de passe incorrect.",
+    auth_err_already_registered: "Un compte existe déjà avec cet email.",
+    auth_err_rate_limit: "Trop de tentatives, réessaie dans quelques minutes.",
+    auth_err_generic: "Une erreur est survenue. Réessaie.",
+    account_signed_in_as: "Connecté en tant que {email}",
   },
   en: {
     brand: "Your French Tutor",
@@ -230,6 +261,37 @@ const I18N = {
     hint_mic_brave: "mic unavailable on Brave ⚠️",
     brave_warning: "⚠️ <strong>You're using Brave</strong>: voice recognition doesn't work in this browser (a deliberate Brave limitation, not an app bug). Use Chrome or Edge to talk with the mic, or type your answers instead.",
     ios_warning: "⚠️ <strong>You're on iPhone/iPad</strong>: the mic doesn't work in any browser on iOS (a system limitation, not an app bug). Type your answers instead, or use a computer or Android device to talk with the mic.",
+    account_title: "Account",
+    label_email: "Email",
+    label_password: "Password",
+    label_new_password: "New password",
+    btn_signin: "Sign in",
+    btn_signup: "Create my account",
+    btn_send_reset: "Send the link",
+    btn_reset_password: "Save password",
+    btn_signout: "Sign out",
+    auth_signin_h: "Sign in",
+    auth_signup_h: "Create an account",
+    auth_forgot_h: "Forgot password",
+    auth_reset_h: "New password",
+    auth_account_h: "My account",
+    auth_forgot_link: "Forgot password?",
+    auth_no_account: "Don't have an account yet?",
+    auth_signup_link: "Create an account",
+    auth_have_account: "Already have an account?",
+    auth_signin_link: "Sign in",
+    auth_forgot_note: "Enter your email, you'll receive a link to choose a new password.",
+    auth_reset_note: "Choose your new password.",
+    auth_check_email: "Account created! Check your inbox and click the link to confirm your address, then come back to sign in.",
+    auth_reset_sent: "Email sent! Check your inbox for the reset link.",
+    auth_password_updated: "Password updated!",
+    auth_err_missing: "Fill in all fields.",
+    auth_err_password_short: "Password must be at least 6 characters.",
+    auth_err_invalid_credentials: "Incorrect email or password.",
+    auth_err_already_registered: "An account already exists with this email.",
+    auth_err_rate_limit: "Too many attempts, try again in a few minutes.",
+    auth_err_generic: "Something went wrong. Try again.",
+    account_signed_in_as: "Signed in as {email}",
   },
   es: {
     brand: "Your French Tutor",
@@ -329,6 +391,37 @@ const I18N = {
     hint_mic_brave: "micrófono no disponible en Brave ⚠️",
     brave_warning: "⚠️ <strong>Estás usando Brave</strong>: el reconocimiento de voz no funciona en este navegador (una limitación deliberada de Brave, no un error de la app). Usa Chrome o Edge para hablar por el micrófono, o escribe tus respuestas mientras tanto.",
     ios_warning: "⚠️ <strong>Estás en iPhone/iPad</strong>: el micrófono no funciona en ningún navegador en iOS (una limitación del sistema, no un error de la app). Escribe tus respuestas mientras tanto, o usa un ordenador o un dispositivo Android para hablar por el micrófono.",
+    account_title: "Cuenta",
+    label_email: "Correo electrónico",
+    label_password: "Contraseña",
+    label_new_password: "Nueva contraseña",
+    btn_signin: "Iniciar sesión",
+    btn_signup: "Crear mi cuenta",
+    btn_send_reset: "Enviar el enlace",
+    btn_reset_password: "Guardar contraseña",
+    btn_signout: "Cerrar sesión",
+    auth_signin_h: "Iniciar sesión",
+    auth_signup_h: "Crear una cuenta",
+    auth_forgot_h: "Contraseña olvidada",
+    auth_reset_h: "Nueva contraseña",
+    auth_account_h: "Mi cuenta",
+    auth_forgot_link: "¿Olvidaste tu contraseña?",
+    auth_no_account: "¿Aún no tienes cuenta?",
+    auth_signup_link: "Crear una cuenta",
+    auth_have_account: "¿Ya tienes una cuenta?",
+    auth_signin_link: "Iniciar sesión",
+    auth_forgot_note: "Indica tu correo, recibirás un enlace para elegir una nueva contraseña.",
+    auth_reset_note: "Elige tu nueva contraseña.",
+    auth_check_email: "¡Cuenta creada! Revisa tu correo y haz clic en el enlace para confirmar tu dirección, luego vuelve para iniciar sesión.",
+    auth_reset_sent: "¡Correo enviado! Revisa tu bandeja de entrada para el enlace de restablecimiento.",
+    auth_password_updated: "¡Contraseña actualizada!",
+    auth_err_missing: "Completa todos los campos.",
+    auth_err_password_short: "La contraseña debe tener al menos 6 caracteres.",
+    auth_err_invalid_credentials: "Correo o contraseña incorrectos.",
+    auth_err_already_registered: "Ya existe una cuenta con este correo.",
+    auth_err_rate_limit: "Demasiados intentos, inténtalo de nuevo en unos minutos.",
+    auth_err_generic: "Ocurrió un error. Inténtalo de nuevo.",
+    account_signed_in_as: "Conectado como {email}",
   },
   de: {
     brand: "Your French Tutor",
@@ -428,6 +521,37 @@ const I18N = {
     hint_mic_brave: "Mikrofon auf Brave nicht verfügbar ⚠️",
     brave_warning: "⚠️ <strong>Du nutzt Brave</strong>: Die Spracherkennung funktioniert in diesem Browser nicht (eine bewusste Einschränkung von Brave, kein App-Fehler). Nutze Chrome oder Edge, um mit dem Mikrofon zu sprechen, oder schreibe stattdessen deine Antworten.",
     ios_warning: "⚠️ <strong>Du bist auf iPhone/iPad</strong>: Das Mikrofon funktioniert in keinem Browser unter iOS (eine Systemeinschränkung, kein App-Fehler). Schreibe stattdessen deine Antworten, oder nutze einen Computer oder ein Android-Gerät, um mit dem Mikrofon zu sprechen.",
+    account_title: "Konto",
+    label_email: "E-Mail-Adresse",
+    label_password: "Passwort",
+    label_new_password: "Neues Passwort",
+    btn_signin: "Anmelden",
+    btn_signup: "Konto erstellen",
+    btn_send_reset: "Link senden",
+    btn_reset_password: "Passwort speichern",
+    btn_signout: "Abmelden",
+    auth_signin_h: "Anmelden",
+    auth_signup_h: "Konto erstellen",
+    auth_forgot_h: "Passwort vergessen",
+    auth_reset_h: "Neues Passwort",
+    auth_account_h: "Mein Konto",
+    auth_forgot_link: "Passwort vergessen?",
+    auth_no_account: "Noch kein Konto?",
+    auth_signup_link: "Konto erstellen",
+    auth_have_account: "Bereits ein Konto?",
+    auth_signin_link: "Anmelden",
+    auth_forgot_note: "Gib deine E-Mail-Adresse ein, du erhältst einen Link, um ein neues Passwort zu wählen.",
+    auth_reset_note: "Wähle dein neues Passwort.",
+    auth_check_email: "Konto erstellt! Überprüfe dein Postfach und klicke auf den Link, um deine Adresse zu bestätigen, dann komm zurück und melde dich an.",
+    auth_reset_sent: "E-Mail gesendet! Überprüfe dein Postfach für den Reset-Link.",
+    auth_password_updated: "Passwort aktualisiert!",
+    auth_err_missing: "Fülle alle Felder aus.",
+    auth_err_password_short: "Das Passwort muss mindestens 6 Zeichen haben.",
+    auth_err_invalid_credentials: "E-Mail oder Passwort falsch.",
+    auth_err_already_registered: "Es existiert bereits ein Konto mit dieser E-Mail.",
+    auth_err_rate_limit: "Zu viele Versuche, versuche es in ein paar Minuten erneut.",
+    auth_err_generic: "Etwas ist schiefgelaufen. Versuche es erneut.",
+    account_signed_in_as: "Angemeldet als {email}",
   },
   pt: {
     brand: "Your French Tutor",
@@ -527,6 +651,37 @@ const I18N = {
     hint_mic_brave: "microfone indisponível no Brave ⚠️",
     brave_warning: "⚠️ <strong>Você está usando o Brave</strong>: o reconhecimento de voz não funciona neste navegador (uma limitação deliberada do Brave, não é um erro do app). Use o Chrome ou o Edge para falar com o microfone, ou escreva suas respostas enquanto isso.",
     ios_warning: "⚠️ <strong>Você está no iPhone/iPad</strong>: o microfone não funciona em nenhum navegador no iOS (uma limitação do sistema, não um erro do app). Escreva suas respostas por enquanto, ou use um computador ou um aparelho Android para falar no microfone.",
+    account_title: "Conta",
+    label_email: "E-mail",
+    label_password: "Senha",
+    label_new_password: "Nova senha",
+    btn_signin: "Entrar",
+    btn_signup: "Criar minha conta",
+    btn_send_reset: "Enviar o link",
+    btn_reset_password: "Salvar senha",
+    btn_signout: "Sair",
+    auth_signin_h: "Entrar",
+    auth_signup_h: "Criar uma conta",
+    auth_forgot_h: "Esqueceu a senha",
+    auth_reset_h: "Nova senha",
+    auth_account_h: "Minha conta",
+    auth_forgot_link: "Esqueceu a senha?",
+    auth_no_account: "Ainda não tem uma conta?",
+    auth_signup_link: "Criar uma conta",
+    auth_have_account: "Já tem uma conta?",
+    auth_signin_link: "Entrar",
+    auth_forgot_note: "Informe seu e-mail, você receberá um link para escolher uma nova senha.",
+    auth_reset_note: "Escolha sua nova senha.",
+    auth_check_email: "Conta criada! Verifique sua caixa de entrada e clique no link para confirmar seu endereço, depois volte para entrar.",
+    auth_reset_sent: "E-mail enviado! Verifique sua caixa de entrada para o link de redefinição.",
+    auth_password_updated: "Senha atualizada!",
+    auth_err_missing: "Preencha todos os campos.",
+    auth_err_password_short: "A senha deve ter pelo menos 6 caracteres.",
+    auth_err_invalid_credentials: "E-mail ou senha incorretos.",
+    auth_err_already_registered: "Já existe uma conta com este e-mail.",
+    auth_err_rate_limit: "Muitas tentativas, tente novamente em alguns minutos.",
+    auth_err_generic: "Ocorreu um erro. Tente novamente.",
+    account_signed_in_as: "Conectado como {email}",
   },
 };
 
@@ -565,6 +720,10 @@ function applyLang() {
   // changement de langue, sinon leur texte reste figé dans l'ancienne langue.
   renderCorrectionsPanel();
   renderVocabPanel();
+  if (!$("authModal").hidden) {
+    const activeView = AUTH_VIEWS.find((id) => !$(id).hidden);
+    if (activeView) $("authTitle").textContent = t(AUTH_VIEW_TITLES[activeView]);
+  }
   if (!state.started) setStatus(micAvailable() ? t("status_ready") : isIOSDevice ? t("no_mic_ios") : t("no_mic"));
 }
 
@@ -585,6 +744,130 @@ $("themeBtn").addEventListener("click", () => {
   state.theme = state.theme === "dark" ? "light" : "dark";
   localStorage.setItem("theme", state.theme);
   applyTheme();
+});
+
+// =========================================================
+//  Compte élève (Supabase Auth)
+// =========================================================
+const SUPABASE_URL = "https://pmwuprmmdzbusnzacaan.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_jkBwKnc6XnfKtuzW7BHQfg_6n7JtoPn";
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const AUTH_VIEWS = ["authSignInView", "authSignUpView", "authForgotView", "authResetView", "authAccountView"];
+const AUTH_VIEW_TITLES = {
+  authSignInView: "auth_signin_h", authSignUpView: "auth_signup_h", authForgotView: "auth_forgot_h",
+  authResetView: "auth_reset_h", authAccountView: "auth_account_h",
+};
+
+function showAuthView(view) {
+  AUTH_VIEWS.forEach((id) => { $(id).hidden = id !== view; });
+  $("authTitle").textContent = t(AUTH_VIEW_TITLES[view]);
+  $("authError").hidden = true;
+  $("authSuccess").hidden = true;
+}
+
+function openAuthModal() {
+  $("authModal").hidden = false;
+}
+
+function showAccountView(session) {
+  $("accountEmailLine").textContent = t("account_signed_in_as").replace("{email}", session.user.email);
+  showAuthView("authAccountView");
+}
+
+function authShowError(msg) {
+  $("authError").textContent = msg;
+  $("authError").hidden = false;
+  $("authSuccess").hidden = true;
+}
+
+function authShowSuccess(msg) {
+  $("authSuccess").textContent = msg;
+  $("authSuccess").hidden = false;
+  $("authError").hidden = true;
+}
+
+// Traduit les messages d'erreur bruts de Supabase (toujours en anglais) vers
+// la langue de l'interface, pour les cas les plus courants.
+function translateAuthError(error) {
+  const msg = (error && error.message) || "";
+  if (/Invalid login credentials/i.test(msg)) return t("auth_err_invalid_credentials");
+  if (/already registered|already exists|User already registered/i.test(msg)) return t("auth_err_already_registered");
+  if (/rate limit/i.test(msg)) return t("auth_err_rate_limit");
+  return msg || t("auth_err_generic");
+}
+
+$("authBtn").addEventListener("click", async () => {
+  openAuthModal();
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (session) showAccountView(session);
+  else showAuthView("authSignInView");
+});
+$("closeAuth").addEventListener("click", () => ($("authModal").hidden = true));
+
+$("showForgotBtn").addEventListener("click", () => showAuthView("authForgotView"));
+$("showSignUpBtn").addEventListener("click", () => showAuthView("authSignUpView"));
+$("showSignInFromSignUpBtn").addEventListener("click", () => showAuthView("authSignInView"));
+$("showSignInFromForgotBtn").addEventListener("click", () => showAuthView("authSignInView"));
+
+$("signInBtn").addEventListener("click", async () => {
+  const email = $("signInEmail").value.trim();
+  const password = $("signInPassword").value;
+  if (!email || !password) return authShowError(t("auth_err_missing"));
+  $("signInBtn").disabled = true;
+  const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+  $("signInBtn").disabled = false;
+  if (error) return authShowError(translateAuthError(error));
+  showAccountView(data.session);
+});
+
+$("signUpBtn").addEventListener("click", async () => {
+  const email = $("signUpEmail").value.trim();
+  const password = $("signUpPassword").value;
+  if (!email || !password) return authShowError(t("auth_err_missing"));
+  if (password.length < 6) return authShowError(t("auth_err_password_short"));
+  $("signUpBtn").disabled = true;
+  const { error } = await supabaseClient.auth.signUp({ email, password });
+  $("signUpBtn").disabled = false;
+  if (error) return authShowError(translateAuthError(error));
+  authShowSuccess(t("auth_check_email"));
+});
+
+$("forgotBtn").addEventListener("click", async () => {
+  const email = $("forgotEmail").value.trim();
+  if (!email) return authShowError(t("auth_err_missing"));
+  $("forgotBtn").disabled = true;
+  const { error } = await supabaseClient.auth.resetPasswordForEmail(email, { redirectTo: window.location.href });
+  $("forgotBtn").disabled = false;
+  if (error) return authShowError(translateAuthError(error));
+  authShowSuccess(t("auth_reset_sent"));
+});
+
+$("resetPasswordBtn").addEventListener("click", async () => {
+  const password = $("resetPassword").value;
+  if (!password || password.length < 6) return authShowError(t("auth_err_password_short"));
+  $("resetPasswordBtn").disabled = true;
+  const { error } = await supabaseClient.auth.updateUser({ password });
+  $("resetPasswordBtn").disabled = false;
+  if (error) return authShowError(translateAuthError(error));
+  authShowSuccess(t("auth_password_updated"));
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (session) setTimeout(() => showAccountView(session), 1200);
+});
+
+$("signOutBtn").addEventListener("click", async () => {
+  await supabaseClient.auth.signOut();
+  $("authModal").hidden = true;
+});
+
+// Supabase renvoie l'élève sur l'appli avec un jeton spécial après un clic
+// sur le lien "mot de passe oublié" : cet évènement ouvre directement la vue
+// de saisie du nouveau mot de passe, plutôt que l'écran de connexion normal.
+supabaseClient.auth.onAuthStateChange((event) => {
+  if (event === "PASSWORD_RECOVERY") {
+    openAuthModal();
+    showAuthView("authResetView");
+  }
 });
 
 // =========================================================
