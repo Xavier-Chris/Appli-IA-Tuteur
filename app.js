@@ -868,6 +868,8 @@ let currentSession = null;
 supabaseClient.auth.getSession().then(({ data: { session } }) => {
   currentSession = session;
   refreshEngineHint();
+  loadVoices();
+  applyPersonaVoice();
 });
 
 // Supabase renvoie l'élève sur l'appli avec un jeton spécial après un clic
@@ -880,6 +882,8 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
     showAuthView("authResetView");
   }
   refreshEngineHint();
+  loadVoices();
+  applyPersonaVoice();
 });
 
 // =========================================================
@@ -1012,8 +1016,11 @@ function voiceSupportsStyles(voiceName) {
   return /marc|soleil/i.test(voiceName || "");
 }
 
+// La voix et le micro Azure passent maintenant par le serveur relais
+// (tts-proxy / stt-token) : ils sont donc débloqués dès que l'élève est
+// connecté, plus par la présence d'une clé Azure collée dans les réglages.
 function azureReady() {
-  return !!(state.azureKey && state.azureRegion);
+  return !!currentSession;
 }
 
 // Genre de la voix actuellement choisie (pour l'accord grammatical du
@@ -1180,17 +1187,12 @@ async function fetchAzureAudioBlob(sentence, voiceName, mood) {
     : `<prosody rate="${rateAttr}">${spoken}</prosody>`;
   const ssml = `<speak version="1.0" xml:lang="fr-FR" xmlns:mstts="https://www.w3.org/2001/mstts"><voice name="${voiceName}">${voiceInner}</voice></speak>`;
 
-  const res = await fetch(`https://${state.azureRegion}.tts.speech.microsoft.com/cognitiveservices/v1`, {
-    method: "POST",
-    headers: {
-      "Ocp-Apim-Subscription-Key": state.azureKey,
-      "Content-Type": "application/ssml+xml",
-      "X-Microsoft-OutputFormat": "audio-24khz-48kbitrate-mono-mp3",
-    },
-    body: ssml,
+  const { data, error } = await supabaseClient.functions.invoke("tts-proxy", {
+    body: { ssml },
+    responseType: "blob",
   });
-  if (!res.ok) throw new Error(`Azure TTS ${res.status}`);
-  return res.blob();
+  if (error) throw new Error(await readFunctionError(error));
+  return data;
 }
 
 // Joue un blob déjà synthétisé jusqu'à la fin (nécessaire pour enchaîner
@@ -1316,11 +1318,8 @@ let azureFinalText = "";
 // repli définitif et silencieux sur le moteur du navigateur.
 let azureSttBroken = false;
 
-function hasAzureKey() {
-  return !!(state.azureKey && state.azureRegion);
-}
 function canUseAzureStt() {
-  return hasAzureKey() && !azureSttBroken && !!window.SpeechSDK;
+  return !!currentSession && !azureSttBroken && !!window.SpeechSDK;
 }
 function micAvailable() {
   return canUseAzureStt() || !!SR;
@@ -1434,8 +1433,25 @@ function startBrowserRecognition() {
 }
 
 // ---- Prioritaire : Azure Speech-to-Text ----
-function startAzureRecognition() {
-  const speechConfig = SpeechSDK.SpeechConfig.fromSubscription(state.azureKey, state.azureRegion);
+async function startAzureRecognition() {
+  // Le jeton (valable 10 minutes) remplace la clé brute : demandé à chaque
+  // démarrage d'écoute, jamais stocké. Échec traité comme n'importe quel
+  // autre échec Azure ci-dessous (repli sur le moteur du navigateur).
+  let token, region;
+  try {
+    const { data, error } = await supabaseClient.functions.invoke("stt-token");
+    if (error) throw new Error(await readFunctionError(error));
+    token = data.token;
+    region = data.region;
+  } catch (err) {
+    console.error("Échec récupération du jeton Azure STT :", err);
+    azureSttBroken = true;
+    if (SR) startBrowserRecognition();
+    else setStatus(`${t("mic_problem")} (Azure)`);
+    return;
+  }
+
+  const speechConfig = SpeechSDK.SpeechConfig.fromAuthorizationToken(token, region);
   speechConfig.speechRecognitionLanguage = "fr-FR";
   const audioConfig = SpeechSDK.AudioConfig.fromDefaultMicrophoneInput();
   const recognizer = new SpeechSDK.SpeechRecognizer(speechConfig, audioConfig);
