@@ -1189,10 +1189,12 @@ async function fetchAzureAudioBlob(sentence, voiceName, mood) {
 
   const { data, error } = await supabaseClient.functions.invoke("tts-proxy", {
     body: { ssml },
-    responseType: "blob",
   });
   if (error) throw new Error(await readFunctionError(error));
-  return data;
+  // La fonction renvoie le MP3 en "application/octet-stream" (seul type que
+  // le client Supabase JS lit en binaire) : on redonne ici le vrai type
+  // audio, sinon le lecteur <audio> ne sait pas décoder le blob reçu.
+  return new Blob([data], { type: "audio/mpeg" });
 }
 
 // Joue un blob déjà synthétisé jusqu'à la fin (nécessaire pour enchaîner

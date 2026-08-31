@@ -47,8 +47,12 @@ Deno.serve(async (req) => {
       });
     }
 
+    // "application/octet-stream" (et pas "audio/mpeg") est nécessaire ici :
+    // c'est le seul type que le client Supabase JS reconnaît comme binaire
+    // et lit avec .blob() plutôt que de le traiter (et corrompre) comme du
+    // texte. L'appli redonne le bon type MIME audio une fois reçu.
     return new Response(res.body, {
-      headers: { ...corsHeaders, "Content-Type": "audio/mpeg" },
+      headers: { ...corsHeaders, "Content-Type": "application/octet-stream" },
     });
   } catch (err) {
     return new Response(JSON.stringify({ error: String(err) }), {
