@@ -28,12 +28,20 @@ Deno.serve(async (req) => {
 
   try {
     switch (event.type) {
-      // Premier paiement réussi : active l'abonnement.
+      // Premier paiement réussi : active l'abonnement. client_reference_id
+      // (ajouté par l'appli au moment du clic sur "S'abonner") dit à quel
+      // compte Supabase ce paiement correspond ; on enregistre à cette
+      // occasion l'identifiant client Stripe, réutilisé ensuite pour les
+      // évènements de renouvellement/annulation ci-dessous.
       case "checkout.session.completed": {
-        const session = event.data.object as { customer: string; subscription: string };
-        await admin.from("profiles")
-          .update({ plan: "active", stripe_subscription_id: session.subscription })
-          .eq("stripe_customer_id", session.customer);
+        const session = event.data.object as {
+          customer: string; subscription: string; client_reference_id: string | null;
+        };
+        if (session.client_reference_id) {
+          await admin.from("profiles")
+            .update({ plan: "active", stripe_customer_id: session.customer, stripe_subscription_id: session.subscription })
+            .eq("user_id", session.client_reference_id);
+        }
         break;
       }
       // Renouvellement, échec de paiement, ou annulation : on suit le

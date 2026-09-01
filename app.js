@@ -2419,19 +2419,19 @@ function openPaywall() {
   $("paywallModal").hidden = false;
 }
 $("closePaywall").addEventListener("click", () => ($("paywallModal").hidden = true));
-$("subscribeBtn").addEventListener("click", async () => {
-  $("subscribeBtn").disabled = true;
-  try {
-    const { data, error } = await supabaseClient.functions.invoke("create-checkout-session", {
-      body: { origin: window.location.origin },
-    });
-    if (error) throw new Error(await readFunctionError(error));
-    if (data?.url) window.location.href = data.url;
-  } catch (err) {
-    console.error("Échec ouverture du paiement :", err);
-    setStatus(t("error_prefix") + (err.message || String(err)));
-    $("subscribeBtn").disabled = false;
-  }
+// Lien de paiement Stripe tout prêt (créé une fois dans le tableau de bord
+// Stripe) : pas besoin d'appel serveur pour démarrer un paiement, juste
+// rediriger l'élève dessus. client_reference_id dit à Stripe (et donc au
+// webhook ensuite) quel compte débloquer une fois le paiement confirmé ;
+// prefilled_email lui évite de le retaper.
+const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/dRm14naKKfz2bBFeHl5AQ0c";
+
+$("subscribeBtn").addEventListener("click", () => {
+  if (!currentSession) return;
+  const url = new URL(STRIPE_PAYMENT_LINK);
+  url.searchParams.set("client_reference_id", currentSession.user.id);
+  url.searchParams.set("prefilled_email", currentSession.user.email);
+  window.location.href = url.toString();
 });
 
 $("skipImportBtn").addEventListener("click", () => {
