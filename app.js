@@ -162,6 +162,10 @@ const I18N = {
     auth_err_rate_limit: "Trop de tentatives, réessaie dans quelques minutes.",
     auth_err_generic: "Une erreur est survenue. Réessaie.",
     account_signed_in_as: "Connecté en tant que {email}",
+    import_h: "Importer ton vocabulaire ?",
+    import_note: "On a trouvé du vocabulaire et des corrections déjà sauvegardés dans ce navigateur. Tu veux les ajouter à ton compte ?",
+    btn_skip_import: "Ignorer",
+    btn_confirm_import: "Importer",
   },
   en: {
     brand: "Your French Tutor",
@@ -292,6 +296,10 @@ const I18N = {
     auth_err_rate_limit: "Too many attempts, try again in a few minutes.",
     auth_err_generic: "Something went wrong. Try again.",
     account_signed_in_as: "Signed in as {email}",
+    import_h: "Import your vocabulary?",
+    import_note: "We found vocabulary and corrections already saved in this browser. Do you want to add them to your account?",
+    btn_skip_import: "Skip",
+    btn_confirm_import: "Import",
   },
   es: {
     brand: "Your French Tutor",
@@ -422,6 +430,10 @@ const I18N = {
     auth_err_rate_limit: "Demasiados intentos, inténtalo de nuevo en unos minutos.",
     auth_err_generic: "Ocurrió un error. Inténtalo de nuevo.",
     account_signed_in_as: "Conectado como {email}",
+    import_h: "¿Importar tu vocabulario?",
+    import_note: "Encontramos vocabulario y correcciones ya guardados en este navegador. ¿Quieres añadirlos a tu cuenta?",
+    btn_skip_import: "Omitir",
+    btn_confirm_import: "Importar",
   },
   de: {
     brand: "Your French Tutor",
@@ -552,6 +564,10 @@ const I18N = {
     auth_err_rate_limit: "Zu viele Versuche, versuche es in ein paar Minuten erneut.",
     auth_err_generic: "Etwas ist schiefgelaufen. Versuche es erneut.",
     account_signed_in_as: "Angemeldet als {email}",
+    import_h: "Dein Vokabular importieren?",
+    import_note: "Wir haben Vokabular und Korrekturen gefunden, die bereits in diesem Browser gespeichert sind. Möchtest du sie zu deinem Konto hinzufügen?",
+    btn_skip_import: "Überspringen",
+    btn_confirm_import: "Importieren",
   },
   pt: {
     brand: "Your French Tutor",
@@ -682,6 +698,10 @@ const I18N = {
     auth_err_rate_limit: "Muitas tentativas, tente novamente em alguns minutos.",
     auth_err_generic: "Ocorreu um erro. Tente novamente.",
     account_signed_in_as: "Conectado como {email}",
+    import_h: "Importar seu vocabulário?",
+    import_note: "Encontramos vocabulário e correções já salvos neste navegador. Quer adicioná-los à sua conta?",
+    btn_skip_import: "Ignorar",
+    btn_confirm_import: "Importar",
   },
 };
 
@@ -865,25 +885,35 @@ $("signOutBtn").addEventListener("click", async () => {
 // collée à la main, donc plusieurs endroits du code doivent savoir si
 // l'élève est connecté sans refaire un appel réseau à chaque fois.
 let currentSession = null;
-supabaseClient.auth.getSession().then(({ data: { session } }) => {
+// Évite de recharger vocabulaire/corrections à chaque évènement d'auth (le
+// jeton se rafraîchit tout seul en arrière-plan toutes les heures) : on ne
+// recharge que si l'élève connecté a réellement changé (connexion,
+// déconnexion, ou changement de compte).
+let loadedForUserId = undefined;
+
+async function syncSession(session) {
   currentSession = session;
   refreshEngineHint();
   loadVoices();
   applyPersonaVoice();
-});
+  const userId = session ? session.user.id : null;
+  if (userId === loadedForUserId) return;
+  loadedForUserId = userId;
+  await loadUserVocabAndCorrections();
+  await maybeOfferImport();
+}
+
+supabaseClient.auth.getSession().then(({ data: { session } }) => syncSession(session));
 
 // Supabase renvoie l'élève sur l'appli avec un jeton spécial après un clic
 // sur le lien "mot de passe oublié" : cet évènement ouvre directement la vue
 // de saisie du nouveau mot de passe, plutôt que l'écran de connexion normal.
 supabaseClient.auth.onAuthStateChange((event, session) => {
-  currentSession = session;
   if (event === "PASSWORD_RECOVERY") {
     openAuthModal();
     showAuthView("authResetView");
   }
-  refreshEngineHint();
-  loadVoices();
-  applyPersonaVoice();
+  syncSession(session);
 });
 
 // =========================================================
@@ -2034,7 +2064,7 @@ async function lookupWord(word, sentenceContext, spanEl) {
       masculine: null, masculinePlural: null, feminine: null, femininePlural: null,
       example: null, exampleTranslation: null,
     });
-    addVocabItem(data.word || cleanWord, data.translation, data.gender, data.infinitive, {
+    await addVocabItem(data.word || cleanWord, data.translation, data.gender, data.infinitive, {
       masculine: data.masculine, masculinePlural: data.masculinePlural,
       feminine: data.feminine, femininePlural: data.femininePlural,
     }, data.example, data.exampleTranslation);
@@ -2273,13 +2303,114 @@ function tidyTranscript(text) {
 }
 
 // Les corrections sont mémorisées entre les sessions (localStorage),
+// Conversion entre le nom des colonnes Supabase (snake_case) et la forme
+// utilisée partout ailleurs dans le code (camelCase, inchangée depuis
+// l'époque localStorage) : tout le reste (affichage, PDF, révision) n'a
+// donc rien à changer.
+function vocabRowToLocal(row) {
+  return {
+    id: row.id, word: row.word, translation: row.translation || "",
+    gender: row.gender || null, infinitive: row.infinitive || null,
+    masculine: row.masculine || null, masculinePlural: row.masculine_plural || null,
+    feminine: row.feminine || null, femininePlural: row.feminine_plural || null,
+    example: row.example || null, exampleTranslation: row.example_translation || null,
+    box: row.box || 0, nextReview: new Date(row.next_review).getTime(),
+  };
+}
+function correctionRowToLocal(row) {
+  return { id: row.id, original: row.original || "", better: row.better, explanation: row.explanation || "" };
+}
+
+// Recharge le vocabulaire, les corrections et la série de révision depuis
+// Supabase (appelé à la connexion, à la déconnexion et au changement de
+// compte). Vide tout si personne n'est connecté.
+async function loadUserVocabAndCorrections() {
+  if (!currentSession) {
+    savedVocab = [];
+    savedCorrections = [];
+    reviewStreak = { count: 0, lastDay: null };
+    renderVocabPanel();
+    renderCorrectionsPanel();
+    return;
+  }
+  const [vocabRes, correctionsRes, streakRes] = await Promise.all([
+    supabaseClient.from("vocab_items").select("*").order("created_at", { ascending: false }),
+    supabaseClient.from("corrections").select("*").order("created_at", { ascending: false }),
+    supabaseClient.from("review_streak").select("*").maybeSingle(),
+  ]);
+  if (vocabRes.error) console.error("Échec chargement du vocabulaire :", vocabRes.error);
+  if (correctionsRes.error) console.error("Échec chargement des corrections :", correctionsRes.error);
+  savedVocab = (vocabRes.data || []).map(vocabRowToLocal);
+  savedCorrections = (correctionsRes.data || []).map(correctionRowToLocal);
+  reviewStreak = streakRes.data ? { count: streakRes.data.count, lastDay: streakRes.data.last_day } : { count: 0, lastDay: null };
+  renderVocabPanel();
+  renderCorrectionsPanel();
+}
+
+// Propose une seule fois, à la première connexion, d'importer le
+// vocabulaire/corrections déjà sauvegardés dans CE navigateur avant la
+// bascule vers les comptes (ancien système localStorage). Ne se redéclenche
+// jamais ensuite (drapeau local), et ne propose rien s'il n'y a rien à
+// importer ou si le compte a déjà des données côté serveur.
+async function maybeOfferImport() {
+  if (!currentSession || localStorage.getItem("importDone")) return;
+  if (savedVocab.length || savedCorrections.length) {
+    localStorage.setItem("importDone", "1");
+    return;
+  }
+  let oldVocab = [], oldCorrections = [];
+  try { oldVocab = JSON.parse(localStorage.getItem("vocabBank")) || []; } catch (_) {}
+  try { oldCorrections = JSON.parse(localStorage.getItem("correctionsBank")) || []; } catch (_) {}
+  if (!oldVocab.length && !oldCorrections.length) {
+    localStorage.setItem("importDone", "1");
+    return;
+  }
+  $("importModal").hidden = false;
+}
+
+async function runImport() {
+  const userId = currentSession.user.id;
+  let oldVocab = [], oldCorrections = [];
+  try { oldVocab = JSON.parse(localStorage.getItem("vocabBank")) || []; } catch (_) {}
+  try { oldCorrections = JSON.parse(localStorage.getItem("correctionsBank")) || []; } catch (_) {}
+
+  if (oldVocab.length) {
+    const rows = oldVocab.map((v) => ({
+      user_id: userId, word: v.word, translation: v.translation || "",
+      gender: v.gender || null, infinitive: v.infinitive || null,
+      masculine: v.masculine || null, masculine_plural: v.masculinePlural || null,
+      feminine: v.feminine || null, feminine_plural: v.femininePlural || null,
+      example: v.example || null, example_translation: v.exampleTranslation || null,
+      box: v.box || 0, next_review: new Date(v.nextReview || Date.now()).toISOString(),
+    }));
+    const { error } = await supabaseClient.from("vocab_items").insert(rows);
+    if (error) console.error("Échec import du vocabulaire :", error);
+  }
+  if (oldCorrections.length) {
+    const rows = oldCorrections.map((c) => ({
+      user_id: userId, original: c.original || "", better: c.better, explanation: c.explanation || "",
+    }));
+    const { error } = await supabaseClient.from("corrections").insert(rows);
+    if (error) console.error("Échec import des corrections :", error);
+  }
+  await loadUserVocabAndCorrections();
+}
+
+$("skipImportBtn").addEventListener("click", () => {
+  $("importModal").hidden = true;
+  localStorage.setItem("importDone", "1");
+});
+$("confirmImportBtn").addEventListener("click", async () => {
+  $("confirmImportBtn").disabled = true;
+  await runImport();
+  $("confirmImportBtn").disabled = false;
+  $("importModal").hidden = true;
+  localStorage.setItem("importDone", "1");
+});
+
+// Les corrections vivent maintenant côté Supabase (table corrections),
 // comme le vocabulaire, pour suivre les fautes récurrentes dans le temps.
 let savedCorrections = [];
-try { savedCorrections = JSON.parse(localStorage.getItem("correctionsBank")) || []; } catch (_) { savedCorrections = []; }
-
-function persistCorrections() {
-  localStorage.setItem("correctionsBank", JSON.stringify(savedCorrections));
-}
 
 function renderCorrectionsPanel() {
   if (!savedCorrections.length) {
@@ -2298,27 +2429,28 @@ function renderCorrectionsPanel() {
   });
 }
 
-function renderCorrection(c) {
-  if (!c || !c.better) return;
-  savedCorrections.unshift({ original: c.original || "", better: c.better, explanation: c.explanation || "" });
-  persistCorrections();
+async function renderCorrection(c) {
+  if (!c || !c.better || !currentSession) return;
+  const row = { user_id: currentSession.user.id, original: c.original || "", better: c.better, explanation: c.explanation || "" };
+  const { data, error } = await supabaseClient.from("corrections").insert(row).select().single();
+  if (error) { console.error("Échec sauvegarde de la correction :", error); return; }
+  savedCorrections.unshift(correctionRowToLocal(data));
   renderCorrectionsPanel();
 }
 
-$("clearCorrectionsBtn").addEventListener("click", () => {
+$("clearCorrectionsBtn").addEventListener("click", async () => {
   savedCorrections = [];
-  persistCorrections();
   renderCorrectionsPanel();
+  if (currentSession) {
+    const { error } = await supabaseClient.from("corrections").delete().eq("user_id", currentSession.user.id);
+    if (error) console.error("Échec suppression des corrections :", error);
+  }
 });
 
-// Le vocabulaire est mémorisé entre les sessions (localStorage), comme un
-// carnet personnel qui s'enrichit au fil des leçons.
+// Le vocabulaire vit maintenant côté Supabase (table vocab_items), comme un
+// carnet personnel qui s'enrichit au fil des leçons et suit l'élève d'un
+// appareil à l'autre.
 let savedVocab = [];
-try { savedVocab = JSON.parse(localStorage.getItem("vocabBank")) || []; } catch (_) { savedVocab = []; }
-
-function persistVocab() {
-  localStorage.setItem("vocabBank", JSON.stringify(savedVocab));
-}
 
 // Les 4 formes d'un adjectif (masculin, masculin pluriel, féminin, féminin
 // pluriel), utilisé à la fois dans le panneau de vocabulaire et les cartes
@@ -2388,24 +2520,31 @@ function renderVocabPanel() {
 
 // Nouveau mot : prêt à être révisé dès maintenant (boîte 0 du système
 // de Leitner), pour encourager une première révision peu après l'ajout.
-function addVocabItem(word, translation, gender, infinitive, adjForms, example, exampleTranslation) {
+async function addVocabItem(word, translation, gender, infinitive, adjForms, example, exampleTranslation) {
+  if (!currentSession) return;
   const key = word.trim().toLowerCase();
   if (savedVocab.some((v) => v.word.trim().toLowerCase() === key)) return;
   const forms = adjForms || {};
-  savedVocab.unshift({
-    word, translation: translation || "", gender: gender || null, infinitive: infinitive || null,
-    masculine: forms.masculine || null, masculinePlural: forms.masculinePlural || null,
-    feminine: forms.feminine || null, femininePlural: forms.femininePlural || null,
-    example: example || null, exampleTranslation: exampleTranslation || null,
-    box: 0, nextReview: Date.now(),
-  });
-  persistVocab();
+  const row = {
+    user_id: currentSession.user.id, word, translation: translation || "",
+    gender: gender || null, infinitive: infinitive || null,
+    masculine: forms.masculine || null, masculine_plural: forms.masculinePlural || null,
+    feminine: forms.feminine || null, feminine_plural: forms.femininePlural || null,
+    example: example || null, example_translation: exampleTranslation || null,
+    box: 0, next_review: new Date().toISOString(),
+  };
+  const { data, error } = await supabaseClient.from("vocab_items").insert(row).select().single();
+  if (error) { console.error("Échec sauvegarde du mot :", error); return; }
+  savedVocab.unshift(vocabRowToLocal(data));
 }
 
-$("clearVocabBtn").addEventListener("click", () => {
+$("clearVocabBtn").addEventListener("click", async () => {
   savedVocab = [];
-  persistVocab();
   renderVocabPanel();
+  if (currentSession) {
+    const { error } = await supabaseClient.from("vocab_items").delete().eq("user_id", currentSession.user.id);
+    if (error) console.error("Échec suppression du vocabulaire :", error);
+  }
 });
 
 // =========================================================
@@ -2431,26 +2570,31 @@ function masteredVocab() {
 
 // Clé du jour en heure locale (pas toISOString, qui utilise l'UTC et
 // pourrait faire changer de "jour" trop tôt ou trop tard selon le fuseau).
+// Format ISO complet (avec zéros) : nécessaire pour être stocké tel quel
+// dans la colonne "date" de review_streak, pas seulement pour la
+// comparaison locale.
 function todayKey(offsetDays = 0) {
   const d = new Date();
   d.setDate(d.getDate() + offsetDays);
-  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${d.getFullYear()}-${mm}-${dd}`;
 }
 
 let reviewStreak = { count: 0, lastDay: null };
-try {
-  reviewStreak = JSON.parse(localStorage.getItem("reviewStreak")) || reviewStreak;
-} catch (_) { /* valeur par défaut conservée */ }
 
 // Appelée à chaque carte notée : incrémente la série si la dernière
 // révision remonte à hier, la remet à 1 sinon (et ne double-compte pas
 // une deuxième carte revue le même jour).
-function bumpStreak() {
+async function bumpStreak() {
   const today = todayKey();
   if (reviewStreak.lastDay === today) return;
   reviewStreak.count = reviewStreak.lastDay === todayKey(-1) ? reviewStreak.count + 1 : 1;
   reviewStreak.lastDay = today;
-  localStorage.setItem("reviewStreak", JSON.stringify(reviewStreak));
+  if (!currentSession) return;
+  const { error } = await supabaseClient.from("review_streak")
+    .upsert({ user_id: currentSession.user.id, count: reviewStreak.count, last_day: reviewStreak.lastDay });
+  if (error) console.error("Échec sauvegarde de la série de révision :", error);
 }
 
 function renderVocabStats() {
@@ -2541,11 +2685,16 @@ function renderReviewCard() {
   actions.appendChild(showBtn);
 }
 
-function gradeCard(v, knew) {
+async function gradeCard(v, knew) {
   v.box = knew ? Math.min((v.box || 0) + 1, LEITNER_INTERVALS_DAYS.length - 1) : 0;
   v.nextReview = Date.now() + LEITNER_INTERVALS_DAYS[v.box] * DAY_MS;
-  persistVocab();
-  bumpStreak();
+  if (currentSession && v.id) {
+    const { error } = await supabaseClient.from("vocab_items")
+      .update({ box: v.box, next_review: new Date(v.nextReview).toISOString() })
+      .eq("id", v.id);
+    if (error) console.error("Échec sauvegarde de la progression :", error);
+  }
+  await bumpStreak();
   renderVocabStats();
   reviewAnswered++;
   reviewIndex++;

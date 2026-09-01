@@ -297,6 +297,20 @@
     </div>
   </div>
 
+  <!-- Fenêtre d'import du vocabulaire/corrections déjà sauvegardés localement -->
+  <div id="importModal" class="modal" hidden>
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2 data-i18n="import_h">Importer ton vocabulaire ?</h2>
+      </div>
+      <p class="small muted" data-i18n="import_note">On a trouvé du vocabulaire et des corrections déjà sauvegardés dans ce navigateur. Tu veux les ajouter à ton compte ?</p>
+      <div class="modal-actions">
+        <button id="skipImportBtn" class="btn btn-ghost" data-i18n="btn_skip_import">Ignorer</button>
+        <button id="confirmImportBtn" class="btn btn-primary" data-i18n="btn_confirm_import">Importer</button>
+      </div>
+    </div>
+  </div>
+
   <script src="vendor/jspdf.umd.min.js"></script>
   <script src="vendor/azure-speech-sdk.min.js"></script>
   <script src="vendor/supabase-js.min.js"></script>
