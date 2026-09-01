@@ -116,6 +116,7 @@ const I18N = {
     hint_mic_brave: "micro indispo sur Brave ⚠️",
     brave_warning: "⚠️ <strong>Tu utilises Brave</strong> : la reconnaissance vocale ne fonctionne pas dans ce navigateur (limitation volontaire de Brave, pas un bug de l'app). Utilise Chrome ou Edge pour parler au micro, ou écris tes réponses en attendant.",
     ios_warning: "⚠️ <strong>Tu es sur iPhone/iPad</strong> : le micro ne fonctionne dans aucun navigateur sur iOS (limitation du système, pas un bug de l'app). Écris tes réponses en attendant, ou utilise un ordinateur ou un appareil Android pour parler au micro.",
+    legacy_contact_reminder: "Si tu vois ce message, contacte-moi pour avoir accès à l'application gratuitement.<br/>Xavier",
     account_title: "Compte",
     label_email: "Email",
     label_password: "Mot de passe",
@@ -243,6 +244,7 @@ const I18N = {
     hint_mic_brave: "mic unavailable on Brave ⚠️",
     brave_warning: "⚠️ <strong>You're using Brave</strong>: voice recognition doesn't work in this browser (a deliberate Brave limitation, not an app bug). Use Chrome or Edge to talk with the mic, or type your answers instead.",
     ios_warning: "⚠️ <strong>You're on iPhone/iPad</strong>: the mic doesn't work in any browser on iOS (a system limitation, not an app bug). Type your answers instead, or use a computer or Android device to talk with the mic.",
+    legacy_contact_reminder: "If you see this message, contact me to get free access to the app.<br/>Xavier",
     account_title: "Account",
     label_email: "Email",
     label_password: "Password",
@@ -370,6 +372,7 @@ const I18N = {
     hint_mic_brave: "micrófono no disponible en Brave ⚠️",
     brave_warning: "⚠️ <strong>Estás usando Brave</strong>: el reconocimiento de voz no funciona en este navegador (una limitación deliberada de Brave, no un error de la app). Usa Chrome o Edge para hablar por el micrófono, o escribe tus respuestas mientras tanto.",
     ios_warning: "⚠️ <strong>Estás en iPhone/iPad</strong>: el micrófono no funciona en ningún navegador en iOS (una limitación del sistema, no un error de la app). Escribe tus respuestas mientras tanto, o usa un ordenador o un dispositivo Android para hablar por el micrófono.",
+    legacy_contact_reminder: "Si ves este mensaje, contáctame para tener acceso gratuito a la aplicación.<br/>Xavier",
     account_title: "Cuenta",
     label_email: "Correo electrónico",
     label_password: "Contraseña",
@@ -497,6 +500,7 @@ const I18N = {
     hint_mic_brave: "Mikrofon auf Brave nicht verfügbar ⚠️",
     brave_warning: "⚠️ <strong>Du nutzt Brave</strong>: Die Spracherkennung funktioniert in diesem Browser nicht (eine bewusste Einschränkung von Brave, kein App-Fehler). Nutze Chrome oder Edge, um mit dem Mikrofon zu sprechen, oder schreibe stattdessen deine Antworten.",
     ios_warning: "⚠️ <strong>Du bist auf iPhone/iPad</strong>: Das Mikrofon funktioniert in keinem Browser unter iOS (eine Systemeinschränkung, kein App-Fehler). Schreibe stattdessen deine Antworten, oder nutze einen Computer oder ein Android-Gerät, um mit dem Mikrofon zu sprechen.",
+    legacy_contact_reminder: "Wenn du diese Nachricht siehst, melde dich bei mir, um kostenlosen Zugang zur App zu bekommen.<br/>Xavier",
     account_title: "Konto",
     label_email: "E-Mail-Adresse",
     label_password: "Passwort",
@@ -624,6 +628,7 @@ const I18N = {
     hint_mic_brave: "microfone indisponível no Brave ⚠️",
     brave_warning: "⚠️ <strong>Você está usando o Brave</strong>: o reconhecimento de voz não funciona neste navegador (uma limitação deliberada do Brave, não é um erro do app). Use o Chrome ou o Edge para falar com o microfone, ou escreva suas respostas enquanto isso.",
     ios_warning: "⚠️ <strong>Você está no iPhone/iPad</strong>: o microfone não funciona em nenhum navegador no iOS (uma limitação do sistema, não um erro do app). Escreva suas respostas por enquanto, ou use um computador ou um aparelho Android para falar no microfone.",
+    legacy_contact_reminder: "Se você vir esta mensagem, entre em contato comigo para ter acesso gratuito ao aplicativo.<br/>Xavier",
     account_title: "Conta",
     label_email: "E-mail",
     label_password: "Senha",
@@ -879,6 +884,7 @@ async function syncSession(session) {
   loadedForUserId = userId;
   await loadUserVocabAndCorrections();
   await maybeOfferImport();
+  if (session) await maybeShowContactReminder();
   // Accueil dédié pour un élève déjà utilisateur (avant la bascule vers les
   // comptes) qui n'est pas encore connecté : lui explique quoi faire dès son
   // arrivée, plutôt qu'il ne tombe sur l'écran de connexion sans contexte.
@@ -1156,7 +1162,10 @@ async function fetchAzureAudioBlob(sentence, voiceName, mood) {
   // manuellement de voix.
   const isParisianSnob = state.persona === "parisien";
   const supportsStyles = voiceSupportsStyles(voiceName);
-  const ratePct = Math.round((voiceRate * (isParisianSnob ? 0.88 : 1) - 1) * 100);
+  // Débit encore plus ralenti (-20% au lieu de -12%) pour accentuer le
+  // dédain, à la demande de Xavier après un retour d'élèves trouvant
+  // la différence avec les autres voix trop discrète.
+  const ratePct = Math.round((voiceRate * (isParisianSnob ? 0.8 : 1) - 1) * 100);
   const rateAttr = ratePct >= 0 ? `+${ratePct}%` : `${ratePct}%`;
   // Humeur dynamique du tuteur classique (voir buildReplySystemPrompt) :
   // n'a d'effet audible que sur une voix qui sait jouer des styles. Le style
@@ -1175,8 +1184,12 @@ async function fetchAzureAudioBlob(sentence, voiceName, mood) {
   const isMultilingual = voiceName.toLowerCase().includes("multilingual");
   const body = wrapPhonemes(escapeSSML(sentence));
   const spoken = isMultilingual ? `<lang xml:lang="fr-FR">${body}</lang>` : body;
+  // "styledegree" règle l'intensité d'un style Azure (0.01 à 2, 1 = normal) :
+  // poussé au maximum pour le Parisien snob, pour un effet nettement plus
+  // exagéré et caricatural qu'avec l'intensité par défaut utilisée jusqu'ici.
+  const styleDegreeAttr = isParisianSnob ? ` styledegree="2"` : "";
   const voiceInner = ttsStyle
-    ? `<mstts:express-as style="${ttsStyle}"><prosody rate="${rateAttr}">${spoken}</prosody></mstts:express-as>`
+    ? `<mstts:express-as style="${ttsStyle}"${styleDegreeAttr}><prosody rate="${rateAttr}">${spoken}</prosody></mstts:express-as>`
     : `<prosody rate="${rateAttr}">${spoken}</prosody>`;
   const ssml = `<speak version="1.0" xml:lang="fr-FR" xmlns:mstts="https://www.w3.org/2001/mstts"><voice name="${voiceName}">${voiceInner}</voice></speak>`;
 
@@ -2332,6 +2345,20 @@ async function loadUserVocabAndCorrections() {
 // bascule vers les comptes (ancien système localStorage). Ne se redéclenche
 // jamais ensuite (drapeau local), et ne propose rien s'il n'y a rien à
 // importer ou si le compte a déjà des données côté serveur.
+// Rappel pour un élève déjà utilisateur (repéré via d'anciennes données
+// locales, comme pour le message de bienvenue) qui a créé son compte mais
+// que Xavier n'a pas encore marqué "élève" (donc encore soumis à la limite
+// d'essai comme un inconnu). Disparaît de lui-même dès que Xavier le passe
+// en "élève" ou "abonné" via le panneau admin.
+async function maybeShowContactReminder() {
+  if (!hasLegacyLocalData()) return;
+  const { data } = await supabaseClient.from("profiles")
+    .select("plan").eq("user_id", currentSession.user.id).maybeSingle();
+  if ((data?.plan || "trial") === "trial") {
+    addWarningBanner("legacy_contact_reminder");
+  }
+}
+
 async function maybeOfferImport() {
   if (!currentSession || localStorage.getItem("importDone")) return;
   if (savedVocab.length || savedCorrections.length) {
