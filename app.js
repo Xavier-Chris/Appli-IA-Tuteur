@@ -147,6 +147,7 @@ const I18N = {
     auth_err_rate_limit: "Trop de tentatives, réessaie dans quelques minutes.",
     auth_err_generic: "Une erreur est survenue. Réessaie.",
     account_signed_in_as: "Connecté en tant que {email}",
+    legacy_welcome_note: "Salut ! On vient de mettre en place des comptes personnels pour plus de sécurité. Crée le tien en 2 minutes (ou connecte-toi si tu en as déjà un) : tout ton vocabulaire et tes corrections seront récupérés automatiquement, rien n'est perdu.<br/>Xavier",
     import_h: "Importer ton vocabulaire ?",
     import_note: "On a trouvé du vocabulaire et des corrections déjà sauvegardés dans ce navigateur. Tu veux les ajouter à ton compte ?",
     btn_skip_import: "Ignorer",
@@ -269,6 +270,7 @@ const I18N = {
     auth_err_rate_limit: "Too many attempts, try again in a few minutes.",
     auth_err_generic: "Something went wrong. Try again.",
     account_signed_in_as: "Signed in as {email}",
+    legacy_welcome_note: "Hey! We've just set up personal accounts for better security. Create yours in 2 minutes (or sign in if you already have one): all your vocabulary and corrections will be recovered automatically, nothing is lost.<br/>Xavier",
     import_h: "Import your vocabulary?",
     import_note: "We found vocabulary and corrections already saved in this browser. Do you want to add them to your account?",
     btn_skip_import: "Skip",
@@ -391,6 +393,7 @@ const I18N = {
     auth_err_rate_limit: "Demasiados intentos, inténtalo de nuevo en unos minutos.",
     auth_err_generic: "Ocurrió un error. Inténtalo de nuevo.",
     account_signed_in_as: "Conectado como {email}",
+    legacy_welcome_note: "¡Hola! Acabamos de poner en marcha cuentas personales para más seguridad. Crea la tuya en 2 minutos (o inicia sesión si ya tienes una): todo tu vocabulario y tus correcciones se recuperarán automáticamente, no se pierde nada.<br/>Xavier",
     import_h: "¿Importar tu vocabulario?",
     import_note: "Encontramos vocabulario y correcciones ya guardados en este navegador. ¿Quieres añadirlos a tu cuenta?",
     btn_skip_import: "Omitir",
@@ -513,6 +516,7 @@ const I18N = {
     auth_err_rate_limit: "Zu viele Versuche, versuche es in ein paar Minuten erneut.",
     auth_err_generic: "Etwas ist schiefgelaufen. Versuche es erneut.",
     account_signed_in_as: "Angemeldet als {email}",
+    legacy_welcome_note: "Hallo! Wir haben gerade persönliche Konten für mehr Sicherheit eingeführt. Erstelle deins in 2 Minuten (oder melde dich an, falls du schon eins hast): dein gesamtes Vokabular und deine Korrekturen werden automatisch wiederhergestellt, nichts geht verloren.<br/>Xavier",
     import_h: "Dein Vokabular importieren?",
     import_note: "Wir haben Vokabular und Korrekturen gefunden, die bereits in diesem Browser gespeichert sind. Möchtest du sie zu deinem Konto hinzufügen?",
     btn_skip_import: "Überspringen",
@@ -635,6 +639,7 @@ const I18N = {
     auth_err_rate_limit: "Muitas tentativas, tente novamente em alguns minutos.",
     auth_err_generic: "Ocorreu um erro. Tente novamente.",
     account_signed_in_as: "Conectado como {email}",
+    legacy_welcome_note: "Oi! Acabamos de criar contas pessoais para mais segurança. Crie a sua em 2 minutos (ou entre se já tiver uma): todo o seu vocabulário e correções serão recuperados automaticamente, nada se perde.<br/>Xavier",
     import_h: "Importar seu vocabulário?",
     import_note: "Encontramos vocabulário e correções já salvos neste navegador. Quer adicioná-los à sua conta?",
     btn_skip_import: "Ignorar",
@@ -728,8 +733,23 @@ function openAuthModal() {
 }
 
 function showAccountView(session) {
+  $("legacyWelcomeNote").hidden = true;
   $("accountEmailLine").textContent = t("account_signed_in_as").replace("{email}", session.user.email);
   showAuthView("authAccountView");
+}
+
+// Un élève qui a déjà utilisé l'appli avant la bascule vers les comptes a
+// forcément du vocabulaire ou des corrections sauvegardés dans SON
+// navigateur (ancien système localStorage) : ce signal suffit à le
+// reconnaître, sans avoir besoin d'une liste d'emails à maintenir.
+function hasLegacyLocalData() {
+  try {
+    const vocab = JSON.parse(localStorage.getItem("vocabBank")) || [];
+    const corrections = JSON.parse(localStorage.getItem("correctionsBank")) || [];
+    return vocab.length > 0 || corrections.length > 0;
+  } catch (_) {
+    return false;
+  }
 }
 
 function authShowError(msg) {
@@ -838,6 +858,14 @@ async function syncSession(session) {
   loadedForUserId = userId;
   await loadUserVocabAndCorrections();
   await maybeOfferImport();
+  // Accueil dédié pour un élève déjà utilisateur (avant la bascule vers les
+  // comptes) qui n'est pas encore connecté : lui explique quoi faire dès son
+  // arrivée, plutôt qu'il ne tombe sur l'écran de connexion sans contexte.
+  if (!session && hasLegacyLocalData()) {
+    $("legacyWelcomeNote").hidden = false;
+    openAuthModal();
+    showAuthView("authSignInView");
+  }
 }
 
 supabaseClient.auth.getSession().then(({ data: { session } }) => syncSession(session));

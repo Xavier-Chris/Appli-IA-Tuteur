@@ -352,6 +352,7 @@ select:focus, input:focus { border-color: var(--primary); }
 .modal-actions { margin-top: 16px; display: flex; justify-content: flex-end; }
 .auth-error { color: var(--accent); margin: 0 0 12px; }
 .auth-success { color: var(--good); margin: 0 0 12px; }
+.legacy-note { background: var(--panel-2); border-radius: 10px; padding: 12px; margin: 0 0 16px; line-height: 1.5; }
 
 /* ---- Responsive ---- */
 @media (max-width: 900px) {
