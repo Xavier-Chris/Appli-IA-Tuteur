@@ -23,7 +23,6 @@
       </select>
       <button id="themeBtn" class="icon-btn" data-i18n-title="theme_title" title="Basculer clair / sombre">🌙</button>
       <button id="authBtn" class="icon-btn" data-i18n-title="account_title" title="Compte">👤</button>
-      <button id="settingsBtn" class="icon-btn" data-i18n-title="settings_title" title="Réglages">⚙️</button>
     </div>
   </header>
 
@@ -226,44 +225,6 @@
         <div class="modal-actions">
           <button id="signOutBtn" class="btn btn-ghost" data-i18n="btn_signout">Se déconnecter</button>
         </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Fenêtre des réglages -->
-  <div id="settingsModal" class="modal" hidden>
-    <div class="modal-card">
-      <div class="modal-head">
-        <h2 data-i18n="settings_h">Réglages</h2>
-        <button id="closeSettings" class="icon-btn">✕</button>
-      </div>
-
-      <label class="field">
-        <span data-i18n="label_apikey">Clé API Claude</span>
-        <input id="apiKeyInput" type="password" data-i18n-ph="apikey_ph" placeholder="Colle ta clé ici" />
-      </label>
-
-      <p class="small muted" data-i18n="privacy_note">
-        Ta clé est enregistrée uniquement dans ce navigateur (localStorage). Elle n'est jamais envoyée ailleurs qu'au fournisseur choisi.
-      </p>
-
-      <h3 class="modal-subhead" data-i18n="azure_h">Voix premium (optionnel)</h3>
-      <p class="small muted" data-i18n="azure_note">
-        Ajoute une clé Azure Speech pour des voix bien plus naturelles que celles du navigateur. Sans clé, l'appli garde la voix du navigateur.
-      </p>
-
-      <label class="field">
-        <span data-i18n="label_azure_key">Clé Azure Speech</span>
-        <input id="azureKeyInput" type="password" data-i18n-ph="azure_key_ph" placeholder="Colle ta clé Azure ici" />
-      </label>
-
-      <label class="field">
-        <span data-i18n="label_azure_region">Région Azure</span>
-        <input id="azureRegionInput" type="text" data-i18n-ph="azure_region_ph" placeholder="ex : francecentral" />
-      </label>
-
-      <div class="modal-actions">
-        <button id="saveSettings" class="btn btn-primary" data-i18n="btn_save">Enregistrer</button>
       </div>
     </div>
   </div>

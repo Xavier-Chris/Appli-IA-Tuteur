@@ -6,9 +6,6 @@
 
 // ---- État global ----
 const state = {
-  apiKey: localStorage.getItem("apiKey") || "",
-  azureKey: localStorage.getItem("azureKey") || "",
-  azureRegion: localStorage.getItem("azureRegion") || "",
   theme: localStorage.getItem("theme") || "light",
   lang: localStorage.getItem("lang") || "en",
   level: "intermediaire",
@@ -36,7 +33,6 @@ const I18N = {
   fr: {
     brand: "Your French Tutor",
     theme_title: "Basculer clair / sombre",
-    settings_title: "Réglages",
     panel_lesson: "Ta leçon",
     label_level: "Niveau",
     lvl_beginner: "Débutant", lvl_intermediate: "Intermédiaire", lvl_upper_intermediate: "Intermédiaire avancé", lvl_advanced: "Avancé",
@@ -94,17 +90,6 @@ const I18N = {
     mic_title: "Parler",
     text_ph: "...ou écris ta réponse ici",
     btn_send: "Envoyer",
-    settings_h: "Réglages",
-    label_apikey: "Clé API Claude",
-    apikey_ph: "Colle ta clé ici",
-    privacy_note: "Ta clé est enregistrée uniquement dans ce navigateur (localStorage). Elle n'est jamais envoyée ailleurs qu'à Claude (Anthropic).",
-    azure_h: "Voix premium (optionnel)",
-    azure_note: "Ajoute une clé Azure Speech pour des voix bien plus naturelles que celles du navigateur. Sans clé, l'appli garde la voix du navigateur.",
-    label_azure_key: "Clé Azure Speech",
-    azure_key_ph: "Colle ta clé Azure ici",
-    label_azure_region: "Région Azure",
-    azure_region_ph: "ex : francecentral",
-    btn_save: "Enregistrer",
     status_ready: "Prêt",
     status_listening: "Je t'écoute...",
     mic_denied: "Micro refusé. Autorise le micro ou écris ta réponse.",
@@ -170,7 +155,6 @@ const I18N = {
   en: {
     brand: "Your French Tutor",
     theme_title: "Toggle light / dark",
-    settings_title: "Settings",
     panel_lesson: "Your lesson",
     label_level: "Level",
     lvl_beginner: "Beginner", lvl_intermediate: "Intermediate", lvl_upper_intermediate: "Upper Intermediate", lvl_advanced: "Advanced",
@@ -228,17 +212,6 @@ const I18N = {
     mic_title: "Speak",
     text_ph: "...or type your answer here",
     btn_send: "Send",
-    settings_h: "Settings",
-    label_apikey: "Claude API key",
-    apikey_ph: "Paste your key here",
-    privacy_note: "Your key is stored only in this browser (localStorage). It is never sent anywhere except to Claude (Anthropic).",
-    azure_h: "Premium voice (optional)",
-    azure_note: "Add an Azure Speech key for voices much more natural than the browser's. Without a key, the app keeps using the browser voice.",
-    label_azure_key: "Azure Speech key",
-    azure_key_ph: "Paste your Azure key here",
-    label_azure_region: "Azure region",
-    azure_region_ph: "e.g. francecentral",
-    btn_save: "Save",
     status_ready: "Ready",
     status_listening: "I'm listening...",
     mic_denied: "Microphone denied. Allow the mic or type your answer.",
@@ -304,7 +277,6 @@ const I18N = {
   es: {
     brand: "Your French Tutor",
     theme_title: "Cambiar claro / oscuro",
-    settings_title: "Ajustes",
     panel_lesson: "Tu lección",
     label_level: "Nivel",
     lvl_beginner: "Principiante", lvl_intermediate: "Intermedio", lvl_upper_intermediate: "Intermedio avanzado", lvl_advanced: "Avanzado",
@@ -362,17 +334,6 @@ const I18N = {
     mic_title: "Hablar",
     text_ph: "...o escribe tu respuesta aquí",
     btn_send: "Enviar",
-    settings_h: "Ajustes",
-    label_apikey: "Clave API de Claude",
-    apikey_ph: "Pega tu clave aquí",
-    privacy_note: "Tu clave se guarda únicamente en este navegador (localStorage). Nunca se envía a ningún sitio salvo a Claude (Anthropic).",
-    azure_h: "Voz premium (opcional)",
-    azure_note: "Añade una clave de Azure Speech para voces mucho más naturales que las del navegador. Sin clave, la app sigue usando la voz del navegador.",
-    label_azure_key: "Clave de Azure Speech",
-    azure_key_ph: "Pega tu clave de Azure aquí",
-    label_azure_region: "Región de Azure",
-    azure_region_ph: "ej: francecentral",
-    btn_save: "Guardar",
     status_ready: "Listo",
     status_listening: "Te escucho...",
     mic_denied: "Micrófono denegado. Permite el micrófono o escribe tu respuesta.",
@@ -438,7 +399,6 @@ const I18N = {
   de: {
     brand: "Your French Tutor",
     theme_title: "Hell/Dunkel umschalten",
-    settings_title: "Einstellungen",
     panel_lesson: "Deine Lektion",
     label_level: "Niveau",
     lvl_beginner: "Anfänger", lvl_intermediate: "Mittelstufe", lvl_upper_intermediate: "Obere Mittelstufe", lvl_advanced: "Fortgeschritten",
@@ -496,17 +456,6 @@ const I18N = {
     mic_title: "Sprechen",
     text_ph: "...oder schreibe deine Antwort hier",
     btn_send: "Senden",
-    settings_h: "Einstellungen",
-    label_apikey: "Claude-API-Schlüssel",
-    apikey_ph: "Füge deinen Schlüssel hier ein",
-    privacy_note: "Dein Schlüssel wird nur in diesem Browser gespeichert (localStorage). Er wird niemals an einen anderen Ort als Claude (Anthropic) gesendet.",
-    azure_h: "Premium-Stimme (optional)",
-    azure_note: "Füge einen Azure-Speech-Schlüssel hinzu für Stimmen, die viel natürlicher klingen als die des Browsers. Ohne Schlüssel nutzt die App weiterhin die Browserstimme.",
-    label_azure_key: "Azure-Speech-Schlüssel",
-    azure_key_ph: "Füge deinen Azure-Schlüssel hier ein",
-    label_azure_region: "Azure-Region",
-    azure_region_ph: "z. B. francecentral",
-    btn_save: "Speichern",
     status_ready: "Bereit",
     status_listening: "Ich höre zu...",
     mic_denied: "Mikrofon abgelehnt. Erlaube das Mikrofon oder schreibe deine Antwort.",
@@ -572,7 +521,6 @@ const I18N = {
   pt: {
     brand: "Your French Tutor",
     theme_title: "Alternar claro / escuro",
-    settings_title: "Configurações",
     panel_lesson: "Sua lição",
     label_level: "Nível",
     lvl_beginner: "Iniciante", lvl_intermediate: "Intermediário", lvl_upper_intermediate: "Intermediário avançado", lvl_advanced: "Avançado",
@@ -630,17 +578,6 @@ const I18N = {
     mic_title: "Falar",
     text_ph: "...ou escreva sua resposta aqui",
     btn_send: "Enviar",
-    settings_h: "Configurações",
-    label_apikey: "Chave API da Claude",
-    apikey_ph: "Cole sua chave aqui",
-    privacy_note: "Sua chave é guardada apenas neste navegador (localStorage). Nunca é enviada para nenhum outro lugar além da Claude (Anthropic).",
-    azure_h: "Voz premium (opcional)",
-    azure_note: "Adicione uma chave Azure Speech para vozes muito mais naturais do que as do navegador. Sem chave, o app continua usando a voz do navegador.",
-    label_azure_key: "Chave Azure Speech",
-    azure_key_ph: "Cole sua chave Azure aqui",
-    label_azure_region: "Região Azure",
-    azure_region_ph: "ex: francecentral",
-    btn_save: "Salvar",
     status_ready: "Pronto",
     status_listening: "Estou ouvindo...",
     mic_denied: "Microfone recusado. Permita o microfone ou escreva sua resposta.",
@@ -915,29 +852,6 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
   }
   syncSession(session);
 });
-
-// =========================================================
-//  Réglages (clé API Claude + voix Azure)
-// =========================================================
-$("settingsBtn").addEventListener("click", openSettings);
-$("closeSettings").addEventListener("click", () => ($("settingsModal").hidden = true));
-$("saveSettings").addEventListener("click", () => {
-  state.apiKey = $("apiKeyInput").value.trim();
-  state.azureKey = $("azureKeyInput").value.trim();
-  state.azureRegion = $("azureRegionInput").value.trim();
-  localStorage.setItem("apiKey", state.apiKey);
-  localStorage.setItem("azureKey", state.azureKey);
-  localStorage.setItem("azureRegion", state.azureRegion);
-  $("settingsModal").hidden = true;
-  refreshEngineHint();
-  loadVoices();   // la source de voix (Azure ou navigateur) a pu changer
-});
-function openSettings() {
-  $("apiKeyInput").value = state.apiKey;
-  $("azureKeyInput").value = state.azureKey;
-  $("azureRegionInput").value = state.azureRegion;
-  $("settingsModal").hidden = false;
-}
 
 // =========================================================
 //  Choix de la leçon
