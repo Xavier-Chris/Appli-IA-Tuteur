@@ -55,6 +55,14 @@ create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function public.handle_new_user();
 
+-- Le trigger ci-dessus ne couvre que les FUTURS comptes : cette ligne crée
+-- le statut "trial" par défaut pour les comptes déjà existants au moment de
+-- cette migration (dont celui de Xavier), pour qu'aucun compte ne se
+-- retrouve sans ligne profiles.
+insert into public.profiles (user_id)
+select id from auth.users
+on conflict (user_id) do nothing;
+
 -- Retrouve l'identifiant d'un compte à partir de son email, utilisé par la
 -- fonction serveur admin-set-status (panneau admin de Xavier) pour marquer
 -- un élève comme exempté. Volontairement réservée au rôle service_role

@@ -49,7 +49,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { error: updateError } = await admin.from("profiles").update({ plan }).eq("user_id", targetUserId);
+    const { error: updateError } = await admin.from("profiles").upsert({ user_id: targetUserId, plan });
     if (updateError) throw updateError;
 
     return new Response(JSON.stringify({ success: true }), {
