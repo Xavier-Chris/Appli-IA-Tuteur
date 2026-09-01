@@ -1001,6 +1001,13 @@ const AZURE_VOICES = [
   { id: "fr-FR-HenriNeural", label: "Henri (homme, naturel)", gender: "m" },
   { id: "fr-FR-Marc:MAI-Voice-2-Flash", label: "Marc (homme, très expressif)", gender: "m" },
   { id: "fr-FR-Soleil:MAI-Voice-2-Flash", label: "Soleil (femme, très expressive)", gender: "f" },
+  // Candidats temporaires à écouter pour trouver une voix plus adaptée au
+  // Parisien snob que Marc (jugé trop expressif) : à retirer une fois le
+  // bon choix fait, garder seulement celui-là dans la liste définitive.
+  { id: "fr-FR-AlainNeural", label: "🧪 Alain (test)", gender: "m" },
+  { id: "fr-FR-ClaudeNeural", label: "🧪 Claude (test)", gender: "m" },
+  { id: "fr-FR-JeromeNeural", label: "🧪 Jérôme (test)", gender: "m" },
+  { id: "fr-FR-MauriceNeural", label: "🧪 Maurice (test)", gender: "m" },
 ];
 
 // Sous-ensemble des styles Azure disponibles sur Marc/Soleil (voir liste
