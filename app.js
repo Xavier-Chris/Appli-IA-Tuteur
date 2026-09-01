@@ -911,25 +911,15 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
 // =========================================================
 //  Choix de la leçon
 // =========================================================
-// Choisit automatiquement une voix adaptée au personnage actuel, selon 3
-// règles dans cet ordre : le Parisien snob impose Marc (seul à savoir jouer
-// son ton méprisant), le tuteur classique impose une voix expressive
-// (Marc/Soleil, pour que son humeur dynamique s'entende), et les autres
-// personnages suivent juste le genre requis. Ne casse jamais un choix déjà
-// cohérent (ex : reste sur Éloïse pour un autre personnage féminin, ou sur
-// Marc/Soleil si déjà là pour le tuteur classique). Appelée au changement de
-// personnage ET au chargement de la page, pour s'appliquer par défaut.
+// Choisit automatiquement une voix adaptée au personnage actuel : le tuteur
+// classique impose une voix expressive (Marc/Soleil, pour que son humeur
+// dynamique s'entende), les autres personnages (dont le Parisien snob,
+// pas de voix dédiée pour l'instant) suivent juste le genre requis. Ne
+// casse jamais un choix déjà cohérent (ex : reste sur Marc/Soleil si déjà
+// là pour le tuteur classique). Appelée au changement de personnage ET au
+// chargement de la page, pour s'appliquer par défaut.
 function applyPersonaVoice() {
   if (!azureReady()) return;
-  if (state.persona === "parisien") {
-    const marc = AZURE_VOICES.find((v) => v.id.includes("Marc"));
-    if (marc && selectedVoiceName !== marc.id) {
-      selectedVoiceName = marc.id;
-      localStorage.setItem("voiceNameV2", selectedVoiceName);
-      loadVoices();
-    }
-    return;
-  }
   if (state.persona === "tuteur") {
     if (voiceSupportsStyles(selectedVoiceName)) return;
     const preferredGender = currentVoiceGender() || "m";
@@ -997,23 +987,14 @@ const AZURE_VOICES = [
   { id: "fr-FR-RemyMultilingualNeural", label: "Rémy ⭐ (homme, très naturel)", gender: "m" },
   { id: "fr-FR-VivienneMultilingualNeural", label: "Vivienne ⭐ (femme, très naturelle)", gender: "f" },
   { id: "fr-FR-LucienMultilingualNeural", label: "Lucien ⭐ (homme, très naturel)", gender: "m" },
-  { id: "fr-FR-DeniseNeural", label: "Denise (femme, naturelle)", gender: "f" },
-  { id: "fr-FR-HenriNeural", label: "Henri (homme, naturel)", gender: "m" },
   { id: "fr-FR-Marc:MAI-Voice-2-Flash", label: "Marc (homme, très expressif)", gender: "m" },
   { id: "fr-FR-Soleil:MAI-Voice-2-Flash", label: "Soleil (femme, très expressive)", gender: "f" },
-  // Candidats temporaires à écouter pour trouver une voix plus adaptée au
-  // Parisien snob que Marc (jugé trop expressif) : à retirer une fois le
-  // bon choix fait, garder seulement celui-là dans la liste définitive.
-  { id: "fr-FR-AlainNeural", label: "🧪 Alain (test)", gender: "m" },
-  { id: "fr-FR-ClaudeNeural", label: "🧪 Claude (test)", gender: "m" },
-  { id: "fr-FR-JeromeNeural", label: "🧪 Jérôme (test)", gender: "m" },
-  { id: "fr-FR-MauriceNeural", label: "🧪 Maurice (test)", gender: "m" },
 ];
 
 // Sous-ensemble des styles Azure disponibles sur Marc/Soleil (voir liste
 // complète dans le catalogue Azure), filtré aux humeurs adaptées à un
-// tuteur bienveillant. "disgusted" est volontairement exclu d'ici : réservé
-// au personnage du Parisien snob, jamais choisi dynamiquement.
+// tuteur bienveillant. "disgusted" est volontairement exclu d'ici : jamais
+// souhaitable pour un tuteur envers son élève.
 const VALID_MOODS = [
   "happy", "joyful", "excited", "hopeful", "surprised",
   "sad", "regretful", "determined", "softvoice", "confused",
@@ -1162,18 +1143,16 @@ function splitSentences(text) {
 
 // Synthétise une seule phrase et renvoie le blob audio, sans la jouer.
 async function fetchAzureAudioBlob(sentence, voiceName, mood) {
-  // Le Parisien snob parle plus lentement et avec un ton méprisant
-  // ("disgusted", seul style dispo qui s'en approche), pour l'effet blasé.
-  // Azure ignore un style non supporté par la voix sans erreur, donc ce
-  // réglage reste sans danger si l'élève garde ce personnage en changeant
-  // manuellement de voix.
+  // Le Parisien snob parle plus lentement et avec un ton plus grave, pour
+  // l'effet blasé/hautain, quelle que soit la voix choisie (plus de voix
+  // imposée pour ce personnage depuis le 2026-09-01, aucune testée jusque-là
+  // n'a convaincu Xavier : Marc + style "disgusted" au maximum jugé trop
+  // expressif, Henri + prosodie seule pas assez marqué non plus).
   const isParisianSnob = state.persona === "parisien";
   const supportsStyles = voiceSupportsStyles(voiceName);
-  // Débit encore plus ralenti (-20% au lieu de -12%) pour accentuer le
-  // dédain, à la demande de Xavier après un retour d'élèves trouvant
-  // la différence avec les autres voix trop discrète.
   const ratePct = Math.round((voiceRate * (isParisianSnob ? 0.8 : 1) - 1) * 100);
   const rateAttr = ratePct >= 0 ? `+${ratePct}%` : `${ratePct}%`;
+  const pitchAttr = isParisianSnob ? "-5%" : "+0%";
   // Humeur dynamique du tuteur classique (voir buildReplySystemPrompt) :
   // n'a d'effet audible que sur une voix qui sait jouer des styles. Le style
   // "chat" (ton par défaut des voix Neural classiques) N'EST PAS supporté
@@ -1182,7 +1161,7 @@ async function fetchAzureAudioBlob(sentence, voiceName, mood) {
   // faisait basculer TOUTE réponse sans humeur marquée sur la voix robotique
   // du navigateur. Sur Marc/Soleil sans humeur valable, on omet donc le
   // style plutôt que de forcer "chat".
-  const ttsStyle = isParisianSnob ? "disgusted" : (mood && supportsStyles ? mood : (supportsStyles ? null : "chat"));
+  const ttsStyle = mood && supportsStyles ? mood : (supportsStyles ? null : "chat");
   // Les voix "Multilingual" (Vivienne, Rémy, Lucien) détectent
   // automatiquement la langue mot par mot. Un mot isolé qui existe aussi
   // en anglais (ex : "aspect") peut alors être prononcé avec un accent
@@ -1191,13 +1170,9 @@ async function fetchAzureAudioBlob(sentence, voiceName, mood) {
   const isMultilingual = voiceName.toLowerCase().includes("multilingual");
   const body = wrapPhonemes(escapeSSML(sentence));
   const spoken = isMultilingual ? `<lang xml:lang="fr-FR">${body}</lang>` : body;
-  // "styledegree" règle l'intensité d'un style Azure (0.01 à 2, 1 = normal) :
-  // poussé au maximum pour le Parisien snob, pour un effet nettement plus
-  // exagéré et caricatural qu'avec l'intensité par défaut utilisée jusqu'ici.
-  const styleDegreeAttr = isParisianSnob ? ` styledegree="2"` : "";
   const voiceInner = ttsStyle
-    ? `<mstts:express-as style="${ttsStyle}"${styleDegreeAttr}><prosody rate="${rateAttr}">${spoken}</prosody></mstts:express-as>`
-    : `<prosody rate="${rateAttr}">${spoken}</prosody>`;
+    ? `<mstts:express-as style="${ttsStyle}"><prosody rate="${rateAttr}" pitch="${pitchAttr}">${spoken}</prosody></mstts:express-as>`
+    : `<prosody rate="${rateAttr}" pitch="${pitchAttr}">${spoken}</prosody>`;
   const ssml = `<speak version="1.0" xml:lang="fr-FR" xmlns:mstts="https://www.w3.org/2001/mstts"><voice name="${voiceName}">${voiceInner}</voice></speak>`;
 
   const { data, error } = await supabaseClient.functions.invoke("tts-proxy", {
@@ -1898,9 +1873,10 @@ Tu es aussi un professeur de français bienveillant, mais tu ne corriges JAMAIS 
 
   // Humeur dynamique de la voix, réservée au tuteur classique (les autres
   // personnages ont un ton fixe défini par leur personnalité, ex : le
-  // Parisien snob reste toujours "disgusted"). Field optionnel dans le
-  // JSON : la synthèse vocale l'ignore silencieusement sur une voix qui ne
-  // sait pas jouer de style (voir voiceSupportsStyles).
+  // Parisien snob reste toujours blasé, via la prosodie plutôt qu'un style,
+  // voir fetchAzureAudioBlob). Field optionnel dans le JSON : la synthèse
+  // vocale l'ignore silencieusement sur une voix qui ne sait pas jouer de
+  // style (voir voiceSupportsStyles).
   const moodField = state.persona === "tuteur"
     ? `,
   "mood": "l'humeur qui correspond le mieux au TON de ta réponse (pas son contenu ni le niveau de langue), à choisir UNIQUEMENT parmi : neutral, ${VALID_MOODS.join(", ")}. Choisis \\"neutral\\" la plupart du temps : ne choisis une humeur marquée que quand le ton de ta réponse le justifie vraiment (une bonne nouvelle, une question surprenante de l'apprenant, un encouragement chaleureux, une petite déception...). Ne force jamais une émotion artificielle."`
