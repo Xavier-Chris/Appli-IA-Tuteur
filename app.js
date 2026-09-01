@@ -148,6 +148,10 @@ const I18N = {
     auth_err_generic: "Une erreur est survenue. Réessaie.",
     account_signed_in_as: "Connecté en tant que {email}",
     legacy_welcome_note: "Salut ! On vient de mettre en place des comptes personnels pour plus de sécurité. Crée le tien en 2 minutes (ou connecte-toi si tu en as déjà un) : tout ton vocabulaire et tes corrections seront récupérés automatiquement, rien n'est perdu.<br/>Xavier",
+    paywall_h: "Essai gratuit terminé pour aujourd'hui",
+    paywall_note: "Tu as utilisé tes 10 minutes gratuites du jour. Reviens demain, ou passe à l'abonnement pour un accès illimité.",
+    btn_subscribe: "S'abonner (20€/mois)",
+    trial_limit_status: "Essai gratuit du jour terminé.",
     import_h: "Importer ton vocabulaire ?",
     import_note: "On a trouvé du vocabulaire et des corrections déjà sauvegardés dans ce navigateur. Tu veux les ajouter à ton compte ?",
     btn_skip_import: "Ignorer",
@@ -271,6 +275,10 @@ const I18N = {
     auth_err_generic: "Something went wrong. Try again.",
     account_signed_in_as: "Signed in as {email}",
     legacy_welcome_note: "Hey! We've just set up personal accounts for better security. Create yours in 2 minutes (or sign in if you already have one): all your vocabulary and corrections will be recovered automatically, nothing is lost.<br/>Xavier",
+    paywall_h: "Free trial finished for today",
+    paywall_note: "You've used your 10 free minutes for today. Come back tomorrow, or subscribe for unlimited access.",
+    btn_subscribe: "Subscribe (€20/month)",
+    trial_limit_status: "Today's free trial is over.",
     import_h: "Import your vocabulary?",
     import_note: "We found vocabulary and corrections already saved in this browser. Do you want to add them to your account?",
     btn_skip_import: "Skip",
@@ -394,6 +402,10 @@ const I18N = {
     auth_err_generic: "Ocurrió un error. Inténtalo de nuevo.",
     account_signed_in_as: "Conectado como {email}",
     legacy_welcome_note: "¡Hola! Acabamos de poner en marcha cuentas personales para más seguridad. Crea la tuya en 2 minutos (o inicia sesión si ya tienes una): todo tu vocabulario y tus correcciones se recuperarán automáticamente, no se pierde nada.<br/>Xavier",
+    paywall_h: "Prueba gratuita terminada por hoy",
+    paywall_note: "Has usado tus 10 minutos gratis de hoy. Vuelve mañana, o suscríbete para un acceso ilimitado.",
+    btn_subscribe: "Suscribirse (20€/mes)",
+    trial_limit_status: "Prueba gratuita de hoy terminada.",
     import_h: "¿Importar tu vocabulario?",
     import_note: "Encontramos vocabulario y correcciones ya guardados en este navegador. ¿Quieres añadirlos a tu cuenta?",
     btn_skip_import: "Omitir",
@@ -517,6 +529,10 @@ const I18N = {
     auth_err_generic: "Etwas ist schiefgelaufen. Versuche es erneut.",
     account_signed_in_as: "Angemeldet als {email}",
     legacy_welcome_note: "Hallo! Wir haben gerade persönliche Konten für mehr Sicherheit eingeführt. Erstelle deins in 2 Minuten (oder melde dich an, falls du schon eins hast): dein gesamtes Vokabular und deine Korrekturen werden automatisch wiederhergestellt, nichts geht verloren.<br/>Xavier",
+    paywall_h: "Kostenlose Testphase für heute beendet",
+    paywall_note: "Du hast deine 10 kostenlosen Minuten für heute aufgebraucht. Komm morgen wieder, oder abonniere für unbegrenzten Zugang.",
+    btn_subscribe: "Abonnieren (20€/Monat)",
+    trial_limit_status: "Kostenloser Test für heute beendet.",
     import_h: "Dein Vokabular importieren?",
     import_note: "Wir haben Vokabular und Korrekturen gefunden, die bereits in diesem Browser gespeichert sind. Möchtest du sie zu deinem Konto hinzufügen?",
     btn_skip_import: "Überspringen",
@@ -640,6 +656,10 @@ const I18N = {
     auth_err_generic: "Ocorreu um erro. Tente novamente.",
     account_signed_in_as: "Conectado como {email}",
     legacy_welcome_note: "Oi! Acabamos de criar contas pessoais para mais segurança. Crie a sua em 2 minutos (ou entre se já tiver uma): todo o seu vocabulário e correções serão recuperados automaticamente, nada se perde.<br/>Xavier",
+    paywall_h: "Teste grátis encerrado por hoje",
+    paywall_note: "Você usou seus 10 minutos grátis de hoje. Volte amanhã, ou assine para acesso ilimitado.",
+    btn_subscribe: "Assinar (20€/mês)",
+    trial_limit_status: "Teste grátis de hoje encerrado.",
     import_h: "Importar seu vocabulário?",
     import_note: "Encontramos vocabulário e correções já salvos neste navegador. Quer adicioná-los à sua conta?",
     btn_skip_import: "Ignorar",
@@ -853,6 +873,7 @@ async function syncSession(session) {
   refreshEngineHint();
   loadVoices();
   applyPersonaVoice();
+  $("adminBtn").hidden = !(session && session.user.email === ADMIN_EMAIL);
   const userId = session ? session.user.id : null;
   if (userId === loadedForUserId) return;
   loadedForUserId = userId;
@@ -1517,6 +1538,7 @@ $("textForm").addEventListener("submit", (e) => {
 let lessonStartTime = null;
 let vocabCountAtStart = 0;
 let correctionsCountAtStart = 0;
+let lastUsageCheckpoint = Date.now();
 
 function formatLessonDuration(ms) {
   const minutes = Math.round(ms / 60000);
@@ -1677,6 +1699,7 @@ async function startLesson() {
   state.messages = [];
   state.started = true;
   lessonStartTime = Date.now();
+  lastUsageCheckpoint = Date.now();
   vocabCountAtStart = savedVocab.length;
   correctionsCountAtStart = savedCorrections.length;
   transcriptEl.innerHTML = "";
@@ -2070,7 +2093,13 @@ async function sendMessage(text, isSystemTrigger = false, fromVoice = false) {
   micBtn.disabled = true;
 
   try {
-    const raw = await callProvider(buildReplySystemPrompt(), state.messages);
+    // Temps écoulé depuis le dernier échange (ou le début de la leçon pour
+    // le tout premier), envoyé uniquement ici : c'est ce qui alimente le
+    // quota des comptes en essai gratuit (10 min/jour), vérifié côté
+    // serveur dans ai-chat.
+    const elapsedSeconds = Math.round((Date.now() - lastUsageCheckpoint) / 1000);
+    lastUsageCheckpoint = Date.now();
+    const raw = await callProvider(buildReplySystemPrompt(), state.messages, MODEL_MAIN, elapsedSeconds);
     const data = parseTutorJSON(raw);
 
     if (userBubble && data.userText) userBubble.textContent = frenchSpacing(data.userText);
@@ -2087,10 +2116,16 @@ async function sendMessage(text, isSystemTrigger = false, fromVoice = false) {
     speak(data.reply, mood);
     setStatus(t("your_turn"));
   } catch (err) {
-    console.error(err);
-    const msg = err && err.message ? err.message : String(err);
-    setStatus(t("error_prefix") + msg);
-    addBubble("tutor", t("err_bubble").replace("{msg}", msg));
+    if (err && err.message === "TRIAL_LIMIT_REACHED") {
+      state.messages.pop();   // ce tour n'a pas eu de réponse, ne pas le garder dans l'historique
+      openPaywall();
+      setStatus(t("trial_limit_status"));
+    } else {
+      console.error(err);
+      const msg = err && err.message ? err.message : String(err);
+      setStatus(t("error_prefix") + msg);
+      addBubble("tutor", t("err_bubble").replace("{msg}", msg));
+    }
   } finally {
     state.busy = false;
     micBtn.disabled = !micAvailable();
@@ -2114,9 +2149,9 @@ async function sendMessage(text, isSystemTrigger = false, fromVoice = false) {
 const MODEL_MAIN = "main";
 const MODEL_FAST = "fast";
 
-async function callAnthropic(systemPrompt, messages, model = MODEL_MAIN) {
+async function callAnthropic(systemPrompt, messages, model = MODEL_MAIN, elapsedSeconds = 0) {
   const { data, error } = await supabaseClient.functions.invoke("ai-chat", {
-    body: { systemPrompt, messages, model },
+    body: { systemPrompt, messages, model, elapsedSeconds },
   });
   if (error) throw new Error(await readFunctionError(error));
   return data?.text || "";
@@ -2126,9 +2161,12 @@ async function callAnthropic(systemPrompt, messages, model = MODEL_MAIN) {
 // ponctuelle). Un seul fournisseur (Claude) est proposé dans les réglages ;
 // les fournisseurs Groq/OpenAI/Gemini, initialement supportés, ont été
 // retirés pour simplifier le code après qu'ils ne soient plus accessibles
-// depuis l'interface.
-async function callProvider(systemPrompt, messages, model) {
-  return callAnthropic(systemPrompt, messages, model);
+// depuis l'interface. elapsedSeconds n'est renseigné que par l'appel
+// principal de conversation (voir sendMessage) : la correction, la
+// recherche de mot et la traduction ne doivent pas compter deux fois le
+// même temps dans le quota d'essai gratuit.
+async function callProvider(systemPrompt, messages, model, elapsedSeconds = 0) {
+  return callAnthropic(systemPrompt, messages, model, elapsedSeconds);
 }
 
 // supabase-js n'inclut pas automatiquement le message JSON qu'une Edge
@@ -2337,6 +2375,64 @@ async function runImport() {
   }
   await loadUserVocabAndCorrections();
 }
+
+// =========================================================
+//  Panneau admin (Xavier uniquement)
+// =========================================================
+// Simple contrôle d'affichage : le vrai contrôle de sécurité est côté
+// serveur (admin-set-status vérifie à nouveau cet email avant d'agir).
+// Un élève qui forcerait ce bouton à s'afficher ne pourrait de toute façon
+// rien faire de plus qu'un refus de la fonction serveur.
+const ADMIN_EMAIL = "gringo.na.gringa55@gmail.com";
+
+$("adminBtn").addEventListener("click", () => {
+  $("adminModal").hidden = false;
+  $("adminError").hidden = true;
+  $("adminSuccess").hidden = true;
+});
+$("closeAdmin").addEventListener("click", () => ($("adminModal").hidden = true));
+$("adminSubmitBtn").addEventListener("click", async () => {
+  const email = $("adminEmailInput").value.trim();
+  const plan = $("adminPlanSelect").value;
+  if (!email) return;
+  $("adminSubmitBtn").disabled = true;
+  $("adminError").hidden = true;
+  $("adminSuccess").hidden = true;
+  try {
+    const { data, error } = await supabaseClient.functions.invoke("admin-set-status", { body: { email, plan } });
+    if (error) throw new Error(await readFunctionError(error));
+    $("adminSuccess").textContent = `${email} mis à jour : ${plan}.`;
+    $("adminSuccess").hidden = false;
+    $("adminEmailInput").value = "";
+  } catch (err) {
+    $("adminError").textContent = (err && err.message) || String(err);
+    $("adminError").hidden = false;
+  } finally {
+    $("adminSubmitBtn").disabled = false;
+  }
+});
+
+// =========================================================
+//  Fin d'essai gratuit / abonnement (Stripe)
+// =========================================================
+function openPaywall() {
+  $("paywallModal").hidden = false;
+}
+$("closePaywall").addEventListener("click", () => ($("paywallModal").hidden = true));
+$("subscribeBtn").addEventListener("click", async () => {
+  $("subscribeBtn").disabled = true;
+  try {
+    const { data, error } = await supabaseClient.functions.invoke("create-checkout-session", {
+      body: { origin: window.location.origin },
+    });
+    if (error) throw new Error(await readFunctionError(error));
+    if (data?.url) window.location.href = data.url;
+  } catch (err) {
+    console.error("Échec ouverture du paiement :", err);
+    setStatus(t("error_prefix") + (err.message || String(err)));
+    $("subscribeBtn").disabled = false;
+  }
+});
 
 $("skipImportBtn").addEventListener("click", () => {
   $("importModal").hidden = true;

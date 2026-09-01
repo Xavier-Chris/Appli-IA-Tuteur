@@ -16,6 +16,12 @@ const MODELS: Record<string, string> = {
   fast: "claude-haiku-4-5-20251001",
 };
 const MAX_TOKENS = 2000;
+const TRIAL_DAILY_LIMIT_SECONDS = 600;
+// Un incrément de temps aberrant (bug client, onglet resté ouvert des
+// heures sans message) ne doit jamais faire sauter tout le quota du jour
+// d'un coup : plafonné à 2 minutes par message, largement au-dessus du
+// temps réel entre deux tours de conversation.
+const MAX_ELAPSED_PER_CALL_SECONDS = 120;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -34,9 +40,37 @@ Deno.serve(async (req) => {
     });
   }
 
+  // Client à privilèges élevés (clé service_role, contourne RLS) : nécessaire
+  // pour lire/écrire profiles et usage_daily, qu'un élève ne peut jamais
+  // modifier lui-même par sécurité (voir la migration SQL).
+  const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+
   try {
-    const { systemPrompt, messages, model } = await req.json();
+    const { systemPrompt, messages, model, elapsedSeconds } = await req.json();
     const claudeModel = MODELS[model] || MODELS.main;
+
+    const { data: profile } = await admin.from("profiles").select("plan").eq("user_id", user.id).maybeSingle();
+    const plan = profile?.plan || "trial";
+
+    if (plan === "trial") {
+      const today = new Date().toISOString().slice(0, 10);
+      const { data: usageRow } = await admin.from("usage_daily")
+        .select("seconds_used").eq("user_id", user.id).eq("day", today).maybeSingle();
+      const usedSoFar = usageRow?.seconds_used || 0;
+
+      if (usedSoFar >= TRIAL_DAILY_LIMIT_SECONDS) {
+        return new Response(JSON.stringify({ error: "TRIAL_LIMIT_REACHED" }), {
+          status: 402,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const increment = Math.max(0, Math.min(Number(elapsedSeconds) || 0, MAX_ELAPSED_PER_CALL_SECONDS));
+      if (increment > 0) {
+        await admin.from("usage_daily")
+          .upsert({ user_id: user.id, day: today, seconds_used: usedSoFar + increment });
+      }
+    }
 
     // Cache de prompt Anthropic : même logique que côté client à l'origine,
     // seul le dernier message est marqué "ephemeral".

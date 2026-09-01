@@ -23,6 +23,7 @@
       </select>
       <button id="themeBtn" class="icon-btn" data-i18n-title="theme_title" title="Basculer clair / sombre">🌙</button>
       <button id="authBtn" class="icon-btn" data-i18n-title="account_title" title="Compte">👤</button>
+      <button id="adminBtn" class="icon-btn" hidden title="Panneau admin">🛠️</button>
     </div>
   </header>
 
@@ -256,6 +257,48 @@
         <button id="closeReview" class="icon-btn">✕</button>
       </div>
       <div id="reviewBody"></div>
+    </div>
+  </div>
+
+  <!-- Panneau admin (visible seulement pour le compte de Xavier ; réservé à
+       lui seul, pas besoin de traduction dans les 5 langues) -->
+  <div id="adminModal" class="modal" hidden>
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2>Panneau admin</h2>
+        <button id="closeAdmin" class="icon-btn">✕</button>
+      </div>
+      <p id="adminError" class="small auth-error" hidden></p>
+      <p id="adminSuccess" class="small auth-success" hidden></p>
+      <label class="field">
+        <span>Email de l'élève</span>
+        <input id="adminEmailInput" type="email" autocomplete="off" />
+      </label>
+      <label class="field">
+        <span>Statut</span>
+        <select id="adminPlanSelect">
+          <option value="student">Élève (gratuit, illimité)</option>
+          <option value="trial">Essai (10 min/jour)</option>
+          <option value="active">Abonné payant</option>
+        </select>
+      </label>
+      <div class="modal-actions">
+        <button id="adminSubmitBtn" class="btn btn-primary">Mettre à jour</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fenêtre de fin d'essai gratuit -->
+  <div id="paywallModal" class="modal" hidden>
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2 data-i18n="paywall_h">Essai gratuit terminé pour aujourd'hui</h2>
+        <button id="closePaywall" class="icon-btn">✕</button>
+      </div>
+      <p class="small muted" data-i18n="paywall_note">Tu as utilisé tes 10 minutes gratuites du jour. Reviens demain, ou passe à l'abonnement pour un accès illimité.</p>
+      <div class="modal-actions">
+        <button id="subscribeBtn" class="btn btn-primary" data-i18n="btn_subscribe">S'abonner (20€/mois)</button>
+      </div>
     </div>
   </div>
 
