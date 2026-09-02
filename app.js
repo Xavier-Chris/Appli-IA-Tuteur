@@ -970,8 +970,6 @@ const AZURE_VOICES = [
   { id: "fr-FR-RemyMultilingualNeural", label: "Rémy ⭐ (homme, très naturel)", gender: "m" },
   { id: "fr-FR-VivienneMultilingualNeural", label: "Vivienne ⭐ (femme, très naturelle)", gender: "f" },
   { id: "fr-FR-LucienMultilingualNeural", label: "Lucien ⭐ (homme, très naturel)", gender: "m" },
-  { id: "fr-FR-DeniseNeural", label: "Denise (femme, naturelle)", gender: "f" },
-  { id: "fr-FR-HenriNeural", label: "Henri (homme, naturel)", gender: "m" },
   { id: "fr-FR-Marc:MAI-Voice-2-Flash", label: "Marc (homme, très expressif)", gender: "m" },
   { id: "fr-FR-Soleil:MAI-Voice-2-Flash", label: "Soleil (femme, très expressive)", gender: "f" },
 ];
