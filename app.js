@@ -1187,12 +1187,12 @@ function playAzureBlob(blob, token) {
   });
 }
 
-async function speakAzure(text, token, mood) {
+async function speakAzure(text, token, mood, voiceOverride) {
   // Figée une seule fois pour toute la réponse : si la voix sélectionnée
   // changeait entre deux phrases (ex : rechargement de la liste des voix
   // pendant la lecture), chaque phrase suivante aurait pu repartir avec
   // une voix différente de la première.
-  const voiceName = selectedVoiceName;
+  const voiceName = voiceOverride || selectedVoiceName;
   const sentences = splitSentences(text);
 
   // Une seule phrase : pas de gain à découper, chemin simple direct.
@@ -1245,13 +1245,13 @@ function normalizeForSpeech(text) {
   return String(text || "").replace(/(\d+)\s*[-‑–—−]\s*(\d+)/g, "$1 à $2");
 }
 
-function speak(text, mood) {
+function speak(text, mood, voiceOverride) {
   const spoken = normalizeForSpeech(text);
   const token = ++speakToken;
   if (currentAzureAudio) { currentAzureAudio.pause(); currentAzureAudio = null; }
   if ("speechSynthesis" in window) speechSynthesis.cancel();
   if (azureReady()) {
-    speakAzure(spoken, token, mood).catch((err) => {
+    speakAzure(spoken, token, mood, voiceOverride).catch((err) => {
       if (token !== speakToken) return;   // supplanté entre-temps, inutile de basculer sur le navigateur
       console.warn("Azure TTS a échoué, repli sur la voix du navigateur :", err);
       speakBrowser(spoken);
@@ -1259,6 +1259,23 @@ function speak(text, mood) {
   } else {
     speakBrowser(spoken);
   }
+}
+
+// Marc/Soleil (MAI-Voice-2) ignorent la balise <lang> qui force le français
+// (contrairement aux voix Multilingual Neural) : sur un mot isolé, sans
+// phrase autour pour donner un indice de langue, ça pouvait le faire lire
+// à l'anglaise (ex : "content" prononcé comme l'adjectif anglais, avec un
+// "t" final audible, proche de "contente"). Pour la lecture d'un mot seul
+// (clic dans la conversation, écoute d'une fiche de révision), on bascule
+// alors sur une voix Multilingual Neural de même genre, fiable sur ce
+// point, quel que soit le personnage actif. Sans effet si la voix en cours
+// est déjà une Multilingual Neural.
+function wordLookupVoiceName() {
+  if (!voiceSupportsStyles(selectedVoiceName)) return selectedVoiceName;
+  const gender = currentVoiceGender() || "m";
+  const multilingual = AZURE_VOICES.find((v) => v.id.toLowerCase().includes("multilingual") && v.gender === gender)
+    || AZURE_VOICES.find((v) => v.id.toLowerCase().includes("multilingual"));
+  return multilingual ? multilingual.id : selectedVoiceName;
 }
 
 // Menu de choix de la voix : on change et on donne un aperçu.
@@ -1997,7 +2014,7 @@ Ne mets rien d'autre que ce JSON.`;
 async function lookupWord(word, sentenceContext, spanEl) {
   const cleanWord = (word || "").trim();
   if (!cleanWord || !currentSession) return;
-  speak(cleanWord);   // prononce le mot cliqué, en plus de sa traduction
+  speak(cleanWord, null, wordLookupVoiceName());   // prononce le mot cliqué, en plus de sa traduction
   spanEl.classList.add("looking-up");
   try {
     const raw = await callProvider(buildVocabLookupPrompt(), [
@@ -2606,7 +2623,7 @@ function renderReviewCard() {
     </div>
     <div class="review-actions" id="reviewActions"></div>`;
 
-  $("reviewListenBtn").addEventListener("click", () => speak(v.word));
+  $("reviewListenBtn").addEventListener("click", () => speak(v.word, null, wordLookupVoiceName()));
 
   const actions = $("reviewActions");
   const showBtn = document.createElement("button");
