@@ -1146,14 +1146,18 @@ async function fetchAzureAudioBlob(sentence, voiceName, mood) {
   // du navigateur. Sur Marc/Soleil sans humeur valable, on omet donc le
   // style plutôt que de forcer "chat".
   const ttsStyle = isParisianSnob ? "disgusted" : (mood && supportsStyles ? mood : (supportsStyles ? null : "chat"));
-  // Les voix "Multilingual" (Vivienne, Rémy, Lucien) détectent
-  // automatiquement la langue mot par mot. Un mot isolé qui existe aussi
-  // en anglais (ex : "aspect") peut alors être prononcé avec un accent
-  // anglais, surtout sans phrase autour pour donner un indice de langue.
-  // On force le français avec la balise <lang> pour ces voix-là.
-  const isMultilingual = voiceName.toLowerCase().includes("multilingual");
+  // Les voix "Multilingual" (Vivienne, Rémy, Lucien) ET les voix MAI-Voice-2
+  // (Marc, Soleil, imposées par défaut sur le tuteur classique pour leur
+  // côté expressif) détectent automatiquement la langue mot par mot. Un mot
+  // isolé qui existe aussi en anglais (ex : "aspect") peut alors être
+  // prononcé avec un accent anglais, surtout sans phrase autour pour donner
+  // un indice de langue (typiquement au clic sur un mot dans la
+  // conversation). On force le français avec la balise <lang> pour
+  // TOUTES les voix : sans effet sur celles qui ne détectent pas la langue,
+  // ça ne coûte donc rien de l'appliquer partout plutôt que de deviner au
+  // cas par cas lesquelles en ont besoin.
   const body = wrapPhonemes(escapeSSML(sentence));
-  const spoken = isMultilingual ? `<lang xml:lang="fr-FR">${body}</lang>` : body;
+  const spoken = `<lang xml:lang="fr-FR">${body}</lang>`;
   const voiceInner = ttsStyle
     ? `<mstts:express-as style="${ttsStyle}"><prosody rate="${rateAttr}">${spoken}</prosody></mstts:express-as>`
     : `<prosody rate="${rateAttr}">${spoken}</prosody>`;
