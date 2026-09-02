@@ -1133,7 +1133,16 @@ async function fetchAzureAudioBlob(sentence, voiceName, mood) {
   // manuellement de voix.
   const isParisianSnob = state.persona === "parisien";
   const supportsStyles = voiceSupportsStyles(voiceName);
-  const ratePct = Math.round((voiceRate * (isParisianSnob ? 0.88 : 1) - 1) * 100);
+  // Test demandé par Xavier (2026-09-02) : ses élèves Débutant/Intermédiaire
+  // trouvaient toutes les voix trop rapides, même en choisissant "Lente"
+  // (-20%, le minimum du réglage manuel). Ralentissement supplémentaire
+  // appliqué automatiquement selon le niveau, cumulé avec la vitesse
+  // choisie manuellement (comme pour le Parisien snob ci-dessous) : le
+  // pourcentage final peut donc légèrement varier selon le réglage manuel
+  // de l'élève, -30%/-25% étant la cible avec la vitesse "Normale" par
+  // défaut.
+  const levelSlowdown = state.level === "debutant" ? 0.7 : state.level === "intermediaire" ? 0.75 : 1;
+  const ratePct = Math.round((voiceRate * (isParisianSnob ? 0.88 : 1) * levelSlowdown - 1) * 100);
   const rateAttr = ratePct >= 0 ? `+${ratePct}%` : `${ratePct}%`;
   // Humeur dynamique du tuteur classique (voir buildReplySystemPrompt) :
   // n'a d'effet audible que sur une voix qui sait jouer des styles. Le style
