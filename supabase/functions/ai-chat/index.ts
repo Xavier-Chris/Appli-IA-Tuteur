@@ -4,10 +4,23 @@
 // même { systemPrompt, messages, model }.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+// Restreint aux origines connues (l'appli en prod + le serveur de test
+// local) plutôt qu'à "*" : un site tiers ne peut plus lire la réponse de
+// cette fonction depuis le navigateur d'un élève. Ne protège pas la
+// fonction elle-même (déjà gardée par la vérification de session
+// ci-dessous), juste une couche de défense en plus avant l'ouverture au
+// public.
+const ALLOWED_ORIGINS = [
+  "https://tutor-app-ai.xavier-web.workers.dev",
+  "http://localhost:5500",
+];
+function corsHeadersFor(req: Request) {
+  const origin = req.headers.get("origin") || "";
+  return {
+    "Access-Control-Allow-Origin": ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0],
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  };
+}
 
 // Seuls ces deux alias sont acceptés depuis le client : un élève ne peut
 // jamais forcer un modèle plus cher que ce qui est prévu pour chaque usage.
@@ -18,6 +31,7 @@ const MODELS: Record<string, string> = {
 const MAX_TOKENS = 2000;
 
 Deno.serve(async (req) => {
+  const corsHeaders = corsHeadersFor(req);
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   const authHeader = req.headers.get("Authorization") || "";

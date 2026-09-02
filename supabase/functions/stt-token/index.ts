@@ -5,12 +5,23 @@
 // qui expire vite, part vers le navigateur.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+// Restreint aux origines connues (l'appli en prod + le serveur de test
+// local) plutôt qu'à "*" : un site tiers ne peut plus lire la réponse de
+// cette fonction depuis le navigateur d'un élève.
+const ALLOWED_ORIGINS = [
+  "https://tutor-app-ai.xavier-web.workers.dev",
+  "http://localhost:5500",
+];
+function corsHeadersFor(req: Request) {
+  const origin = req.headers.get("origin") || "";
+  return {
+    "Access-Control-Allow-Origin": ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0],
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  };
+}
 
 Deno.serve(async (req) => {
+  const corsHeaders = corsHeadersFor(req);
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   const authHeader = req.headers.get("Authorization") || "";
