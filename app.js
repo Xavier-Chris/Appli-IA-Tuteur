@@ -1,7 +1,9 @@
 /* =========================================================
    Tuteur de français IA - logique de l'application
-   - Reconnaissance vocale et synthèse : navigateur (gratuit)
-   - Cerveau : Claude (Anthropic) ou OpenAI, clé fournie par toi
+   - Reconnaissance et synthèse vocales : Azure (via la fonction serveur
+     stt-token/tts-proxy), repli sur le navigateur si indisponible
+   - Cerveau : Claude (Anthropic), via la fonction serveur ai-chat
+     (clé jamais exposée côté client)
    ========================================================= */
 
 // ---- État global ----
@@ -103,7 +105,7 @@ const I18N = {
     no_mic: "Ton navigateur ne gère pas le micro. Utilise Chrome/Edge ou écris tes réponses.",
     no_mic_ios: "Le micro n'est pas disponible sur iPhone/iPad, quel que soit le navigateur (limitation d'iOS). Écris tes réponses.",
     reset_ready: "Nouvelle leçon prête. Clique sur <strong>Démarrer la conversation</strong>.",
-    err_bubble: "Problème technique. Détail : {msg}\n\nSi tu vois « 401 » : ta clé API est absente ou invalide (⚙️). Si tu vois « Failed to fetch » : le navigateur bloque l'appel, on lancera un serveur local.",
+    err_bubble: "Problème technique. Détail : {msg}\n\nSi le problème persiste, essaie de te reconnecter (👤 en haut à droite) ou vérifie ta connexion internet.",
     c_said: "Tu as dit", c_better: "Mieux", c_why: "Pourquoi",
     replay_title: "Réécouter",
     translate_title: "Voir la traduction",
@@ -226,7 +228,7 @@ const I18N = {
     no_mic: "Your browser doesn't support the mic. Use Chrome/Edge or type your answers.",
     no_mic_ios: "The mic isn't available on iPhone/iPad, in any browser (an iOS limitation). Type your answers instead.",
     reset_ready: "New lesson ready. Click <strong>Start conversation</strong>.",
-    err_bubble: "Technical problem. Details: {msg}\n\nIf you see \"401\": your API key is missing or invalid (⚙️). If you see \"Failed to fetch\": the browser is blocking the call, we'll set up a local server.",
+    err_bubble: "Technical problem. Details: {msg}\n\nIf the problem persists, try signing in again (👤 top right) or check your internet connection.",
     c_said: "You said", c_better: "Better", c_why: "Why",
     replay_title: "Play again",
     translate_title: "Show translation",
@@ -349,7 +351,7 @@ const I18N = {
     no_mic: "Tu navegador no admite el micrófono. Usa Chrome/Edge o escribe tus respuestas.",
     no_mic_ios: "El micrófono no está disponible en iPhone/iPad, en ningún navegador (una limitación de iOS). Escribe tus respuestas.",
     reset_ready: "Nueva lección lista. Haz clic en <strong>Empezar la conversación</strong>.",
-    err_bubble: "Problema técnico. Detalle: {msg}\n\nSi ves «401»: tu clave API falta o no es válida (⚙️). Si ves «Failed to fetch»: el navegador está bloqueando la llamada, configuraremos un servidor local.",
+    err_bubble: "Problema técnico. Detalle: {msg}\n\nSi el problema persiste, intenta volver a iniciar sesión (👤 arriba a la derecha) o comprueba tu conexión a internet.",
     c_said: "Dijiste", c_better: "Mejor", c_why: "Por qué",
     replay_title: "Volver a escuchar",
     translate_title: "Ver la traducción",
@@ -472,7 +474,7 @@ const I18N = {
     no_mic: "Dein Browser unterstützt das Mikrofon nicht. Nutze Chrome/Edge oder schreibe deine Antworten.",
     no_mic_ios: "Das Mikrofon ist auf iPhone/iPad in keinem Browser verfügbar (eine Einschränkung von iOS). Schreibe deine Antworten.",
     reset_ready: "Neue Lektion bereit. Klicke auf <strong>Gespräch starten</strong>.",
-    err_bubble: "Technisches Problem. Details: {msg}\n\nWenn du \"401\" siehst: dein API-Schlüssel fehlt oder ist ungültig (⚙️). Wenn du \"Failed to fetch\" siehst: der Browser blockiert den Aufruf, wir richten einen lokalen Server ein.",
+    err_bubble: "Technisches Problem. Details: {msg}\n\nWenn das Problem weiterhin besteht, versuche dich erneut anzumelden (👤 oben rechts) oder überprüfe deine Internetverbindung.",
     c_said: "Du sagtest", c_better: "Besser", c_why: "Warum",
     replay_title: "Erneut anhören",
     translate_title: "Übersetzung anzeigen",
@@ -595,7 +597,7 @@ const I18N = {
     no_mic: "Seu navegador não suporta o microfone. Use o Chrome/Edge ou escreva suas respostas.",
     no_mic_ios: "O microfone não está disponível em iPhone/iPad, em nenhum navegador (uma limitação do iOS). Escreva suas respostas.",
     reset_ready: "Nova lição pronta. Clique em <strong>Começar a conversa</strong>.",
-    err_bubble: "Problema técnico. Detalhe: {msg}\n\nSe você vir \"401\": sua chave API está faltando ou é inválida (⚙️). Se você vir \"Failed to fetch\": o navegador está bloqueando o pedido, vamos configurar um servidor local.",
+    err_bubble: "Problema técnico. Detalhe: {msg}\n\nSe o problema persistir, tente entrar novamente (👤 no canto superior direito) ou verifique sua conexão com a internet.",
     c_said: "Você disse", c_better: "Melhor", c_why: "Por quê",
     replay_title: "Ouvir novamente",
     translate_title: "Ver a tradução",
@@ -1978,7 +1980,7 @@ async function translateBubble(text, btn, box) {
   }
   btn.classList.add("looking-up");
   try {
-    const raw = await callProvider(buildTranslatePrompt(), [{ role: "user", content: text }]);
+    const raw = await callAnthropic(buildTranslatePrompt(), [{ role: "user", content: text }]);
     const data = parseJSON(raw, { translation: "" });
     box.textContent = data.translation || "";
     box.dataset.loaded = "1";
@@ -2027,7 +2029,7 @@ async function lookupWord(word, sentenceContext, spanEl) {
   speak(cleanWord, null, wordLookupVoiceName());   // prononce le mot cliqué, en plus de sa traduction
   spanEl.classList.add("looking-up");
   try {
-    const raw = await callProvider(buildVocabLookupPrompt(), [
+    const raw = await callAnthropic(buildVocabLookupPrompt(), [
       { role: "user", content: `Phrase : "${sentenceContext}"\nMot ou expression cliqué : "${cleanWord}"` },
     ], MODEL_FAST);
     const data = parseJSON(raw, {
@@ -2089,7 +2091,7 @@ async function sendMessage(text, isSystemTrigger = false, fromVoice = false) {
   // besoin de tout l'historique) et met à jour son panneau dès qu'elle est
   // prête, même après que le tuteur ait fini de répondre.
   if (!isSystemTrigger) {
-    callProvider(buildCorrectionSystemPrompt(fromVoice), [{ role: "user", content: text }], MODEL_FAST)
+    callAnthropic(buildCorrectionSystemPrompt(fromVoice), [{ role: "user", content: text }], MODEL_FAST)
       .then((raw) => renderCorrection(parseJSON(raw, { correction: null }).correction))
       .catch((err) => console.warn("Correction indisponible :", err));
   }
@@ -2099,7 +2101,7 @@ async function sendMessage(text, isSystemTrigger = false, fromVoice = false) {
   micBtn.disabled = true;
 
   try {
-    const raw = await callProvider(buildReplySystemPrompt(), state.messages);
+    const raw = await callAnthropic(buildReplySystemPrompt(), state.messages);
     const data = parseTutorJSON(raw);
 
     if (userBubble && data.userText) userBubble.textContent = frenchSpacing(data.userText);
@@ -2143,21 +2145,14 @@ async function sendMessage(text, isSystemTrigger = false, fromVoice = false) {
 const MODEL_MAIN = "main";
 const MODEL_FAST = "fast";
 
+// Point d'entrée unique pour tous les appels IA (conversation ou recherche
+// ponctuelle).
 async function callAnthropic(systemPrompt, messages, model = MODEL_MAIN) {
   const { data, error } = await supabaseClient.functions.invoke("ai-chat", {
     body: { systemPrompt, messages, model },
   });
   if (error) throw new Error(await readFunctionError(error));
   return data?.text || "";
-}
-
-// Point d'entrée unique pour tous les appels IA (conversation ou recherche
-// ponctuelle). Un seul fournisseur (Claude) est proposé dans les réglages ;
-// les fournisseurs Groq/OpenAI/Gemini, initialement supportés, ont été
-// retirés pour simplifier le code après qu'ils ne soient plus accessibles
-// depuis l'interface.
-async function callProvider(systemPrompt, messages, model) {
-  return callAnthropic(systemPrompt, messages, model);
 }
 
 // supabase-js n'inclut pas automatiquement le message JSON qu'une Edge
