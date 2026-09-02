@@ -880,7 +880,8 @@ async function syncSession(session) {
   refreshEngineHint();
   loadVoices();
   applyPersonaVoice();
-  $("adminBtn").hidden = !(session && session.user.email === ADMIN_EMAIL);
+  $("adminBtn").hidden = true;
+  if (session) refreshAdminButtonVisibility();
   const userId = session ? session.user.id : null;
   if (userId === loadedForUserId) return;
   loadedForUserId = userId;
@@ -2416,10 +2417,18 @@ async function runImport() {
 //  Panneau admin (Xavier uniquement)
 // =========================================================
 // Simple contrôle d'affichage : le vrai contrôle de sécurité est côté
-// serveur (admin-set-status vérifie à nouveau cet email avant d'agir).
-// Un élève qui forcerait ce bouton à s'afficher ne pourrait de toute façon
-// rien faire de plus qu'un refus de la fonction serveur.
-const ADMIN_EMAIL = "gringo.na.gringa55@gmail.com";
+// serveur (admin-set-status revérifie l'email du compte connecté avant
+// d'agir, à partir d'un secret jamais envoyé au navigateur). On ne garde
+// donc plus cet email en clair ici : on interroge juste le statut
+// "is_admin" du compte connecté (colonne profiles, lisible seulement par
+// ce compte via RLS), qui ne révèle rien sur les autres comptes. Un élève
+// qui forcerait quand même ce bouton à s'afficher ne pourrait de toute
+// façon rien faire de plus qu'un refus de la fonction serveur.
+async function refreshAdminButtonVisibility() {
+  const { data } = await supabaseClient.from("profiles")
+    .select("is_admin").eq("user_id", currentSession.user.id).maybeSingle();
+  $("adminBtn").hidden = !data?.is_admin;
+}
 
 $("adminBtn").addEventListener("click", () => {
   $("adminModal").hidden = false;
