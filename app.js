@@ -1558,6 +1558,18 @@ $("textForm").addEventListener("submit", (e) => {
   sendMessage(text);
 });
 
+document.querySelectorAll(".accent-key").forEach((key) => {
+  key.addEventListener("click", () => {
+    const input = $("textInput");
+    const char = key.dataset.char;
+    const start = input.selectionStart ?? input.value.length;
+    const end = input.selectionEnd ?? input.value.length;
+    input.value = input.value.slice(0, start) + char + input.value.slice(end);
+    input.focus();
+    input.setSelectionRange(start + char.length, start + char.length);
+  });
+});
+
 // =========================================================
 //  Démarrage / reset de la leçon
 // =========================================================

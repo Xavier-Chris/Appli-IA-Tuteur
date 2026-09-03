@@ -249,6 +249,29 @@ select:focus, input:focus { border-color: var(--primary); }
 .waveform.speaking span { background: var(--accent); animation: wave .7s ease-in-out infinite; }
 @keyframes wave { 0%,100%{ height: 8px; } 50%{ height: 26px; } }
 
+.mic-row { display: flex; align-items: center; gap: 14px; }
+.accent-keyboard {
+  display: grid;
+  grid-template-columns: repeat(7, 30px);
+  grid-auto-rows: 30px;
+  gap: 4px;
+}
+.accent-key {
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--text);
+  border-radius: 6px;
+  font-size: 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: background .15s ease, transform .1s ease;
+}
+.accent-key:hover { background: var(--border); }
+.accent-key:active { transform: scale(.92); }
+
 .mic-btn {
   width: 76px; height: 76px;
   border-radius: 50%;
