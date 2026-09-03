@@ -882,6 +882,7 @@ async function syncSession(session) {
   applyPersonaVoice();
   $("adminBtn").hidden = true;
   if (session) refreshAdminButtonVisibility();
+  refreshPremiumButtonVisibility();
   const userId = session ? session.user.id : null;
   if (userId === loadedForUserId) return;
   loadedForUserId = userId;
@@ -2430,6 +2431,19 @@ async function refreshAdminButtonVisibility() {
   $("adminBtn").hidden = !data?.is_admin;
 }
 
+// Bouton "Premium" de la barre du haut : accès direct à l'abonnement, sans
+// attendre la limite d'essai. Visible pour un visiteur pas encore connecté
+// (un lead déjà briefé par l'email sait à quoi s'attendre, voir mémoire du
+// chantier) et pour un compte connecté encore en essai ; caché dès qu'il
+// est exempté ("élève") ou déjà abonné ("actif"), pas besoin de lui
+// proposer de payer ce qu'il a déjà.
+async function refreshPremiumButtonVisibility() {
+  if (!currentSession) { $("premiumBtn").hidden = false; return; }
+  const { data } = await supabaseClient.from("profiles")
+    .select("plan").eq("user_id", currentSession.user.id).maybeSingle();
+  $("premiumBtn").hidden = (data?.plan || "trial") !== "trial";
+}
+
 $("adminBtn").addEventListener("click", () => {
   $("adminModal").hidden = false;
   $("adminError").hidden = true;
@@ -2471,12 +2485,22 @@ $("closePaywall").addEventListener("click", () => ($("paywallModal").hidden = tr
 // prefilled_email lui évite de le retaper.
 const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/dRm14naKKfz2bBFeHl5AQ0c";
 
-$("subscribeBtn").addEventListener("click", () => {
-  if (!currentSession) return;
+function goToStripeCheckout() {
   const url = new URL(STRIPE_PAYMENT_LINK);
   url.searchParams.set("client_reference_id", currentSession.user.id);
   url.searchParams.set("prefilled_email", currentSession.user.email);
   window.location.href = url.toString();
+}
+$("subscribeBtn").addEventListener("click", () => {
+  if (!currentSession) return;
+  goToStripeCheckout();
+});
+// Un visiteur pas encore connecté doit d'abord créer un compte ou se
+// connecter (Stripe a besoin de son user_id pour savoir quel compte
+// débloquer) : direction l'écran de connexion plutôt qu'un clic sans effet.
+$("premiumBtn").addEventListener("click", () => {
+  if (!currentSession) { openAuthModal(); showAuthView("authSignInView"); return; }
+  goToStripeCheckout();
 });
 
 $("skipImportBtn").addEventListener("click", () => {

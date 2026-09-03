@@ -102,6 +102,21 @@ body {
   font-size: 14px;
   font-weight: 600;
 }
+.btn-premium {
+  border: 1px solid #d4af37;
+  background: transparent;
+  color: #b8860b;
+  height: 38px;
+  padding: 0 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  transition: transform .1s ease, background .2s ease;
+}
+.btn-premium:hover { background: rgba(212, 175, 55, 0.12); transform: translateY(-1px); }
+:root[data-theme="dark"] .btn-premium { color: #e0b84c; }
 
 /* ---- Layout ---- */
 .layout {
