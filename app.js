@@ -2535,6 +2535,34 @@ $("confirmImportBtn").addEventListener("click", async () => {
 // comme le vocabulaire, pour suivre les fautes récurrentes dans le temps.
 let savedCorrections = [];
 
+// Diff mot à mot (LCS) entre la phrase de l'apprenant et sa correction, pour
+// ne surligner que les mots qui changent au lieu de barrer/colorer toute la
+// phrase (plus lisible sur une phrase longue avec peu de fautes).
+function diffWords(original, better) {
+  const a = (original || "").split(/\s+/).filter(Boolean);
+  const b = (better || "").split(/\s+/).filter(Boolean);
+  const n = a.length, m = b.length;
+  const dp = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(0));
+  for (let i = n - 1; i >= 0; i--) {
+    for (let j = m - 1; j >= 0; j--) {
+      dp[i][j] = a[i] === b[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+    }
+  }
+  const origParts = [], betterParts = [];
+  let i = 0, j = 0;
+  while (i < n && j < m) {
+    if (a[i] === b[j]) { origParts.push({ word: a[i], changed: false }); betterParts.push({ word: b[j], changed: false }); i++; j++; }
+    else if (dp[i + 1][j] >= dp[i][j + 1]) { origParts.push({ word: a[i], changed: true }); i++; }
+    else { betterParts.push({ word: b[j], changed: true }); j++; }
+  }
+  while (i < n) { origParts.push({ word: a[i], changed: true }); i++; }
+  while (j < m) { betterParts.push({ word: b[j], changed: true }); j++; }
+  return { origParts, betterParts };
+}
+function diffPartsToHtml(parts, changedClass) {
+  return parts.map((p) => p.changed ? `<span class="${changedClass}">${escapeHtml(p.word)}</span>` : escapeHtml(p.word)).join(" ");
+}
+
 function renderCorrectionsPanel() {
   if (!savedCorrections.length) {
     correctionsEl.innerHTML = `<p class="small muted">${t("corrections_empty")}</p>`;
@@ -2542,11 +2570,12 @@ function renderCorrectionsPanel() {
   }
   correctionsEl.innerHTML = "";
   savedCorrections.forEach((c) => {
+    const { origParts, betterParts } = diffWords(c.original || "", c.better || "");
     const card = document.createElement("div");
     card.className = "correction-card";
     card.innerHTML = `
-      <div class="row"><span class="tag">${t("c_said")}</span><span class="said">${escapeHtml(c.original || "")}</span></div>
-      <div class="row"><span class="tag">${t("c_better")}</span><span class="better">${escapeHtml(c.better)}</span></div>
+      <div class="row"><span class="tag">${t("c_said")}</span><span class="said">${diffPartsToHtml(origParts, "err-word")}</span></div>
+      <div class="row"><span class="tag">${t("c_better")}</span><span class="better">${diffPartsToHtml(betterParts, "fix-word")}</span></div>
       <div class="row"><span class="tag">${t("c_why")}</span><span class="why">${escapeHtml(c.explanation || "")}</span></div>`;
     correctionsEl.appendChild(card);
   });
