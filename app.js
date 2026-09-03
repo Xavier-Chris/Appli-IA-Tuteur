@@ -118,6 +118,7 @@ const I18N = {
     hint_mic_brave: "micro indispo sur Brave ⚠️",
     brave_warning: "⚠️ <strong>Tu utilises Brave</strong> : la reconnaissance vocale ne fonctionne pas dans ce navigateur (limitation volontaire de Brave, pas un bug de l'app). Utilise Chrome ou Edge pour parler au micro, ou écris tes réponses en attendant.",
     ios_warning: "⚠️ <strong>Tu es sur iPhone/iPad</strong> : le micro ne fonctionne dans aucun navigateur sur iOS (limitation du système, pas un bug de l'app). Écris tes réponses en attendant, ou utilise un ordinateur ou un appareil Android pour parler au micro.",
+    legacy_contact_reminder: "Si tu vois ce message, contacte-moi pour avoir accès à l'application gratuitement.<br/>Xavier",
     account_title: "Compte",
     label_email: "Email",
     label_password: "Mot de passe",
@@ -150,6 +151,10 @@ const I18N = {
     auth_err_generic: "Une erreur est survenue. Réessaie.",
     account_signed_in_as: "Connecté en tant que {email}",
     legacy_welcome_note: "Salut ! On vient de mettre en place des comptes personnels pour plus de sécurité. Crée le tien en 2 minutes (ou connecte-toi si tu en as déjà un) : tout ton vocabulaire et tes corrections seront récupérés automatiquement, rien n'est perdu.<br/>Xavier",
+    paywall_h: "Essai gratuit terminé pour aujourd'hui",
+    paywall_note: "Tu as utilisé tes 10 minutes gratuites du jour. Reviens demain, ou passe à l'abonnement pour un accès illimité.",
+    btn_subscribe: "S'abonner (20€/mois)",
+    trial_limit_status: "Essai gratuit du jour terminé.",
     import_h: "Importer ton vocabulaire ?",
     import_note: "On a trouvé du vocabulaire et des corrections déjà sauvegardés dans ce navigateur. Tu veux les ajouter à ton compte ?",
     btn_skip_import: "Ignorer",
@@ -241,6 +246,7 @@ const I18N = {
     hint_mic_brave: "mic unavailable on Brave ⚠️",
     brave_warning: "⚠️ <strong>You're using Brave</strong>: voice recognition doesn't work in this browser (a deliberate Brave limitation, not an app bug). Use Chrome or Edge to talk with the mic, or type your answers instead.",
     ios_warning: "⚠️ <strong>You're on iPhone/iPad</strong>: the mic doesn't work in any browser on iOS (a system limitation, not an app bug). Type your answers instead, or use a computer or Android device to talk with the mic.",
+    legacy_contact_reminder: "If you see this message, contact me to get free access to the app.<br/>Xavier",
     account_title: "Account",
     label_email: "Email",
     label_password: "Password",
@@ -273,6 +279,10 @@ const I18N = {
     auth_err_generic: "Something went wrong. Try again.",
     account_signed_in_as: "Signed in as {email}",
     legacy_welcome_note: "Hey! We've just set up personal accounts for better security. Create yours in 2 minutes (or sign in if you already have one): all your vocabulary and corrections will be recovered automatically, nothing is lost.<br/>Xavier",
+    paywall_h: "Free trial finished for today",
+    paywall_note: "You've used your 10 free minutes for today. Come back tomorrow, or subscribe for unlimited access.",
+    btn_subscribe: "Subscribe (€20/month)",
+    trial_limit_status: "Today's free trial is over.",
     import_h: "Import your vocabulary?",
     import_note: "We found vocabulary and corrections already saved in this browser. Do you want to add them to your account?",
     btn_skip_import: "Skip",
@@ -364,6 +374,7 @@ const I18N = {
     hint_mic_brave: "micrófono no disponible en Brave ⚠️",
     brave_warning: "⚠️ <strong>Estás usando Brave</strong>: el reconocimiento de voz no funciona en este navegador (una limitación deliberada de Brave, no un error de la app). Usa Chrome o Edge para hablar por el micrófono, o escribe tus respuestas mientras tanto.",
     ios_warning: "⚠️ <strong>Estás en iPhone/iPad</strong>: el micrófono no funciona en ningún navegador en iOS (una limitación del sistema, no un error de la app). Escribe tus respuestas mientras tanto, o usa un ordenador o un dispositivo Android para hablar por el micrófono.",
+    legacy_contact_reminder: "Si ves este mensaje, contáctame para tener acceso gratuito a la aplicación.<br/>Xavier",
     account_title: "Cuenta",
     label_email: "Correo electrónico",
     label_password: "Contraseña",
@@ -396,6 +407,10 @@ const I18N = {
     auth_err_generic: "Ocurrió un error. Inténtalo de nuevo.",
     account_signed_in_as: "Conectado como {email}",
     legacy_welcome_note: "¡Hola! Acabamos de poner en marcha cuentas personales para más seguridad. Crea la tuya en 2 minutos (o inicia sesión si ya tienes una): todo tu vocabulario y tus correcciones se recuperarán automáticamente, no se pierde nada.<br/>Xavier",
+    paywall_h: "Prueba gratuita terminada por hoy",
+    paywall_note: "Has usado tus 10 minutos gratis de hoy. Vuelve mañana, o suscríbete para un acceso ilimitado.",
+    btn_subscribe: "Suscribirse (20€/mes)",
+    trial_limit_status: "Prueba gratuita de hoy terminada.",
     import_h: "¿Importar tu vocabulario?",
     import_note: "Encontramos vocabulario y correcciones ya guardados en este navegador. ¿Quieres añadirlos a tu cuenta?",
     btn_skip_import: "Omitir",
@@ -487,6 +502,7 @@ const I18N = {
     hint_mic_brave: "Mikrofon auf Brave nicht verfügbar ⚠️",
     brave_warning: "⚠️ <strong>Du nutzt Brave</strong>: Die Spracherkennung funktioniert in diesem Browser nicht (eine bewusste Einschränkung von Brave, kein App-Fehler). Nutze Chrome oder Edge, um mit dem Mikrofon zu sprechen, oder schreibe stattdessen deine Antworten.",
     ios_warning: "⚠️ <strong>Du bist auf iPhone/iPad</strong>: Das Mikrofon funktioniert in keinem Browser unter iOS (eine Systemeinschränkung, kein App-Fehler). Schreibe stattdessen deine Antworten, oder nutze einen Computer oder ein Android-Gerät, um mit dem Mikrofon zu sprechen.",
+    legacy_contact_reminder: "Wenn du diese Nachricht siehst, melde dich bei mir, um kostenlosen Zugang zur App zu bekommen.<br/>Xavier",
     account_title: "Konto",
     label_email: "E-Mail-Adresse",
     label_password: "Passwort",
@@ -519,6 +535,10 @@ const I18N = {
     auth_err_generic: "Etwas ist schiefgelaufen. Versuche es erneut.",
     account_signed_in_as: "Angemeldet als {email}",
     legacy_welcome_note: "Hallo! Wir haben gerade persönliche Konten für mehr Sicherheit eingeführt. Erstelle deins in 2 Minuten (oder melde dich an, falls du schon eins hast): dein gesamtes Vokabular und deine Korrekturen werden automatisch wiederhergestellt, nichts geht verloren.<br/>Xavier",
+    paywall_h: "Kostenlose Testphase für heute beendet",
+    paywall_note: "Du hast deine 10 kostenlosen Minuten für heute aufgebraucht. Komm morgen wieder, oder abonniere für unbegrenzten Zugang.",
+    btn_subscribe: "Abonnieren (20€/Monat)",
+    trial_limit_status: "Kostenloser Test für heute beendet.",
     import_h: "Dein Vokabular importieren?",
     import_note: "Wir haben Vokabular und Korrekturen gefunden, die bereits in diesem Browser gespeichert sind. Möchtest du sie zu deinem Konto hinzufügen?",
     btn_skip_import: "Überspringen",
@@ -610,6 +630,7 @@ const I18N = {
     hint_mic_brave: "microfone indisponível no Brave ⚠️",
     brave_warning: "⚠️ <strong>Você está usando o Brave</strong>: o reconhecimento de voz não funciona neste navegador (uma limitação deliberada do Brave, não é um erro do app). Use o Chrome ou o Edge para falar com o microfone, ou escreva suas respostas enquanto isso.",
     ios_warning: "⚠️ <strong>Você está no iPhone/iPad</strong>: o microfone não funciona em nenhum navegador no iOS (uma limitação do sistema, não um erro do app). Escreva suas respostas por enquanto, ou use um computador ou um aparelho Android para falar no microfone.",
+    legacy_contact_reminder: "Se você vir esta mensagem, entre em contato comigo para ter acesso gratuito ao aplicativo.<br/>Xavier",
     account_title: "Conta",
     label_email: "E-mail",
     label_password: "Senha",
@@ -642,6 +663,10 @@ const I18N = {
     auth_err_generic: "Ocorreu um erro. Tente novamente.",
     account_signed_in_as: "Conectado como {email}",
     legacy_welcome_note: "Oi! Acabamos de criar contas pessoais para mais segurança. Crie a sua em 2 minutos (ou entre se já tiver uma): todo o seu vocabulário e correções serão recuperados automaticamente, nada se perde.<br/>Xavier",
+    paywall_h: "Teste grátis encerrado por hoje",
+    paywall_note: "Você usou seus 10 minutos grátis de hoje. Volte amanhã, ou assine para acesso ilimitado.",
+    btn_subscribe: "Assinar (20€/mês)",
+    trial_limit_status: "Teste grátis de hoje encerrado.",
     import_h: "Importar seu vocabulário?",
     import_note: "Encontramos vocabulário e correções já salvos neste navegador. Quer adicioná-los à sua conta?",
     btn_skip_import: "Ignorar",
@@ -855,11 +880,14 @@ async function syncSession(session) {
   refreshEngineHint();
   loadVoices();
   applyPersonaVoice();
+  $("adminBtn").hidden = true;
+  if (session) refreshAdminButtonVisibility();
   const userId = session ? session.user.id : null;
   if (userId === loadedForUserId) return;
   loadedForUserId = userId;
   await loadUserVocabAndCorrections();
   await maybeOfferImport();
+  if (session) await maybeShowContactReminder();
   // Accueil dédié pour un élève déjà utilisateur (avant la bascule vers les
   // comptes) qui n'est pas encore connecté : lui explique quoi faire dès son
   // arrivée, plutôt qu'il ne tombe sur l'écran de connexion sans contexte.
@@ -886,25 +914,15 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
 // =========================================================
 //  Choix de la leçon
 // =========================================================
-// Choisit automatiquement une voix adaptée au personnage actuel, selon 3
-// règles dans cet ordre : le Parisien snob impose Marc (seul à savoir jouer
-// son ton méprisant), le tuteur classique impose une voix expressive
-// (Marc/Soleil, pour que son humeur dynamique s'entende), et les autres
-// personnages suivent juste le genre requis. Ne casse jamais un choix déjà
-// cohérent (ex : reste sur Éloïse pour un autre personnage féminin, ou sur
-// Marc/Soleil si déjà là pour le tuteur classique). Appelée au changement de
-// personnage ET au chargement de la page, pour s'appliquer par défaut.
+// Choisit automatiquement une voix adaptée au personnage actuel : le tuteur
+// classique impose une voix expressive (Marc/Soleil, pour que son humeur
+// dynamique s'entende), les autres personnages (dont le Parisien snob,
+// pas de voix dédiée pour l'instant) suivent juste le genre requis. Ne
+// casse jamais un choix déjà cohérent (ex : reste sur Marc/Soleil si déjà
+// là pour le tuteur classique). Appelée au changement de personnage ET au
+// chargement de la page, pour s'appliquer par défaut.
 function applyPersonaVoice() {
   if (!azureReady()) return;
-  if (state.persona === "parisien") {
-    const marc = AZURE_VOICES.find((v) => v.id.includes("Marc"));
-    if (marc && selectedVoiceName !== marc.id) {
-      selectedVoiceName = marc.id;
-      localStorage.setItem("voiceNameV2", selectedVoiceName);
-      loadVoices();
-    }
-    return;
-  }
   if (state.persona === "tuteur") {
     if (voiceSupportsStyles(selectedVoiceName)) return;
     const preferredGender = currentVoiceGender() || "m";
@@ -978,8 +996,8 @@ const AZURE_VOICES = [
 
 // Sous-ensemble des styles Azure disponibles sur Marc/Soleil (voir liste
 // complète dans le catalogue Azure), filtré aux humeurs adaptées à un
-// tuteur bienveillant. "disgusted" est volontairement exclu d'ici : réservé
-// au personnage du Parisien snob, jamais choisi dynamiquement.
+// tuteur bienveillant. "disgusted" est volontairement exclu d'ici : jamais
+// souhaitable pour un tuteur envers son élève.
 const VALID_MOODS = [
   "happy", "joyful", "excited", "hopeful", "surprised",
   "sad", "regretful", "determined", "softvoice", "confused",
@@ -1128,11 +1146,11 @@ function splitSentences(text) {
 
 // Synthétise une seule phrase et renvoie le blob audio, sans la jouer.
 async function fetchAzureAudioBlob(sentence, voiceName, mood) {
-  // Le Parisien snob parle plus lentement et avec un ton méprisant
-  // ("disgusted", seul style dispo qui s'en approche), pour l'effet blasé.
-  // Azure ignore un style non supporté par la voix sans erreur, donc ce
-  // réglage reste sans danger si l'élève garde ce personnage en changeant
-  // manuellement de voix.
+  // Le Parisien snob parle plus lentement et avec un ton plus grave, pour
+  // l'effet blasé/hautain, quelle que soit la voix choisie (plus de voix
+  // imposée pour ce personnage depuis le 2026-09-01, aucune testée jusque-là
+  // n'a convaincu Xavier : Marc + style "disgusted" au maximum jugé trop
+  // expressif, Henri + prosodie seule pas assez marqué non plus).
   const isParisianSnob = state.persona === "parisien";
   const supportsStyles = voiceSupportsStyles(voiceName);
   // Test demandé par Xavier (2026-09-02) : ses élèves Débutant/Intermédiaire
@@ -1144,8 +1162,9 @@ async function fetchAzureAudioBlob(sentence, voiceName, mood) {
   // de l'élève, -30%/-25% étant la cible avec la vitesse "Normale" par
   // défaut.
   const levelSlowdown = state.level === "debutant" ? 0.7 : state.level === "intermediaire" ? 0.75 : 1;
-  const ratePct = Math.round((voiceRate * (isParisianSnob ? 0.88 : 1) * levelSlowdown - 1) * 100);
+  const ratePct = Math.round((voiceRate * (isParisianSnob ? 0.8 : 1) * levelSlowdown - 1) * 100);
   const rateAttr = ratePct >= 0 ? `+${ratePct}%` : `${ratePct}%`;
+  const pitchAttr = isParisianSnob ? "-5%" : "+0%";
   // Humeur dynamique du tuteur classique (voir buildReplySystemPrompt) :
   // n'a d'effet audible que sur une voix qui sait jouer des styles. Le style
   // "chat" (ton par défaut des voix Neural classiques) N'EST PAS supporté
@@ -1154,7 +1173,7 @@ async function fetchAzureAudioBlob(sentence, voiceName, mood) {
   // faisait basculer TOUTE réponse sans humeur marquée sur la voix robotique
   // du navigateur. Sur Marc/Soleil sans humeur valable, on omet donc le
   // style plutôt que de forcer "chat".
-  const ttsStyle = isParisianSnob ? "disgusted" : (mood && supportsStyles ? mood : (supportsStyles ? null : "chat"));
+  const ttsStyle = mood && supportsStyles ? mood : (supportsStyles ? null : "chat");
   // Les voix "Multilingual" (Vivienne, Rémy, Lucien) ET les voix MAI-Voice-2
   // (Marc, Soleil, imposées par défaut sur le tuteur classique pour leur
   // côté expressif) détectent automatiquement la langue mot par mot. Un mot
@@ -1168,8 +1187,8 @@ async function fetchAzureAudioBlob(sentence, voiceName, mood) {
   const body = wrapPhonemes(escapeSSML(sentence));
   const spoken = `<lang xml:lang="fr-FR">${body}</lang>`;
   const voiceInner = ttsStyle
-    ? `<mstts:express-as style="${ttsStyle}"><prosody rate="${rateAttr}">${spoken}</prosody></mstts:express-as>`
-    : `<prosody rate="${rateAttr}">${spoken}</prosody>`;
+    ? `<mstts:express-as style="${ttsStyle}"><prosody rate="${rateAttr}" pitch="${pitchAttr}">${spoken}</prosody></mstts:express-as>`
+    : `<prosody rate="${rateAttr}" pitch="${pitchAttr}">${spoken}</prosody>`;
   const ssml = `<speak version="1.0" xml:lang="fr-FR" xmlns:mstts="https://www.w3.org/2001/mstts"><voice name="${voiceName}">${voiceInner}</voice></speak>`;
 
   const { data, error } = await supabaseClient.functions.invoke("tts-proxy", {
@@ -1547,6 +1566,7 @@ $("textForm").addEventListener("submit", (e) => {
 let lessonStartTime = null;
 let vocabCountAtStart = 0;
 let correctionsCountAtStart = 0;
+let lastUsageCheckpoint = Date.now();
 
 function formatLessonDuration(ms) {
   const minutes = Math.round(ms / 60000);
@@ -1707,6 +1727,7 @@ async function startLesson() {
   state.messages = [];
   state.started = true;
   lessonStartTime = Date.now();
+  lastUsageCheckpoint = Date.now();
   vocabCountAtStart = savedVocab.length;
   correctionsCountAtStart = savedCorrections.length;
   transcriptEl.innerHTML = "";
@@ -1885,9 +1906,10 @@ Tu es aussi un professeur de français bienveillant, mais tu ne corriges JAMAIS 
 
   // Humeur dynamique de la voix, réservée au tuteur classique (les autres
   // personnages ont un ton fixe défini par leur personnalité, ex : le
-  // Parisien snob reste toujours "disgusted"). Field optionnel dans le
-  // JSON : la synthèse vocale l'ignore silencieusement sur une voix qui ne
-  // sait pas jouer de style (voir voiceSupportsStyles).
+  // Parisien snob reste toujours blasé, via la prosodie plutôt qu'un style,
+  // voir fetchAzureAudioBlob). Field optionnel dans le JSON : la synthèse
+  // vocale l'ignore silencieusement sur une voix qui ne sait pas jouer de
+  // style (voir voiceSupportsStyles).
   const moodField = state.persona === "tuteur"
     ? `,
   "mood": "l'humeur qui correspond le mieux au TON de ta réponse (pas son contenu ni le niveau de langue), à choisir UNIQUEMENT parmi : neutral, ${VALID_MOODS.join(", ")}. Choisis \\"neutral\\" la plupart du temps : ne choisis une humeur marquée que quand le ton de ta réponse le justifie vraiment (une bonne nouvelle, une question surprenante de l'apprenant, un encouragement chaleureux, une petite déception...). Ne force jamais une émotion artificielle."`
@@ -2101,7 +2123,13 @@ async function sendMessage(text, isSystemTrigger = false, fromVoice = false) {
   micBtn.disabled = true;
 
   try {
-    const raw = await callAnthropic(buildReplySystemPrompt(), state.messages);
+    // Temps écoulé depuis le dernier échange (ou le début de la leçon pour
+    // le tout premier), envoyé uniquement ici : c'est ce qui alimente le
+    // quota des comptes en essai gratuit (10 min/jour), vérifié côté
+    // serveur dans ai-chat.
+    const elapsedSeconds = Math.round((Date.now() - lastUsageCheckpoint) / 1000);
+    lastUsageCheckpoint = Date.now();
+    const raw = await callAnthropic(buildReplySystemPrompt(), state.messages, MODEL_MAIN, elapsedSeconds);
     const data = parseTutorJSON(raw);
 
     if (userBubble && data.userText) userBubble.textContent = frenchSpacing(data.userText);
@@ -2118,10 +2146,16 @@ async function sendMessage(text, isSystemTrigger = false, fromVoice = false) {
     speak(data.reply, mood);
     setStatus(t("your_turn"));
   } catch (err) {
-    console.error(err);
-    const msg = err && err.message ? err.message : String(err);
-    setStatus(t("error_prefix") + msg);
-    addBubble("tutor", t("err_bubble").replace("{msg}", msg));
+    if (err && err.message === "TRIAL_LIMIT_REACHED") {
+      state.messages.pop();   // ce tour n'a pas eu de réponse, ne pas le garder dans l'historique
+      openPaywall();
+      setStatus(t("trial_limit_status"));
+    } else {
+      console.error(err);
+      const msg = err && err.message ? err.message : String(err);
+      setStatus(t("error_prefix") + msg);
+      addBubble("tutor", t("err_bubble").replace("{msg}", msg));
+    }
   } finally {
     state.busy = false;
     micBtn.disabled = !micAvailable();
@@ -2146,10 +2180,13 @@ const MODEL_MAIN = "main";
 const MODEL_FAST = "fast";
 
 // Point d'entrée unique pour tous les appels IA (conversation ou recherche
-// ponctuelle).
-async function callAnthropic(systemPrompt, messages, model = MODEL_MAIN) {
+// ponctuelle). elapsedSeconds n'est renseigné que par l'appel principal de
+// conversation (voir sendMessage) : la correction, la recherche de mot et
+// la traduction ne doivent pas compter deux fois le même temps dans le
+// quota d'essai gratuit.
+async function callAnthropic(systemPrompt, messages, model = MODEL_MAIN, elapsedSeconds = 0) {
   const { data, error } = await supabaseClient.functions.invoke("ai-chat", {
-    body: { systemPrompt, messages, model },
+    body: { systemPrompt, messages, model, elapsedSeconds },
   });
   if (error) throw new Error(await readFunctionError(error));
   return data?.text || "";
@@ -2313,6 +2350,20 @@ async function loadUserVocabAndCorrections() {
   renderCorrectionsPanel();
 }
 
+// Rappel pour un élève déjà utilisateur (repéré via d'anciennes données
+// locales, comme pour le message de bienvenue) qui a créé son compte mais
+// que Xavier n'a pas encore marqué "élève" (donc encore soumis à la limite
+// d'essai comme un inconnu). Disparaît de lui-même dès que Xavier le passe
+// en "élève" ou "abonné" via le panneau admin.
+async function maybeShowContactReminder() {
+  if (!hasLegacyLocalData()) return;
+  const { data } = await supabaseClient.from("profiles")
+    .select("plan").eq("user_id", currentSession.user.id).maybeSingle();
+  if ((data?.plan || "trial") === "trial") {
+    addWarningBanner("legacy_contact_reminder");
+  }
+}
+
 // Propose une seule fois, à la première connexion, d'importer le
 // vocabulaire/corrections déjà sauvegardés dans CE navigateur avant la
 // bascule vers les comptes (ancien système localStorage). Ne se redéclenche
@@ -2361,6 +2412,75 @@ async function runImport() {
   }
   await loadUserVocabAndCorrections();
 }
+
+// =========================================================
+//  Panneau admin (Xavier uniquement)
+// =========================================================
+// Simple contrôle d'affichage : le vrai contrôle de sécurité est côté
+// serveur (admin-set-status revérifie l'email du compte connecté avant
+// d'agir, à partir d'un secret jamais envoyé au navigateur). On ne garde
+// donc plus cet email en clair ici : on interroge juste le statut
+// "is_admin" du compte connecté (colonne profiles, lisible seulement par
+// ce compte via RLS), qui ne révèle rien sur les autres comptes. Un élève
+// qui forcerait quand même ce bouton à s'afficher ne pourrait de toute
+// façon rien faire de plus qu'un refus de la fonction serveur.
+async function refreshAdminButtonVisibility() {
+  const { data } = await supabaseClient.from("profiles")
+    .select("is_admin").eq("user_id", currentSession.user.id).maybeSingle();
+  $("adminBtn").hidden = !data?.is_admin;
+}
+
+$("adminBtn").addEventListener("click", () => {
+  $("adminModal").hidden = false;
+  $("adminError").hidden = true;
+  $("adminSuccess").hidden = true;
+});
+$("closeAdmin").addEventListener("click", () => ($("adminModal").hidden = true));
+$("adminSubmitBtn").addEventListener("click", async () => {
+  const email = $("adminEmailInput").value.trim();
+  const plan = $("adminPlanSelect").value;
+  if (!email) return;
+  $("adminSubmitBtn").disabled = true;
+  $("adminError").hidden = true;
+  $("adminSuccess").hidden = true;
+  try {
+    const { data, error } = await supabaseClient.functions.invoke("admin-set-status", { body: { email, plan } });
+    if (error) throw new Error(await readFunctionError(error));
+    $("adminSuccess").textContent = `${email} mis à jour : ${plan}.`;
+    $("adminSuccess").hidden = false;
+    $("adminEmailInput").value = "";
+  } catch (err) {
+    $("adminError").textContent = (err && err.message) || String(err);
+    $("adminError").hidden = false;
+  } finally {
+    $("adminSubmitBtn").disabled = false;
+  }
+});
+
+// =========================================================
+//  Fin d'essai gratuit / abonnement (Stripe)
+// =========================================================
+function openPaywall() {
+  $("paywallModal").hidden = false;
+}
+$("closePaywall").addEventListener("click", () => ($("paywallModal").hidden = true));
+// Lien de paiement Stripe tout prêt (créé une fois dans le tableau de bord
+// Stripe) : pas besoin d'appel serveur pour démarrer un paiement, juste
+// rediriger l'élève dessus. client_reference_id dit à Stripe (et donc au
+// webhook ensuite) quel compte débloquer une fois le paiement confirmé ;
+// prefilled_email lui évite de le retaper.
+// ⚠️ Lien de TEST pour l'instant (aucun vrai paiement) : à remplacer par le
+// vrai lien live juste avant le vrai lancement (voir mémoire du chantier).
+// Live : https://buy.stripe.com/dRm14naKKfz2bBFeHl5AQ0c
+const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/test_dRmdR96uu0E8bBF6aP5AQ00";
+
+$("subscribeBtn").addEventListener("click", () => {
+  if (!currentSession) return;
+  const url = new URL(STRIPE_PAYMENT_LINK);
+  url.searchParams.set("client_reference_id", currentSession.user.id);
+  url.searchParams.set("prefilled_email", currentSession.user.email);
+  window.location.href = url.toString();
+});
 
 $("skipImportBtn").addEventListener("click", () => {
   $("importModal").hidden = true;
