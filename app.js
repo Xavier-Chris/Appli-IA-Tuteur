@@ -2469,10 +2469,7 @@ $("closePaywall").addEventListener("click", () => ($("paywallModal").hidden = tr
 // rediriger l'élève dessus. client_reference_id dit à Stripe (et donc au
 // webhook ensuite) quel compte débloquer une fois le paiement confirmé ;
 // prefilled_email lui évite de le retaper.
-// ⚠️ Lien de TEST pour l'instant (aucun vrai paiement) : à remplacer par le
-// vrai lien live juste avant le vrai lancement (voir mémoire du chantier).
-// Live : https://buy.stripe.com/dRm14naKKfz2bBFeHl5AQ0c
-const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/test_dRmdR96uu0E8bBF6aP5AQ00";
+const STRIPE_PAYMENT_LINK = "https://buy.stripe.com/dRm14naKKfz2bBFeHl5AQ0c";
 
 $("subscribeBtn").addEventListener("click", () => {
   if (!currentSession) return;
