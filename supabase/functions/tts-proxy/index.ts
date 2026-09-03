@@ -45,7 +45,7 @@ Deno.serve(async (req) => {
       headers: {
         "Ocp-Apim-Subscription-Key": Deno.env.get("AZURE_SPEECH_KEY")!,
         "Content-Type": "application/ssml+xml",
-        "X-Microsoft-OutputFormat": "audio-24khz-48kbitrate-mono-mp3",
+        "X-Microsoft-OutputFormat": "riff-24khz-16bit-mono-pcm",
       },
       body: ssml,
     });

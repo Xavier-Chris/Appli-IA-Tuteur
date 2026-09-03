@@ -1196,10 +1196,13 @@ async function fetchAzureAudioBlob(sentence, voiceName, mood) {
     body: { ssml },
   });
   if (error) throw new Error(await readFunctionError(error));
-  // La fonction renvoie le MP3 en "application/octet-stream" (seul type que
+  // La fonction renvoie l'audio en "application/octet-stream" (seul type que
   // le client Supabase JS lit en binaire) : on redonne ici le vrai type
   // audio, sinon le lecteur <audio> ne sait pas décoder le blob reçu.
-  return new Blob([data], { type: "audio/mpeg" });
+  // WAV/PCM non compressé (pas de MP3) : évite les petits clics audibles au
+  // début/à la fin de chaque phrase, causés par l'encodage MP3 indépendant
+  // de chaque segment enchaîné (retard d'encodeur/padding propre au format).
+  return new Blob([data], { type: "audio/wav" });
 }
 
 // Joue un blob déjà synthétisé jusqu'à la fin (nécessaire pour enchaîner
