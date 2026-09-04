@@ -109,6 +109,7 @@ const I18N = {
     c_said: "Tu as dit", c_better: "Mieux", c_why: "Pourquoi",
     replay_title: "Réécouter",
     translate_title: "Voir la traduction",
+    shadow_title: "Répéter après le tuteur",
     vocab_clear: "Vider",
     voice_default: "Voix par défaut du navigateur",
     grammar_noun_f: "n.f.", grammar_noun_m: "n.m.", grammar_infinitive_prefix: "inf. :",
@@ -237,6 +238,7 @@ const I18N = {
     c_said: "You said", c_better: "Better", c_why: "Why",
     replay_title: "Play again",
     translate_title: "Show translation",
+    shadow_title: "Repeat after the tutor",
     vocab_clear: "Clear",
     voice_default: "Browser default voice",
     grammar_noun_f: "f.", grammar_noun_m: "m.", grammar_infinitive_prefix: "inf.:",
@@ -365,6 +367,7 @@ const I18N = {
     c_said: "Dijiste", c_better: "Mejor", c_why: "Por qué",
     replay_title: "Volver a escuchar",
     translate_title: "Ver la traducción",
+    shadow_title: "Repetir después del tutor",
     vocab_clear: "Borrar",
     voice_default: "Voz predeterminada del navegador",
     grammar_noun_f: "f.", grammar_noun_m: "m.", grammar_infinitive_prefix: "inf.:",
@@ -493,6 +496,7 @@ const I18N = {
     c_said: "Du sagtest", c_better: "Besser", c_why: "Warum",
     replay_title: "Erneut anhören",
     translate_title: "Übersetzung anzeigen",
+    shadow_title: "Nach dem Tutor wiederholen",
     vocab_clear: "Leeren",
     voice_default: "Standardstimme des Browsers",
     grammar_noun_f: "f.", grammar_noun_m: "m.", grammar_infinitive_prefix: "Inf.:",
@@ -621,6 +625,7 @@ const I18N = {
     c_said: "Você disse", c_better: "Melhor", c_why: "Por quê",
     replay_title: "Ouvir novamente",
     translate_title: "Ver a tradução",
+    shadow_title: "Repetir depois do tutor",
     vocab_clear: "Limpar",
     voice_default: "Voz padrão do navegador",
     grammar_noun_f: "f.", grammar_noun_m: "m.", grammar_infinitive_prefix: "inf.:",
@@ -1541,6 +1546,96 @@ async function startAzureRecognition() {
   );
 }
 
+// =========================================================
+//  Shadowing (répéter après le tuteur) + score de prononciation
+// =========================================================
+// Reconnaissance ponctuelle (une seule phrase, pas continue comme le micro
+// principal) avec l'évaluation de prononciation d'Azure, qui a besoin de
+// connaître à l'avance le texte attendu (ici la phrase du tuteur) pour
+// comparer ce qui a été dit et noter chaque mot. Complètement indépendant
+// de l'état du micro principal (listening/micBtn) : les deux ne se gênent
+// pas, mais un seul shadowing à la fois suffit, pas besoin de file d'attente.
+let shadowInProgress = false;
+async function shadowSentence(refText, btn) {
+  if (shadowInProgress) return;
+  shadowInProgress = true;
+  const originalLabel = btn.textContent;
+  btn.textContent = "🔴";
+  btn.classList.add("shadow-active");
+
+  const cleanup = () => {
+    shadowInProgress = false;
+    btn.textContent = originalLabel;
+    btn.classList.remove("shadow-active");
+  };
+
+  let token, region;
+  try {
+    const { data, error } = await supabaseClient.functions.invoke("stt-token");
+    if (error) throw new Error(await readFunctionError(error));
+    token = data.token;
+    region = data.region;
+  } catch (err) {
+    console.error("Échec récupération du jeton Azure STT (shadowing) :", err);
+    cleanup();
+    return;
+  }
+
+  const speechConfig = SpeechSDK.SpeechConfig.fromAuthorizationToken(token, region);
+  speechConfig.speechRecognitionLanguage = "fr-FR";
+  const audioConfig = SpeechSDK.AudioConfig.fromDefaultMicrophoneInput();
+  const recognizer = new SpeechSDK.SpeechRecognizer(speechConfig, audioConfig);
+  const paConfig = new SpeechSDK.PronunciationAssessmentConfig(
+    refText,
+    SpeechSDK.PronunciationAssessmentGradingSystem.HundredMark,
+    SpeechSDK.PronunciationAssessmentGranularity.Word,
+    true
+  );
+  paConfig.applyTo(recognizer);
+
+  recognizer.recognizeOnceAsync(
+    (result) => {
+      recognizer.close();
+      if (result.reason === SpeechSDK.ResultReason.RecognizedSpeech) {
+        const assessment = SpeechSDK.PronunciationAssessmentResult.fromResult(result);
+        let words = [];
+        try {
+          const raw = result.properties.getProperty(SpeechSDK.PropertyId.SpeechServiceResponse_JsonResult);
+          const parsed = JSON.parse(raw);
+          words = (parsed.NBest && parsed.NBest[0] && parsed.NBest[0].Words) || [];
+        } catch (_) { /* pas de détail mot par mot, on garde juste le score global */ }
+        renderShadowResult(btn, assessment.pronunciationScore, words);
+      }
+      cleanup();
+    },
+    (err) => {
+      console.error("Erreur évaluation de prononciation :", err);
+      recognizer.close();
+      cleanup();
+    }
+  );
+}
+
+// Score sur 100 + un mot par mot coloré (bon/moyen/mauvais/oublié), affiché
+// juste après le bouton qui a déclenché l'écoute. Remplace le résultat
+// précédent s'il y en avait un (pas d'empilement en répétant plusieurs fois).
+function renderShadowResult(btn, score, words) {
+  const existing = btn.parentElement.querySelector(".shadow-result");
+  if (existing) existing.remove();
+
+  const card = document.createElement("div");
+  card.className = "shadow-result";
+  const scoreClass = score >= 80 ? "good" : score >= 60 ? "ok" : "poor";
+  const wordsHtml = words.map((w) => {
+    const acc = w.AccuracyScore ?? 100;
+    const cls = w.ErrorType === "Omission" ? "poor"
+      : acc >= 80 ? "good" : acc >= 60 ? "ok" : "poor";
+    return `<span class="shadow-word ${cls}">${escapeHtml(w.Word)}</span>`;
+  }).join(" ");
+  card.innerHTML = `<span class="shadow-score ${scoreClass}">${Math.round(score)}/100</span> ${wordsHtml}`;
+  btn.insertAdjacentElement("afterend", card);
+}
+
 micBtn.addEventListener("click", () => {
   if (!micAvailable()) return;
   if (listening) { stopListening(); return; }
@@ -2277,6 +2372,18 @@ function addBubble(who, text) {
       translateBtn.addEventListener("click", () => translateBubble(text, translateBtn, box));
       div.appendChild(translateBtn);
       div.appendChild(box);
+    }
+    // Shadowing (répéter après le tuteur) : nécessite Azure spécifiquement,
+    // le moteur de secours du navigateur ne sait pas évaluer la
+    // prononciation. Bouton simplement absent si Azure n'est pas disponible,
+    // plutôt que de proposer un bouton qui échouerait à coup sûr.
+    if (canUseAzureStt()) {
+      const shadowBtn = document.createElement("span");
+      shadowBtn.className = "speak-again";
+      shadowBtn.textContent = "🔁";
+      shadowBtn.title = t("shadow_title");
+      shadowBtn.addEventListener("click", () => shadowSentence(text, shadowBtn));
+      div.appendChild(shadowBtn);
     }
   } else {
     div.textContent = text;
