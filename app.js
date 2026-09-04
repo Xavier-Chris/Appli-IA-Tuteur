@@ -1672,9 +1672,19 @@ let shadowLatestWords = null;
 async function shadowSentence(refText, btn) {
   if (shadowActiveBtn === btn) {
     // Deuxième clic sur le même bouton : l'apprenant signale qu'il a fini.
+    // On attend la fin RÉELLE de l'arrêt avant de lire shadowLatestWords :
+    // l'arrêter puis lire le résultat dans la foulée (sans attendre) arrivait
+    // avant que le dernier segment parlé ait fini d'être reconnu, laissant
+    // shadowLatestWords vide (constaté par Xavier : "aucune phrase n'apparaît").
     const recognizer = shadowRecognizer;
-    if (recognizer) recognizer.stopContinuousRecognitionAsync(() => recognizer.close(), () => recognizer.close());
-    finishShadow(btn);
+    if (recognizer) {
+      recognizer.stopContinuousRecognitionAsync(
+        () => { recognizer.close(); finishShadow(btn); },
+        () => { recognizer.close(); finishShadow(btn); }
+      );
+    } else {
+      finishShadow(btn);
+    }
     return;
   }
   if (shadowActiveBtn) return; // un autre shadowing déjà en cours ailleurs

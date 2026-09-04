@@ -79,15 +79,6 @@ body {
 .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; }
 .logo { font-size: 22px; }
 .brand-name { letter-spacing: 0.3px; }
-.help-btn {
-  width: 22px; height: 22px;
-  border: none;
-  background: var(--panel-2);
-  font-size: 12px;
-  font-weight: 700;
-  opacity: .7;
-}
-.help-btn:hover { opacity: 1; }
 .topbar-actions { display: flex; gap: 8px; }
 .icon-btn {
   border: 1px solid var(--border);
