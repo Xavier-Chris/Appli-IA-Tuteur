@@ -214,10 +214,9 @@ select:focus, input:focus { border-color: var(--primary); }
 .bubble .speak-again.shadow-inline { margin-left: 4px; font-size: 11px; }
 
 .shadow-result { display: block; margin: 4px 0 6px; font-size: 13px; line-height: 1.6; }
-.shadow-score { font-weight: 700; margin-right: 6px; }
-.shadow-score.good, .shadow-word.good { color: var(--good); }
-.shadow-score.ok, .shadow-word.ok { color: #d6a02c; }
-.shadow-score.poor, .shadow-word.poor { color: var(--accent); }
+.shadow-word.good { color: var(--good); }
+.shadow-word.ok { color: #d6a02c; }
+.shadow-word.poor { color: var(--accent); }
 .shadow-word { font-weight: 600; }
 
 .clickable-word {

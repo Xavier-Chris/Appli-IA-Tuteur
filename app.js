@@ -1549,25 +1549,34 @@ async function startAzureRecognition() {
 // =========================================================
 //  Shadowing (répéter après le tuteur) + score de prononciation
 // =========================================================
-// Reconnaissance ponctuelle (une seule phrase, pas continue comme le micro
-// principal) avec l'évaluation de prononciation d'Azure, qui a besoin de
-// connaître à l'avance le texte attendu (ici la phrase du tuteur) pour
-// comparer ce qui a été dit et noter chaque mot. Complètement indépendant
-// de l'état du micro principal (listening/micBtn) : les deux ne se gênent
-// pas, mais un seul shadowing à la fois suffit, pas besoin de file d'attente.
-let shadowInProgress = false;
-async function shadowSentence(refText, btn) {
-  if (shadowInProgress) return;
-  shadowInProgress = true;
-  const originalLabel = btn.textContent;
-  btn.textContent = "🔴";
-  btn.classList.add("shadow-active");
+// Écoute continue déclenchée/arrêtée par un clic sur le même bouton (comme
+// le micro principal), pas une écoute ponctuelle à durée fixe : l'apprenant
+// décide lui-même quand il a fini de lire la phrase. L'évaluation de
+// prononciation d'Azure a besoin de connaître à l'avance le texte attendu
+// (ici la phrase du tuteur) pour comparer ce qui a été dit et noter chaque
+// mot. Un seul shadowing à la fois (indépendant du micro principal, mais
+// les deux utilisant le micro physique, pas de sens à les cumuler).
+// Seul le détail mot par mot est affiché (voir renderShadowResult) : le
+// score global composite d'Azure (précision+fluidité+complétude+prosodie)
+// s'est avéré peu fiable en test (ex : 0/100 ou 51/100 avec des mots
+// pourtant bien reconnus), donc volontairement pas affiché à l'apprenant.
+let shadowRecognizer = null;
+let shadowActiveBtn = null;
+let shadowLatestWords = null;
 
-  const cleanup = () => {
-    shadowInProgress = false;
-    btn.textContent = originalLabel;
-    btn.classList.remove("shadow-active");
-  };
+async function shadowSentence(refText, btn) {
+  if (shadowActiveBtn === btn) {
+    // Deuxième clic sur le même bouton : l'apprenant signale qu'il a fini.
+    const recognizer = shadowRecognizer;
+    if (recognizer) recognizer.stopContinuousRecognitionAsync(() => recognizer.close(), () => recognizer.close());
+    finishShadow(btn);
+    return;
+  }
+  if (shadowActiveBtn) return; // un autre shadowing déjà en cours ailleurs
+
+  shadowActiveBtn = btn;
+  shadowLatestWords = null;
+  btn.classList.add("shadow-active");
 
   let token, region;
   try {
@@ -1577,9 +1586,10 @@ async function shadowSentence(refText, btn) {
     region = data.region;
   } catch (err) {
     console.error("Échec récupération du jeton Azure STT (shadowing) :", err);
-    cleanup();
+    resetShadowBtn(btn);
     return;
   }
+  if (shadowActiveBtn !== btn) return; // annulé (reclic) pendant la récupération du jeton
 
   const speechConfig = SpeechSDK.SpeechConfig.fromAuthorizationToken(token, region);
   speechConfig.speechRecognitionLanguage = "fr-FR";
@@ -1593,51 +1603,57 @@ async function shadowSentence(refText, btn) {
   );
   paConfig.applyTo(recognizer);
 
-  recognizer.recognizeOnceAsync(
-    (result) => {
-      recognizer.close();
-      if (result.reason === SpeechSDK.ResultReason.RecognizedSpeech) {
-        const assessment = SpeechSDK.PronunciationAssessmentResult.fromResult(result);
-        let words = [];
-        try {
-          const raw = result.properties.getProperty(SpeechSDK.PropertyId.SpeechServiceResponse_JsonResult);
-          const parsed = JSON.parse(raw);
-          words = (parsed.NBest && parsed.NBest[0] && parsed.NBest[0].Words) || [];
-          // Détail temporaire pour diagnostiquer un score global incohérent
-          // avec les mots individuels (à retirer une fois le problème compris).
-          console.log("[shadowing] sous-scores détaillés :", parsed.NBest && parsed.NBest[0] && parsed.NBest[0].PronunciationAssessment);
-        } catch (_) { /* pas de détail mot par mot, on garde juste le score global */ }
-        console.log("[shadowing] référence attendue :", JSON.stringify(refText));
-        console.log("[shadowing] texte reconnu :", JSON.stringify(result.text), "| score SDK (pron/accuracy/fluency/completeness) :", assessment.pronunciationScore, assessment.accuracyScore, assessment.fluencyScore, assessment.completenessScore);
-        renderShadowResult(btn, assessment.pronunciationScore, words);
-      }
-      cleanup();
-    },
+  recognizer.recognized = (_s, e) => {
+    if (e.result.reason !== SpeechSDK.ResultReason.RecognizedSpeech) return;
+    try {
+      const raw = e.result.properties.getProperty(SpeechSDK.PropertyId.SpeechServiceResponse_JsonResult);
+      const parsed = JSON.parse(raw);
+      shadowLatestWords = (parsed.NBest && parsed.NBest[0] && parsed.NBest[0].Words) || [];
+    } catch (_) { shadowLatestWords = []; }
+  };
+  recognizer.canceled = (_s, e) => {
+    console.error("Erreur reconnaissance shadowing :", e.errorDetails);
+  };
+
+  shadowRecognizer = recognizer;
+  recognizer.startContinuousRecognitionAsync(
+    () => {},
     (err) => {
-      console.error("Erreur évaluation de prononciation :", err);
+      console.error("Échec démarrage shadowing :", err);
       recognizer.close();
-      cleanup();
+      shadowRecognizer = null;
+      resetShadowBtn(btn);
     }
   );
 }
 
-// Score sur 100 + un mot par mot coloré (bon/moyen/mauvais/oublié), affiché
-// juste après le bouton qui a déclenché l'écoute. Remplace le résultat
-// précédent s'il y en avait un (pas d'empilement en répétant plusieurs fois).
-function renderShadowResult(btn, score, words) {
+function finishShadow(btn) {
+  if (shadowLatestWords && shadowLatestWords.length) renderShadowResult(btn, shadowLatestWords);
+  shadowRecognizer = null;
+  resetShadowBtn(btn);
+}
+
+function resetShadowBtn(btn) {
+  shadowActiveBtn = null;
+  btn.classList.remove("shadow-active");
+}
+
+// Un mot par mot coloré (bon/moyen/mauvais/oublié), affiché juste après le
+// bouton qui a déclenché l'écoute. Remplace le résultat précédent s'il y en
+// avait un (pas d'empilement en répétant plusieurs fois).
+function renderShadowResult(btn, words) {
   const existing = btn.parentElement.querySelector(".shadow-result");
   if (existing) existing.remove();
 
-  const card = document.createElement("div");
-  card.className = "shadow-result";
-  const scoreClass = score >= 80 ? "good" : score >= 60 ? "ok" : "poor";
   const wordsHtml = words.map((w) => {
     const acc = w.AccuracyScore ?? 100;
     const cls = w.ErrorType === "Omission" ? "poor"
       : acc >= 80 ? "good" : acc >= 60 ? "ok" : "poor";
     return `<span class="shadow-word ${cls}">${escapeHtml(w.Word)}</span>`;
   }).join(" ");
-  card.innerHTML = `<span class="shadow-score ${scoreClass}">${Math.round(score)}/100</span> ${wordsHtml}`;
+  const card = document.createElement("div");
+  card.className = "shadow-result";
+  card.innerHTML = wordsHtml;
   btn.insertAdjacentElement("afterend", card);
 }
 
