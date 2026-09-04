@@ -110,14 +110,13 @@ const I18N = {
     replay_title: "Réécouter",
     translate_title: "Voir la traduction",
     shadow_title: "Répéter après le tuteur",
+    accents_toggle_title: "Afficher/cacher le clavier d'accents",
     vocab_clear: "Vider",
     voice_default: "Voix par défaut du navigateur",
     grammar_noun_f: "n.f.", grammar_noun_m: "n.m.", grammar_infinitive_prefix: "inf. :",
     hint_engine: "Moteur", hint_key_ok: "connecté ✅", hint_key_missing: "non connecté ⚠️",
     hint_voice: "Voix", hint_mic_ok: "micro dispo 🎤", hint_mic_no: "micro indispo (utilise le texte)",
     hint_mic_ios: "micro indispo sur iPhone/iPad (utilise le texte)",
-    hint_mic_brave: "micro indispo sur Brave ⚠️",
-    brave_warning: "⚠️ <strong>Tu utilises Brave</strong> : la reconnaissance vocale ne fonctionne pas dans ce navigateur (limitation volontaire de Brave, pas un bug de l'app). Utilise Chrome ou Edge pour parler au micro, ou écris tes réponses en attendant.",
     ios_warning: "⚠️ <strong>Tu es sur iPhone/iPad</strong> : le micro ne fonctionne dans aucun navigateur sur iOS (limitation du système, pas un bug de l'app). Écris tes réponses en attendant, ou utilise un ordinateur ou un appareil Android pour parler au micro.",
     legacy_contact_reminder: "Si tu vois ce message, contacte-moi pour avoir accès à l'application gratuitement.<br/>Xavier",
     account_title: "Compte",
@@ -239,14 +238,13 @@ const I18N = {
     replay_title: "Play again",
     translate_title: "Show translation",
     shadow_title: "Repeat after the tutor",
+    accents_toggle_title: "Show/hide the accent keyboard",
     vocab_clear: "Clear",
     voice_default: "Browser default voice",
     grammar_noun_f: "f.", grammar_noun_m: "m.", grammar_infinitive_prefix: "inf.:",
     hint_engine: "Engine", hint_key_ok: "signed in ✅", hint_key_missing: "not signed in ⚠️",
     hint_voice: "Voice", hint_mic_ok: "mic ready 🎤", hint_mic_no: "mic unavailable (type instead)",
     hint_mic_ios: "mic unavailable on iPhone/iPad (type instead)",
-    hint_mic_brave: "mic unavailable on Brave ⚠️",
-    brave_warning: "⚠️ <strong>You're using Brave</strong>: voice recognition doesn't work in this browser (a deliberate Brave limitation, not an app bug). Use Chrome or Edge to talk with the mic, or type your answers instead.",
     ios_warning: "⚠️ <strong>You're on iPhone/iPad</strong>: the mic doesn't work in any browser on iOS (a system limitation, not an app bug). Type your answers instead, or use a computer or Android device to talk with the mic.",
     legacy_contact_reminder: "If you see this message, contact me to get free access to the app.<br/>Xavier",
     account_title: "Account",
@@ -368,14 +366,13 @@ const I18N = {
     replay_title: "Volver a escuchar",
     translate_title: "Ver la traducción",
     shadow_title: "Repetir después del tutor",
+    accents_toggle_title: "Mostrar/ocultar el teclado de acentos",
     vocab_clear: "Borrar",
     voice_default: "Voz predeterminada del navegador",
     grammar_noun_f: "f.", grammar_noun_m: "m.", grammar_infinitive_prefix: "inf.:",
     hint_engine: "Motor", hint_key_ok: "conectado ✅", hint_key_missing: "no conectado ⚠️",
     hint_voice: "Voz", hint_mic_ok: "micrófono listo 🎤", hint_mic_no: "micrófono no disponible (usa el texto)",
     hint_mic_ios: "micrófono no disponible en iPhone/iPad (usa el texto)",
-    hint_mic_brave: "micrófono no disponible en Brave ⚠️",
-    brave_warning: "⚠️ <strong>Estás usando Brave</strong>: el reconocimiento de voz no funciona en este navegador (una limitación deliberada de Brave, no un error de la app). Usa Chrome o Edge para hablar por el micrófono, o escribe tus respuestas mientras tanto.",
     ios_warning: "⚠️ <strong>Estás en iPhone/iPad</strong>: el micrófono no funciona en ningún navegador en iOS (una limitación del sistema, no un error de la app). Escribe tus respuestas mientras tanto, o usa un ordenador o un dispositivo Android para hablar por el micrófono.",
     legacy_contact_reminder: "Si ves este mensaje, contáctame para tener acceso gratuito a la aplicación.<br/>Xavier",
     account_title: "Cuenta",
@@ -497,14 +494,13 @@ const I18N = {
     replay_title: "Erneut anhören",
     translate_title: "Übersetzung anzeigen",
     shadow_title: "Nach dem Tutor wiederholen",
+    accents_toggle_title: "Akzenttastatur ein-/ausblenden",
     vocab_clear: "Leeren",
     voice_default: "Standardstimme des Browsers",
     grammar_noun_f: "f.", grammar_noun_m: "m.", grammar_infinitive_prefix: "Inf.:",
     hint_engine: "Engine", hint_key_ok: "angemeldet ✅", hint_key_missing: "nicht angemeldet ⚠️",
     hint_voice: "Stimme", hint_mic_ok: "Mikrofon bereit 🎤", hint_mic_no: "Mikrofon nicht verfügbar (nutze den Text)",
     hint_mic_ios: "Mikrofon auf iPhone/iPad nicht verfügbar (nutze den Text)",
-    hint_mic_brave: "Mikrofon auf Brave nicht verfügbar ⚠️",
-    brave_warning: "⚠️ <strong>Du nutzt Brave</strong>: Die Spracherkennung funktioniert in diesem Browser nicht (eine bewusste Einschränkung von Brave, kein App-Fehler). Nutze Chrome oder Edge, um mit dem Mikrofon zu sprechen, oder schreibe stattdessen deine Antworten.",
     ios_warning: "⚠️ <strong>Du bist auf iPhone/iPad</strong>: Das Mikrofon funktioniert in keinem Browser unter iOS (eine Systemeinschränkung, kein App-Fehler). Schreibe stattdessen deine Antworten, oder nutze einen Computer oder ein Android-Gerät, um mit dem Mikrofon zu sprechen.",
     legacy_contact_reminder: "Wenn du diese Nachricht siehst, melde dich bei mir, um kostenlosen Zugang zur App zu bekommen.<br/>Xavier",
     account_title: "Konto",
@@ -626,14 +622,13 @@ const I18N = {
     replay_title: "Ouvir novamente",
     translate_title: "Ver a tradução",
     shadow_title: "Repetir depois do tutor",
+    accents_toggle_title: "Mostrar/ocultar o teclado de acentos",
     vocab_clear: "Limpar",
     voice_default: "Voz padrão do navegador",
     grammar_noun_f: "f.", grammar_noun_m: "m.", grammar_infinitive_prefix: "inf.:",
     hint_engine: "Motor", hint_key_ok: "conectado ✅", hint_key_missing: "não conectado ⚠️",
     hint_voice: "Voz", hint_mic_ok: "microfone pronto 🎤", hint_mic_no: "microfone indisponível (use o texto)",
     hint_mic_ios: "microfone indisponível em iPhone/iPad (use o texto)",
-    hint_mic_brave: "microfone indisponível no Brave ⚠️",
-    brave_warning: "⚠️ <strong>Você está usando o Brave</strong>: o reconhecimento de voz não funciona neste navegador (uma limitação deliberada do Brave, não é um erro do app). Use o Chrome ou o Edge para falar com o microfone, ou escreva suas respostas enquanto isso.",
     ios_warning: "⚠️ <strong>Você está no iPhone/iPad</strong>: o microfone não funciona em nenhum navegador no iOS (uma limitação do sistema, não um erro do app). Escreva suas respostas por enquanto, ou use um computador ou um aparelho Android para falar no microfone.",
     legacy_contact_reminder: "Se você vir esta mensagem, entre em contato comigo para ter acesso gratuito ao aplicativo.<br/>Xavier",
     account_title: "Conta",
@@ -1687,6 +1682,20 @@ document.querySelectorAll(".accent-key").forEach((key) => {
     input.focus();
     input.setSelectionRange(start + char.length, start + char.length);
   });
+});
+
+// Clavier d'accents affiché par défaut, mais certains élèves n'en ont pas
+// besoin (clavier déjà configuré pour les accents) : préférence mémorisée
+// par appareil, pas liée au compte.
+function applyAccentKeyboardVisibility(hidden) {
+  $("accentKeyboard").classList.toggle("hidden", hidden);
+  $("toggleAccentsBtn").classList.toggle("active", !hidden);
+}
+applyAccentKeyboardVisibility(localStorage.getItem("accentKeyboardHidden") === "1");
+$("toggleAccentsBtn").addEventListener("click", () => {
+  const hidden = !$("accentKeyboard").classList.contains("hidden");
+  localStorage.setItem("accentKeyboardHidden", hidden ? "1" : "0");
+  applyAccentKeyboardVisibility(hidden);
 });
 
 // =========================================================
@@ -3008,7 +3017,7 @@ function refreshEngineHint() {
   const key = currentSession ? t("hint_key_ok") : t("hint_key_missing");
   const voice = canUseAzureStt() ? t("hint_mic_ok")
     : !SR ? (isIOSDevice ? t("hint_mic_ios") : t("hint_mic_no"))
-    : isBraveBrowser ? t("hint_mic_brave") : t("hint_mic_ok");
+    : t("hint_mic_ok");
   $("engineHint").innerHTML = `${t("hint_engine")} : ${engine} · ${key}<br/>${t("hint_voice")} : ${voice}`;
 }
 
@@ -3025,14 +3034,6 @@ function addWarningBanner(i18nKey) {
 }
 
 if (isIOSDevice && !canUseAzureStt()) addWarningBanner("ios_warning");
-
-let isBraveBrowser = false;
-(async () => {
-  isBraveBrowser = !!(navigator.brave && (await navigator.brave.isBrave()));
-  if (!isBraveBrowser) return;
-  addWarningBanner("brave_warning");
-  refreshEngineHint();
-})();
 
 // ---- Init ----
 applyTheme();
