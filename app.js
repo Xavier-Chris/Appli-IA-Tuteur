@@ -1607,7 +1607,8 @@ async function shadowSentence(refText, btn) {
           // avec les mots individuels (à retirer une fois le problème compris).
           console.log("[shadowing] sous-scores détaillés :", parsed.NBest && parsed.NBest[0] && parsed.NBest[0].PronunciationAssessment);
         } catch (_) { /* pas de détail mot par mot, on garde juste le score global */ }
-        console.log("[shadowing] texte reconnu :", result.text, "| score SDK :", assessment.pronunciationScore, assessment.accuracyScore, assessment.fluencyScore, assessment.completenessScore);
+        console.log("[shadowing] référence attendue :", JSON.stringify(refText));
+        console.log("[shadowing] texte reconnu :", JSON.stringify(result.text), "| score SDK (pron/accuracy/fluency/completeness) :", assessment.pronunciationScore, assessment.accuracyScore, assessment.fluencyScore, assessment.completenessScore);
         renderShadowResult(btn, assessment.pronunciationScore, words);
       }
       cleanup();
