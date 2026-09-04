@@ -109,7 +109,6 @@ const I18N = {
     c_said: "Tu as dit", c_better: "Mieux", c_why: "Pourquoi",
     replay_title: "Réécouter",
     translate_title: "Voir la traduction",
-    shadow_title: "Répéter après le tuteur",
     accents_toggle_title: "Afficher/cacher le clavier d'accents",
     help_title: "Comment fonctionne l'appli ?",
     help_h: "Comment fonctionne l'appli ?",
@@ -120,7 +119,6 @@ const I18N = {
       <p><strong>⌨️ Clavier d'accents</strong> : insère à, é, è, ê... dans le champ de texte. Clique sur ⌨️ pour le cacher ou le réafficher.</p>
       <h3>Sur une réponse du tuteur</h3>
       <p><strong>🔊</strong> réécoute la réponse. <strong>🌐</strong> affiche la traduction dans ta langue.</p>
-      <p><strong>🔁</strong> : répète la phrase à voix haute pour t'entraîner à la prononciation. Clique pour commencer, reclique quand tu as fini de lire : chaque mot s'affiche en couleur selon ta précision.</p>
       <p><strong>Un mot cliquable</strong> dans la conversation : l'ajoute à ton carnet de vocabulaire (et le prononce si tu recliques dessus).</p>
       <h3>Corrections et vocabulaire</h3>
       <p><strong>Panneau Corrections</strong> : tes fautes de français, avec la version corrigée et une explication. Seuls les mots qui changent sont surlignés.</p>
@@ -259,7 +257,6 @@ const I18N = {
     c_said: "You said", c_better: "Better", c_why: "Why",
     replay_title: "Play again",
     translate_title: "Show translation",
-    shadow_title: "Repeat after the tutor",
     accents_toggle_title: "Show/hide the accent keyboard",
     help_title: "How does the app work?",
     help_h: "How does the app work?",
@@ -270,7 +267,6 @@ const I18N = {
       <p><strong>⌨️ Accent keyboard</strong>: insert à, é, è, ê... into the text field. Click ⌨️ to hide or show it again.</p>
       <h3>On a tutor reply</h3>
       <p><strong>🔊</strong> replays the reply. <strong>🌐</strong> shows the translation in your language.</p>
-      <p><strong>🔁</strong>: repeat the sentence out loud to practice your pronunciation. Click to start, click again when you're done reading: each word is color-coded based on your accuracy.</p>
       <p><strong>A clickable word</strong> in the conversation: adds it to your vocabulary notebook (and pronounces it if you click it again).</p>
       <h3>Corrections and vocabulary</h3>
       <p><strong>Corrections panel</strong>: your French mistakes, with the corrected version and an explanation. Only the words that changed are highlighted.</p>
@@ -409,7 +405,6 @@ const I18N = {
     c_said: "Dijiste", c_better: "Mejor", c_why: "Por qué",
     replay_title: "Volver a escuchar",
     translate_title: "Ver la traducción",
-    shadow_title: "Repetir después del tutor",
     accents_toggle_title: "Mostrar/ocultar el teclado de acentos",
     help_title: "¿Cómo funciona la app?",
     help_h: "¿Cómo funciona la app?",
@@ -420,7 +415,6 @@ const I18N = {
       <p><strong>⌨️ Teclado de acentos</strong>: inserta à, é, è, ê... en el campo de texto. Haz clic en ⌨️ para ocultarlo o mostrarlo de nuevo.</p>
       <h3>Sobre una respuesta del tutor</h3>
       <p><strong>🔊</strong> vuelve a reproducir la respuesta. <strong>🌐</strong> muestra la traducción en tu idioma.</p>
-      <p><strong>🔁</strong>: repite la frase en voz alta para practicar tu pronunciación. Haz clic para empezar, vuelve a hacer clic cuando termines de leer: cada palabra se colorea según tu precisión.</p>
       <p><strong>Una palabra en la que puedes hacer clic</strong> en la conversación: la añade a tu cuaderno de vocabulario (y la pronuncia si vuelves a hacer clic en ella).</p>
       <h3>Correcciones y vocabulario</h3>
       <p><strong>Panel de correcciones</strong>: tus errores de francés, con la versión corregida y una explicación. Solo se resaltan las palabras que cambian.</p>
@@ -559,7 +553,6 @@ const I18N = {
     c_said: "Du sagtest", c_better: "Besser", c_why: "Warum",
     replay_title: "Erneut anhören",
     translate_title: "Übersetzung anzeigen",
-    shadow_title: "Nach dem Tutor wiederholen",
     accents_toggle_title: "Akzenttastatur ein-/ausblenden",
     help_title: "Wie funktioniert die App?",
     help_h: "Wie funktioniert die App?",
@@ -570,7 +563,6 @@ const I18N = {
       <p><strong>⌨️ Akzenttastatur</strong>: fügt à, é, è, ê... in das Textfeld ein. Klicke auf ⌨️, um sie ein- oder auszublenden.</p>
       <h3>Bei einer Antwort des Tutors</h3>
       <p><strong>🔊</strong> spielt die Antwort erneut ab. <strong>🌐</strong> zeigt die Übersetzung in deiner Sprache.</p>
-      <p><strong>🔁</strong>: wiederhole den Satz laut, um deine Aussprache zu üben. Klicke zum Starten, klicke erneut, wenn du fertig gelesen hast: jedes Wort wird je nach Genauigkeit farbig markiert.</p>
       <p><strong>Ein klickbares Wort</strong> in der Unterhaltung: fügt es zu deinem Vokabelheft hinzu (und spricht es aus, wenn du erneut darauf klickst).</p>
       <h3>Korrekturen und Vokabeln</h3>
       <p><strong>Korrekturen-Feld</strong>: deine Fehler auf Französisch, mit der korrigierten Version und einer Erklärung. Nur die geänderten Wörter werden hervorgehoben.</p>
@@ -709,7 +701,6 @@ const I18N = {
     c_said: "Você disse", c_better: "Melhor", c_why: "Por quê",
     replay_title: "Ouvir novamente",
     translate_title: "Ver a tradução",
-    shadow_title: "Repetir depois do tutor",
     accents_toggle_title: "Mostrar/ocultar o teclado de acentos",
     help_title: "Como funciona o app?",
     help_h: "Como funciona o app?",
@@ -720,7 +711,6 @@ const I18N = {
       <p><strong>⌨️ Teclado de acentos</strong>: insere à, é, è, ê... no campo de texto. Clique em ⌨️ para escondê-lo ou mostrá-lo de novo.</p>
       <h3>Sobre uma resposta do tutor</h3>
       <p><strong>🔊</strong> reproduz a resposta de novo. <strong>🌐</strong> mostra a tradução no seu idioma.</p>
-      <p><strong>🔁</strong>: repita a frase em voz alta para praticar sua pronúncia. Clique para começar, clique de novo quando terminar de ler: cada palavra aparece colorida de acordo com sua precisão.</p>
       <p><strong>Uma palavra clicável</strong> na conversa: adiciona ela ao seu caderno de vocabulário (e a pronuncia se você clicar nela de novo).</p>
       <h3>Correções e vocabulário</h3>
       <p><strong>Painel de correções</strong>: seus erros de francês, com a versão corrigida e uma explicação. Só as palavras que mudam ficam destacadas.</p>
@@ -1651,127 +1641,6 @@ async function startAzureRecognition() {
   );
 }
 
-// =========================================================
-//  Shadowing (répéter après le tuteur) + score de prononciation
-// =========================================================
-// Écoute continue déclenchée/arrêtée par un clic sur le même bouton (comme
-// le micro principal), pas une écoute ponctuelle à durée fixe : l'apprenant
-// décide lui-même quand il a fini de lire la phrase. L'évaluation de
-// prononciation d'Azure a besoin de connaître à l'avance le texte attendu
-// (ici la phrase du tuteur) pour comparer ce qui a été dit et noter chaque
-// mot. Un seul shadowing à la fois (indépendant du micro principal, mais
-// les deux utilisant le micro physique, pas de sens à les cumuler).
-// Seul le détail mot par mot est affiché (voir renderShadowResult) : le
-// score global composite d'Azure (précision+fluidité+complétude+prosodie)
-// s'est avéré peu fiable en test (ex : 0/100 ou 51/100 avec des mots
-// pourtant bien reconnus), donc volontairement pas affiché à l'apprenant.
-let shadowRecognizer = null;
-let shadowActiveBtn = null;
-let shadowLatestWords = null;
-
-async function shadowSentence(refText, btn) {
-  if (shadowActiveBtn === btn) {
-    // Deuxième clic sur le même bouton : l'apprenant signale qu'il a fini.
-    // On attend la fin RÉELLE de l'arrêt avant de lire shadowLatestWords :
-    // l'arrêter puis lire le résultat dans la foulée (sans attendre) arrivait
-    // avant que le dernier segment parlé ait fini d'être reconnu, laissant
-    // shadowLatestWords vide (constaté par Xavier : "aucune phrase n'apparaît").
-    const recognizer = shadowRecognizer;
-    if (recognizer) {
-      recognizer.stopContinuousRecognitionAsync(
-        () => { recognizer.close(); finishShadow(btn); },
-        () => { recognizer.close(); finishShadow(btn); }
-      );
-    } else {
-      finishShadow(btn);
-    }
-    return;
-  }
-  if (shadowActiveBtn) return; // un autre shadowing déjà en cours ailleurs
-
-  shadowActiveBtn = btn;
-  shadowLatestWords = null;
-  btn.classList.add("shadow-active");
-
-  let token, region;
-  try {
-    const { data, error } = await supabaseClient.functions.invoke("stt-token");
-    if (error) throw new Error(await readFunctionError(error));
-    token = data.token;
-    region = data.region;
-  } catch (err) {
-    console.error("Échec récupération du jeton Azure STT (shadowing) :", err);
-    resetShadowBtn(btn);
-    return;
-  }
-  if (shadowActiveBtn !== btn) return; // annulé (reclic) pendant la récupération du jeton
-
-  const speechConfig = SpeechSDK.SpeechConfig.fromAuthorizationToken(token, region);
-  speechConfig.speechRecognitionLanguage = "fr-FR";
-  const audioConfig = SpeechSDK.AudioConfig.fromDefaultMicrophoneInput();
-  const recognizer = new SpeechSDK.SpeechRecognizer(speechConfig, audioConfig);
-  const paConfig = new SpeechSDK.PronunciationAssessmentConfig(
-    refText,
-    SpeechSDK.PronunciationAssessmentGradingSystem.HundredMark,
-    SpeechSDK.PronunciationAssessmentGranularity.Word,
-    true
-  );
-  paConfig.applyTo(recognizer);
-
-  recognizer.recognized = (_s, e) => {
-    if (e.result.reason !== SpeechSDK.ResultReason.RecognizedSpeech) return;
-    try {
-      const raw = e.result.properties.getProperty(SpeechSDK.PropertyId.SpeechServiceResponse_JsonResult);
-      const parsed = JSON.parse(raw);
-      shadowLatestWords = (parsed.NBest && parsed.NBest[0] && parsed.NBest[0].Words) || [];
-    } catch (_) { shadowLatestWords = []; }
-  };
-  recognizer.canceled = (_s, e) => {
-    console.error("Erreur reconnaissance shadowing :", e.errorDetails);
-  };
-
-  shadowRecognizer = recognizer;
-  recognizer.startContinuousRecognitionAsync(
-    () => {},
-    (err) => {
-      console.error("Échec démarrage shadowing :", err);
-      recognizer.close();
-      shadowRecognizer = null;
-      resetShadowBtn(btn);
-    }
-  );
-}
-
-function finishShadow(btn) {
-  if (shadowLatestWords && shadowLatestWords.length) renderShadowResult(btn, shadowLatestWords);
-  shadowRecognizer = null;
-  resetShadowBtn(btn);
-}
-
-function resetShadowBtn(btn) {
-  shadowActiveBtn = null;
-  btn.classList.remove("shadow-active");
-}
-
-// Un mot par mot coloré (bon/moyen/mauvais/oublié), affiché juste après le
-// bouton qui a déclenché l'écoute. Remplace le résultat précédent s'il y en
-// avait un (pas d'empilement en répétant plusieurs fois).
-function renderShadowResult(btn, words) {
-  const existing = btn.parentElement.querySelector(".shadow-result");
-  if (existing) existing.remove();
-
-  const wordsHtml = words.map((w) => {
-    const acc = w.AccuracyScore ?? 100;
-    const cls = w.ErrorType === "Omission" ? "poor"
-      : acc >= 80 ? "good" : acc >= 60 ? "ok" : "poor";
-    return `<span class="shadow-word ${cls}">${escapeHtml(w.Word)}</span>`;
-  }).join(" ");
-  const card = document.createElement("div");
-  card.className = "shadow-result";
-  card.innerHTML = wordsHtml;
-  btn.insertAdjacentElement("afterend", card);
-}
-
 micBtn.addEventListener("click", () => {
   if (!micAvailable()) return;
   if (listening) { stopListening(); return; }
@@ -2501,26 +2370,7 @@ function addBubble(who, text) {
   if (who === "tutor") {
     // Chaque mot est cliquable : l'apprenant choisit lui-même ce qu'il
     // veut ajouter à son vocabulaire, au lieu d'une liste imposée.
-    // Shadowing PHRASE PAR PHRASE (pas sur tout le message d'un coup) :
-    // l'évaluation de prononciation d'Azure pénalise la note globale
-    // ("fluency"/"prosody") sur un long texte à plusieurs phrases, même
-    // quand chaque mot est bien prononcé (constaté par Xavier : 78/100 avec
-    // tous les mots en vert sur une réponse de 3 phrases). Une phrase à la
-    // fois evite ce biais et correspond aussi mieux à l'exercice de
-    // shadowing traditionnel (répéter un énoncé court, pas un paragraphe).
-    const sentences = canUseAzureStt() ? splitSentences(text) : [text];
-    sentences.forEach((sentence) => {
-      makeWordsClickable(sentence, div);
-      if (canUseAzureStt()) {
-        const shadowBtn = document.createElement("span");
-        shadowBtn.className = "speak-again shadow-inline";
-        shadowBtn.textContent = "🔁";
-        shadowBtn.title = t("shadow_title");
-        shadowBtn.addEventListener("click", () => shadowSentence(sentence, shadowBtn));
-        div.appendChild(shadowBtn);
-        div.appendChild(document.createTextNode(" "));
-      }
-    });
+    makeWordsClickable(text, div);
     const btn = document.createElement("span");
     btn.className = "speak-again";
     btn.textContent = "🔊";
