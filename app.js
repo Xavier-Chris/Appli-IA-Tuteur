@@ -111,6 +111,28 @@ const I18N = {
     translate_title: "Voir la traduction",
     shadow_title: "Répéter après le tuteur",
     accents_toggle_title: "Afficher/cacher le clavier d'accents",
+    help_title: "Comment fonctionne l'appli ?",
+    help_h: "Comment fonctionne l'appli ?",
+    help_content: `
+      <h3>Parler au tuteur</h3>
+      <p><strong>🎤 Micro</strong> : clique pour parler, reclique quand tu as fini ta phrase.</p>
+      <p><strong>Champ de texte</strong> : écris ta réponse si tu préfères, ou si le micro ne fonctionne pas.</p>
+      <p><strong>⌨️ Clavier d'accents</strong> : insère à, é, è, ê... dans le champ de texte. Clique sur ⌨️ pour le cacher ou le réafficher.</p>
+      <h3>Sur une réponse du tuteur</h3>
+      <p><strong>🔊</strong> réécoute la réponse. <strong>🌐</strong> affiche la traduction dans ta langue.</p>
+      <p><strong>🔁</strong> : répète la phrase à voix haute pour t'entraîner à la prononciation. Clique pour commencer, reclique quand tu as fini de lire : chaque mot s'affiche en couleur selon ta précision.</p>
+      <p><strong>Un mot cliquable</strong> dans la conversation : l'ajoute à ton carnet de vocabulaire (et le prononce si tu recliques dessus).</p>
+      <h3>Corrections et vocabulaire</h3>
+      <p><strong>Panneau Corrections</strong> : tes fautes de français, avec la version corrigée et une explication. Seuls les mots qui changent sont surlignés.</p>
+      <p><strong>Panneau Vocabulaire</strong> : les mots que tu as ajoutés. Le bouton <strong>Réviser</strong> te les fait retravailler avec des fiches de révision espacée.</p>
+      <h3>Régler ta leçon</h3>
+      <p><strong>Niveau</strong> : adapte le vocabulaire et la difficulté des phrases du tuteur.</p>
+      <p><strong>Mode</strong> : conversation libre, guidée sur un thème, jeu de rôle, ou leçon de grammaire.</p>
+      <p><strong>Personnage</strong> : change qui te parle (le tuteur classique, ou un personnage avec sa propre personnalité).</p>
+      <p><strong>Contexte</strong> : précise le thème ou le scénario, selon le mode choisi.</p>
+      <h3>Ton compte</h3>
+      <p>10 minutes gratuites par jour. Le bouton <strong>Premium</strong> permet de t'abonner pour un accès illimité, à tout moment.</p>
+    `,
     vocab_clear: "Vider",
     voice_default: "Voix par défaut du navigateur",
     grammar_noun_f: "n.f.", grammar_noun_m: "n.m.", grammar_infinitive_prefix: "inf. :",
@@ -239,6 +261,28 @@ const I18N = {
     translate_title: "Show translation",
     shadow_title: "Repeat after the tutor",
     accents_toggle_title: "Show/hide the accent keyboard",
+    help_title: "How does the app work?",
+    help_h: "How does the app work?",
+    help_content: `
+      <h3>Talking to the tutor</h3>
+      <p><strong>🎤 Microphone</strong>: click to speak, click again when you've finished your sentence.</p>
+      <p><strong>Text field</strong>: type your answer if you prefer, or if the microphone isn't working.</p>
+      <p><strong>⌨️ Accent keyboard</strong>: insert à, é, è, ê... into the text field. Click ⌨️ to hide or show it again.</p>
+      <h3>On a tutor reply</h3>
+      <p><strong>🔊</strong> replays the reply. <strong>🌐</strong> shows the translation in your language.</p>
+      <p><strong>🔁</strong>: repeat the sentence out loud to practice your pronunciation. Click to start, click again when you're done reading: each word is color-coded based on your accuracy.</p>
+      <p><strong>A clickable word</strong> in the conversation: adds it to your vocabulary notebook (and pronounces it if you click it again).</p>
+      <h3>Corrections and vocabulary</h3>
+      <p><strong>Corrections panel</strong>: your French mistakes, with the corrected version and an explanation. Only the words that changed are highlighted.</p>
+      <p><strong>Vocabulary panel</strong>: the words you've added. The <strong>Review</strong> button lets you practice them with spaced-repetition flashcards.</p>
+      <h3>Adjusting your lesson</h3>
+      <p><strong>Level</strong>: adapts the tutor's vocabulary and sentence difficulty.</p>
+      <p><strong>Mode</strong>: free conversation, guided on a topic, roleplay, or a grammar lesson.</p>
+      <p><strong>Character</strong>: changes who's talking to you (the classic tutor, or a character with their own personality).</p>
+      <p><strong>Context</strong>: specifies the topic or scenario, depending on the mode you picked.</p>
+      <h3>Your account</h3>
+      <p>10 free minutes a day. The <strong>Premium</strong> button lets you subscribe for unlimited access, any time.</p>
+    `,
     vocab_clear: "Clear",
     voice_default: "Browser default voice",
     grammar_noun_f: "f.", grammar_noun_m: "m.", grammar_infinitive_prefix: "inf.:",
@@ -367,6 +411,28 @@ const I18N = {
     translate_title: "Ver la traducción",
     shadow_title: "Repetir después del tutor",
     accents_toggle_title: "Mostrar/ocultar el teclado de acentos",
+    help_title: "¿Cómo funciona la app?",
+    help_h: "¿Cómo funciona la app?",
+    help_content: `
+      <h3>Hablar con el tutor</h3>
+      <p><strong>🎤 Micrófono</strong>: haz clic para hablar, vuelve a hacer clic cuando termines tu frase.</p>
+      <p><strong>Campo de texto</strong>: escribe tu respuesta si lo prefieres, o si el micrófono no funciona.</p>
+      <p><strong>⌨️ Teclado de acentos</strong>: inserta à, é, è, ê... en el campo de texto. Haz clic en ⌨️ para ocultarlo o mostrarlo de nuevo.</p>
+      <h3>Sobre una respuesta del tutor</h3>
+      <p><strong>🔊</strong> vuelve a reproducir la respuesta. <strong>🌐</strong> muestra la traducción en tu idioma.</p>
+      <p><strong>🔁</strong>: repite la frase en voz alta para practicar tu pronunciación. Haz clic para empezar, vuelve a hacer clic cuando termines de leer: cada palabra se colorea según tu precisión.</p>
+      <p><strong>Una palabra en la que puedes hacer clic</strong> en la conversación: la añade a tu cuaderno de vocabulario (y la pronuncia si vuelves a hacer clic en ella).</p>
+      <h3>Correcciones y vocabulario</h3>
+      <p><strong>Panel de correcciones</strong>: tus errores de francés, con la versión corregida y una explicación. Solo se resaltan las palabras que cambian.</p>
+      <p><strong>Panel de vocabulario</strong>: las palabras que has añadido. El botón <strong>Repasar</strong> te permite practicarlas con fichas de repetición espaciada.</p>
+      <h3>Ajustar tu lección</h3>
+      <p><strong>Nivel</strong>: adapta el vocabulario y la dificultad de las frases del tutor.</p>
+      <p><strong>Modo</strong>: conversación libre, guiada sobre un tema, juego de rol, o lección de gramática.</p>
+      <p><strong>Personaje</strong>: cambia quién te habla (el tutor clásico, o un personaje con su propia personalidad).</p>
+      <p><strong>Contexto</strong>: precisa el tema o el escenario, según el modo elegido.</p>
+      <h3>Tu cuenta</h3>
+      <p>10 minutos gratis al día. El botón <strong>Premium</strong> te permite suscribirte para tener acceso ilimitado, en cualquier momento.</p>
+    `,
     vocab_clear: "Borrar",
     voice_default: "Voz predeterminada del navegador",
     grammar_noun_f: "f.", grammar_noun_m: "m.", grammar_infinitive_prefix: "inf.:",
@@ -495,6 +561,28 @@ const I18N = {
     translate_title: "Übersetzung anzeigen",
     shadow_title: "Nach dem Tutor wiederholen",
     accents_toggle_title: "Akzenttastatur ein-/ausblenden",
+    help_title: "Wie funktioniert die App?",
+    help_h: "Wie funktioniert die App?",
+    help_content: `
+      <h3>Mit dem Tutor sprechen</h3>
+      <p><strong>🎤 Mikrofon</strong>: klicke zum Sprechen, klicke erneut, wenn du deinen Satz beendet hast.</p>
+      <p><strong>Textfeld</strong>: schreibe deine Antwort, wenn du das lieber magst, oder wenn das Mikrofon nicht funktioniert.</p>
+      <p><strong>⌨️ Akzenttastatur</strong>: fügt à, é, è, ê... in das Textfeld ein. Klicke auf ⌨️, um sie ein- oder auszublenden.</p>
+      <h3>Bei einer Antwort des Tutors</h3>
+      <p><strong>🔊</strong> spielt die Antwort erneut ab. <strong>🌐</strong> zeigt die Übersetzung in deiner Sprache.</p>
+      <p><strong>🔁</strong>: wiederhole den Satz laut, um deine Aussprache zu üben. Klicke zum Starten, klicke erneut, wenn du fertig gelesen hast: jedes Wort wird je nach Genauigkeit farbig markiert.</p>
+      <p><strong>Ein klickbares Wort</strong> in der Unterhaltung: fügt es zu deinem Vokabelheft hinzu (und spricht es aus, wenn du erneut darauf klickst).</p>
+      <h3>Korrekturen und Vokabeln</h3>
+      <p><strong>Korrekturen-Feld</strong>: deine Fehler auf Französisch, mit der korrigierten Version und einer Erklärung. Nur die geänderten Wörter werden hervorgehoben.</p>
+      <p><strong>Vokabel-Feld</strong>: die Wörter, die du hinzugefügt hast. Der Button <strong>Wiederholen</strong> lässt dich sie mit Karteikarten im Abstand wiederholen üben.</p>
+      <h3>Deine Lektion einstellen</h3>
+      <p><strong>Niveau</strong>: passt den Wortschatz und die Satzschwierigkeit des Tutors an.</p>
+      <p><strong>Modus</strong>: freies Gespräch, geführt zu einem Thema, Rollenspiel, oder eine Grammatiklektion.</p>
+      <p><strong>Figur</strong>: ändert, wer mit dir spricht (der klassische Tutor, oder eine Figur mit eigener Persönlichkeit).</p>
+      <p><strong>Kontext</strong>: legt das Thema oder Szenario fest, je nach gewähltem Modus.</p>
+      <h3>Dein Konto</h3>
+      <p>10 kostenlose Minuten pro Tag. Mit dem Button <strong>Premium</strong> kannst du jederzeit ein Abo für unbegrenzten Zugang abschließen.</p>
+    `,
     vocab_clear: "Leeren",
     voice_default: "Standardstimme des Browsers",
     grammar_noun_f: "f.", grammar_noun_m: "m.", grammar_infinitive_prefix: "Inf.:",
@@ -623,6 +711,28 @@ const I18N = {
     translate_title: "Ver a tradução",
     shadow_title: "Repetir depois do tutor",
     accents_toggle_title: "Mostrar/ocultar o teclado de acentos",
+    help_title: "Como funciona o app?",
+    help_h: "Como funciona o app?",
+    help_content: `
+      <h3>Falar com o tutor</h3>
+      <p><strong>🎤 Microfone</strong>: clique para falar, clique de novo quando terminar sua frase.</p>
+      <p><strong>Campo de texto</strong>: escreva sua resposta se preferir, ou se o microfone não estiver funcionando.</p>
+      <p><strong>⌨️ Teclado de acentos</strong>: insere à, é, è, ê... no campo de texto. Clique em ⌨️ para escondê-lo ou mostrá-lo de novo.</p>
+      <h3>Sobre uma resposta do tutor</h3>
+      <p><strong>🔊</strong> reproduz a resposta de novo. <strong>🌐</strong> mostra a tradução no seu idioma.</p>
+      <p><strong>🔁</strong>: repita a frase em voz alta para praticar sua pronúncia. Clique para começar, clique de novo quando terminar de ler: cada palavra aparece colorida de acordo com sua precisão.</p>
+      <p><strong>Uma palavra clicável</strong> na conversa: adiciona ela ao seu caderno de vocabulário (e a pronuncia se você clicar nela de novo).</p>
+      <h3>Correções e vocabulário</h3>
+      <p><strong>Painel de correções</strong>: seus erros de francês, com a versão corrigida e uma explicação. Só as palavras que mudam ficam destacadas.</p>
+      <p><strong>Painel de vocabulário</strong>: as palavras que você adicionou. O botão <strong>Revisar</strong> permite praticá-las com fichas de repetição espaçada.</p>
+      <h3>Ajustar sua aula</h3>
+      <p><strong>Nível</strong>: adapta o vocabulário e a dificuldade das frases do tutor.</p>
+      <p><strong>Modo</strong>: conversa livre, guiada sobre um tema, interpretação de papéis, ou aula de gramática.</p>
+      <p><strong>Personagem</strong>: muda quem fala com você (o tutor clássico, ou um personagem com sua própria personalidade).</p>
+      <p><strong>Contexto</strong>: define o tema ou o cenário, de acordo com o modo escolhido.</p>
+      <h3>Sua conta</h3>
+      <p>10 minutos grátis por dia. O botão <strong>Premium</strong> permite assinar para ter acesso ilimitado, a qualquer momento.</p>
+    `,
     vocab_clear: "Limpar",
     voice_default: "Voz padrão do navegador",
     grammar_noun_f: "f.", grammar_noun_m: "m.", grammar_infinitive_prefix: "inf.:",
@@ -2641,6 +2751,9 @@ function openPaywall() {
   $("paywallModal").hidden = false;
 }
 $("closePaywall").addEventListener("click", () => ($("paywallModal").hidden = true));
+
+$("helpBtn").addEventListener("click", () => ($("helpModal").hidden = false));
+$("closeHelp").addEventListener("click", () => ($("helpModal").hidden = true));
 // Lien de paiement Stripe tout prêt (créé une fois dans le tableau de bord
 // Stripe) : pas besoin d'appel serveur pour démarrer un paiement, juste
 // rediriger l'élève dessus. client_reference_id dit à Stripe (et donc au

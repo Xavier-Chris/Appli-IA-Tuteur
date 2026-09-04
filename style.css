@@ -79,6 +79,15 @@ body {
 .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; }
 .logo { font-size: 22px; }
 .brand-name { letter-spacing: 0.3px; }
+.help-btn {
+  width: 22px; height: 22px;
+  border: none;
+  background: var(--panel-2);
+  font-size: 12px;
+  font-weight: 700;
+  opacity: .7;
+}
+.help-btn:hover { opacity: 1; }
 .topbar-actions { display: flex; gap: 8px; }
 .icon-btn {
   border: 1px solid var(--border);
@@ -412,6 +421,12 @@ select:focus, input:focus { border-color: var(--primary); }
 .summary-list li { font-size: 14px; }
 .summary-checkbox { display: flex; align-items: center; gap: 8px; margin-top: 16px; font-size: 14px; color: var(--muted); cursor: pointer; }
 .modal-actions { margin-top: 16px; display: flex; justify-content: flex-end; }
+.modal-card-wide { max-width: 560px; }
+.help-body { max-height: 60vh; overflow-y: auto; font-size: 14px; line-height: 1.5; }
+.help-body h3 { margin: 18px 0 6px; font-size: 14px; }
+.help-body h3:first-child { margin-top: 0; }
+.help-body p { margin: 0 0 10px; color: var(--muted); }
+.help-body strong { color: var(--text); }
 .auth-error { color: var(--accent); margin: 0 0 12px; }
 .auth-success { color: var(--good); margin: 0 0 12px; }
 .legacy-note { background: var(--panel-2); border-radius: 10px; padding: 12px; margin: 0 0 16px; line-height: 1.5; }

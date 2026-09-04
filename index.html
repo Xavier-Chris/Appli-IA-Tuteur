@@ -12,6 +12,7 @@
     <div class="brand">
       <span class="logo">🎙️</span>
       <span class="brand-name" data-i18n="brand">Tuteur FR</span>
+      <button id="helpBtn" class="icon-btn help-btn" data-i18n-title="help_title" title="Comment fonctionne l'appli ?">❓</button>
     </div>
     <div class="topbar-actions">
       <select id="langSelect" class="lang-select" title="Language">
@@ -333,6 +334,17 @@
         <button id="skipImportBtn" class="btn btn-ghost" data-i18n="btn_skip_import">Ignorer</button>
         <button id="confirmImportBtn" class="btn btn-primary" data-i18n="btn_confirm_import">Importer</button>
       </div>
+    </div>
+  </div>
+
+  <!-- Aide : explique chaque bouton/option de l'appli -->
+  <div id="helpModal" class="modal" hidden>
+    <div class="modal-card modal-card-wide">
+      <div class="modal-head">
+        <h2 data-i18n="help_h">Comment fonctionne l'appli ?</h2>
+        <button id="closeHelp" class="icon-btn">✕</button>
+      </div>
+      <div class="help-body" data-i18n-html="help_content"></div>
     </div>
   </div>
 
