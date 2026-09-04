@@ -2351,7 +2351,26 @@ function addBubble(who, text) {
   if (who === "tutor") {
     // Chaque mot est cliquable : l'apprenant choisit lui-même ce qu'il
     // veut ajouter à son vocabulaire, au lieu d'une liste imposée.
-    makeWordsClickable(text, div);
+    // Shadowing PHRASE PAR PHRASE (pas sur tout le message d'un coup) :
+    // l'évaluation de prononciation d'Azure pénalise la note globale
+    // ("fluency"/"prosody") sur un long texte à plusieurs phrases, même
+    // quand chaque mot est bien prononcé (constaté par Xavier : 78/100 avec
+    // tous les mots en vert sur une réponse de 3 phrases). Une phrase à la
+    // fois evite ce biais et correspond aussi mieux à l'exercice de
+    // shadowing traditionnel (répéter un énoncé court, pas un paragraphe).
+    const sentences = canUseAzureStt() ? splitSentences(text) : [text];
+    sentences.forEach((sentence) => {
+      makeWordsClickable(sentence, div);
+      if (canUseAzureStt()) {
+        const shadowBtn = document.createElement("span");
+        shadowBtn.className = "speak-again shadow-inline";
+        shadowBtn.textContent = "🔁";
+        shadowBtn.title = t("shadow_title");
+        shadowBtn.addEventListener("click", () => shadowSentence(sentence, shadowBtn));
+        div.appendChild(shadowBtn);
+        div.appendChild(document.createTextNode(" "));
+      }
+    });
     const btn = document.createElement("span");
     btn.className = "speak-again";
     btn.textContent = "🔊";
@@ -2372,18 +2391,6 @@ function addBubble(who, text) {
       translateBtn.addEventListener("click", () => translateBubble(text, translateBtn, box));
       div.appendChild(translateBtn);
       div.appendChild(box);
-    }
-    // Shadowing (répéter après le tuteur) : nécessite Azure spécifiquement,
-    // le moteur de secours du navigateur ne sait pas évaluer la
-    // prononciation. Bouton simplement absent si Azure n'est pas disponible,
-    // plutôt que de proposer un bouton qui échouerait à coup sûr.
-    if (canUseAzureStt()) {
-      const shadowBtn = document.createElement("span");
-      shadowBtn.className = "speak-again";
-      shadowBtn.textContent = "🔁";
-      shadowBtn.title = t("shadow_title");
-      shadowBtn.addEventListener("click", () => shadowSentence(text, shadowBtn));
-      div.appendChild(shadowBtn);
     }
   } else {
     div.textContent = text;
