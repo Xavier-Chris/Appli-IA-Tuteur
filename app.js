@@ -1984,7 +1984,8 @@ const LEVEL_GUIDANCE = {
     "Niveau débutant (A1-A2). " +
     "Vocabulaire : uniquement des mots très courants et concrets du quotidien (famille, nourriture, temps, couleurs, nombres, lieux familiers). Aucun mot abstrait, figuré ou rare. " +
     "Temps verbaux : présent de l'indicatif, futur proche (aller + infinitif), passé composé avec des verbes courants, impératif simple. N'utilise JAMAIS le subjonctif, le conditionnel complexe ou la voix passive. " +
-    "Phrases : courtes et simples (sujet-verbe-complément), pas ou très peu de subordination. Connecteurs simples uniquement : et, mais, parce que, alors, ou.",
+    "Phrases : courtes et simples (sujet-verbe-complément), pas ou très peu de subordination. Connecteurs simples uniquement : et, mais, parce que, alors, ou. " +
+    "Prononciation : écris TOUJOURS les mots en entier, jamais de contractions orales familières (comme « j'suis », « j'veux », « t'as », « d'faire », « chuis », « y'a »...). Utilise systématiquement la forme standard complète : « je suis », « je veux », « tu as », « de faire », « il y a ».",
   intermediaire:
     "Niveau intermédiaire (B1). " +
     "Vocabulaire : plus large que le débutant, avec des mots abstraits simples et des expressions usuelles de la vie courante. Pas encore d'expressions idiomatiques. " +
