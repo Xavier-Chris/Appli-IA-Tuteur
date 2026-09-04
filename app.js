@@ -1603,7 +1603,11 @@ async function shadowSentence(refText, btn) {
           const raw = result.properties.getProperty(SpeechSDK.PropertyId.SpeechServiceResponse_JsonResult);
           const parsed = JSON.parse(raw);
           words = (parsed.NBest && parsed.NBest[0] && parsed.NBest[0].Words) || [];
+          // Détail temporaire pour diagnostiquer un score global incohérent
+          // avec les mots individuels (à retirer une fois le problème compris).
+          console.log("[shadowing] sous-scores détaillés :", parsed.NBest && parsed.NBest[0] && parsed.NBest[0].PronunciationAssessment);
         } catch (_) { /* pas de détail mot par mot, on garde juste le score global */ }
+        console.log("[shadowing] texte reconnu :", result.text, "| score SDK :", assessment.pronunciationScore, assessment.accuracyScore, assessment.fluencyScore, assessment.completenessScore);
         renderShadowResult(btn, assessment.pronunciationScore, words);
       }
       cleanup();
