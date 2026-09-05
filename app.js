@@ -46,6 +46,7 @@ const I18N = {
     label_mode: "Mode",
     mode_libre: "Conversation libre", mode_guidee: "Conversation guidée",
     mode_roleplay: "Jeu de rôle", mode_grammaire: "Grammaire",
+    mode_conjugaison: "Conjugaison", mode_ecoute: "Écoute / dictée",
     ctx_subject: "Sujet", ctx_scenario: "Scénario", ctx_grammar: "Point de grammaire",
     ctx_ph_default: "Ex : voyage, restaurant...",
     ctx_ph_subject: "Ex : voyage, travail, université...",
@@ -194,6 +195,7 @@ const I18N = {
     label_mode: "Mode",
     mode_libre: "Free conversation", mode_guidee: "Guided conversation",
     mode_roleplay: "Role play", mode_grammaire: "Grammar",
+    mode_conjugaison: "Conjugation", mode_ecoute: "Listening / dictation",
     ctx_subject: "Topic", ctx_scenario: "Scenario", ctx_grammar: "Grammar point",
     ctx_ph_default: "e.g. travel, restaurant...",
     ctx_ph_subject: "e.g. travel, work, university...",
@@ -342,6 +344,7 @@ const I18N = {
     label_mode: "Modo",
     mode_libre: "Conversación libre", mode_guidee: "Conversación guiada",
     mode_roleplay: "Juego de rol", mode_grammaire: "Gramática",
+    mode_conjugaison: "Conjugación", mode_ecoute: "Escucha / dictado",
     ctx_subject: "Tema", ctx_scenario: "Escenario", ctx_grammar: "Punto de gramática",
     ctx_ph_default: "Ej: viaje, restaurante...",
     ctx_ph_subject: "Ej: viaje, trabajo, universidad...",
@@ -490,6 +493,7 @@ const I18N = {
     label_mode: "Modus",
     mode_libre: "Freies Gespräch", mode_guidee: "Geführtes Gespräch",
     mode_roleplay: "Rollenspiel", mode_grammaire: "Grammatik",
+    mode_conjugaison: "Konjugation", mode_ecoute: "Hören / Diktat",
     ctx_subject: "Thema", ctx_scenario: "Szenario", ctx_grammar: "Grammatikthema",
     ctx_ph_default: "z. B. Reise, Restaurant...",
     ctx_ph_subject: "z. B. Reise, Arbeit, Universität...",
@@ -638,6 +642,7 @@ const I18N = {
     label_mode: "Modo",
     mode_libre: "Conversa livre", mode_guidee: "Conversa guiada",
     mode_roleplay: "Simulação", mode_grammaire: "Gramática",
+    mode_conjugaison: "Conjugação", mode_ecoute: "Escuta / ditado",
     ctx_subject: "Tema", ctx_scenario: "Cenário", ctx_grammar: "Ponto de gramática",
     ctx_ph_default: "Ex: viagem, restaurante...",
     ctx_ph_subject: "Ex: viagem, trabalho, universidade...",
@@ -2020,6 +2025,7 @@ Tu es aussi un professeur de français bienveillant, mais tu ne corriges JAMAIS 
     guidee: `Conversation guidée sur le thème : ${state.context || "au choix"}. Rends la difficulté progressive.`,
     roleplay: `Jeu de rôle. Scénario : ${state.context || "au choix"}. Joue pleinement ton personnage, en suivant un déroulé réaliste et dans l'ordre logique de la vraie vie pour cette situation, étape par étape (par exemple, au restaurant : demander d'abord s'il y a une réservation, puis le nombre de personnes, avant d'installer les clients et de présenter le menu). Ne saute pas d'étapes et ne pars pas dans une autre direction avant d'avoir naturellement progressé dans la situation. Choisis aussi le registre (tutoiement ou vouvoiement) comme dans la vraie vie pour cette situation précise : vouvoiement pour un contexte formel ou entre inconnus (entretien d'embauche, administration, médecin, hôtel, cadre professionnel...), tutoiement pour un contexte familier (amis, famille, situation informelle). Une fois choisi, garde CE MÊME registre du début à la fin de la conversation, sans jamais en changer en cours de route.`,
     grammaire: `Leçon de grammaire interactive sur : ${state.context || "au choix"}. Ne fais pas de longs exposés : pose des questions et guide l'apprenant vers la règle.`,
+    conjugaison: `Exercices de conjugaison, un verbe à la fois. Choisis un verbe (varie les verbes réguliers et irréguliers, adaptés aux temps autorisés pour ce niveau), un temps et une personne, et demande à l'apprenant de le conjuguer, par exemple sous la forme "Conjugue 'finir' à la première personne du pluriel, au passé composé." Attends sa réponse, dis clairement si c'est juste ou faux, donne la bonne forme avec une explication très courte si c'est faux, puis enchaîne directement sur un nouvel exercice avec un verbe différent. Un seul exercice à la fois, jamais plusieurs d'un coup.`,
   }[state.mode];
 
   const levelGuidance = LEVEL_GUIDANCE[state.level] || LEVEL_GUIDANCE.intermediaire;
