@@ -336,8 +336,8 @@ select:focus, input:focus { border-color: var(--primary); }
 .correction-card .said { color: var(--text); }
 .correction-card .better { color: var(--text); }
 .correction-card .why { color: var(--text); }
-.correction-card .err-word { color: var(--accent); text-decoration: line-through; }
-.correction-card .fix-word { color: var(--good); font-weight: 700; }
+.err-word { color: var(--accent); text-decoration: line-through; }
+.fix-word { color: var(--good); font-weight: 700; }
 
 .vocab-item {
   display: flex; justify-content: space-between; align-items: center; gap: 8px;
