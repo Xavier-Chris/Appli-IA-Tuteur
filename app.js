@@ -2615,6 +2615,15 @@ $("closePaywall").addEventListener("click", () => ($("paywallModal").hidden = tr
 
 $("helpBtn").addEventListener("click", () => ($("helpModal").hidden = false));
 $("closeHelp").addEventListener("click", () => ($("helpModal").hidden = true));
+
+// Premier visiteur sur cet appareil : on ouvre l'aide automatiquement une
+// seule fois, plutôt que de compter sur lui pour remarquer le bouton ❓ tout
+// seul. Mémorisé même s'il ferme sans tout lire, pour ne jamais réapparaître
+// de force ensuite (le bouton reste disponible à tout moment).
+if (!localStorage.getItem("hasSeenHelp")) {
+  localStorage.setItem("hasSeenHelp", "1");
+  $("helpModal").hidden = false;
+}
 // Lien de paiement Stripe tout prêt (créé une fois dans le tableau de bord
 // Stripe) : pas besoin d'appel serveur pour démarrer un paiement, juste
 // rediriger l'élève dessus. client_reference_id dit à Stripe (et donc au
