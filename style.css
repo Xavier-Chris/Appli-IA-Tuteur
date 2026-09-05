@@ -331,8 +331,8 @@ select:focus, input:focus { border-color: var(--primary); }
   scroll-snap-align: start;
   scroll-snap-stop: always;
 }
-.correction-card .row { margin-bottom: 6px; }
-.correction-card .tag { font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); display: block; }
+.correction-card .row, .bubble .row { margin-bottom: 6px; }
+.tag { font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); display: block; }
 .correction-card .said { color: var(--text); }
 .correction-card .better { color: var(--text); }
 .correction-card .why { color: var(--text); }

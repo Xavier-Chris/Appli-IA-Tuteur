@@ -47,6 +47,9 @@ const I18N = {
     mode_libre: "Conversation libre", mode_guidee: "Conversation guidée",
     mode_roleplay: "Jeu de rôle", mode_grammaire: "Grammaire",
     mode_conjugaison: "Conjugaison", mode_ecoute: "Écoute / dictée",
+    dictee_listen: "Écoute la phrase, puis écris ce que tu as entendu.",
+    dictee_placeholder: "🎧 Écoute la phrase, puis écris ce que tu as entendu ci-dessous.",
+    dictee_you_wrote: "Tu as écrit", dictee_actual: "Phrase réelle",
     ctx_subject: "Sujet", ctx_scenario: "Scénario", ctx_grammar: "Point de grammaire",
     ctx_ph_default: "Ex : voyage, restaurant...",
     ctx_ph_subject: "Ex : voyage, travail, université...",
@@ -196,6 +199,9 @@ const I18N = {
     mode_libre: "Free conversation", mode_guidee: "Guided conversation",
     mode_roleplay: "Role play", mode_grammaire: "Grammar",
     mode_conjugaison: "Conjugation", mode_ecoute: "Listening / dictation",
+    dictee_listen: "Listen to the sentence, then type what you heard.",
+    dictee_placeholder: "🎧 Listen to the sentence, then type what you heard below.",
+    dictee_you_wrote: "You wrote", dictee_actual: "Actual sentence",
     ctx_subject: "Topic", ctx_scenario: "Scenario", ctx_grammar: "Grammar point",
     ctx_ph_default: "e.g. travel, restaurant...",
     ctx_ph_subject: "e.g. travel, work, university...",
@@ -345,6 +351,9 @@ const I18N = {
     mode_libre: "Conversación libre", mode_guidee: "Conversación guiada",
     mode_roleplay: "Juego de rol", mode_grammaire: "Gramática",
     mode_conjugaison: "Conjugación", mode_ecoute: "Escucha / dictado",
+    dictee_listen: "Escucha la frase y luego escribe lo que oíste.",
+    dictee_placeholder: "🎧 Escucha la frase y luego escribe lo que oíste abajo.",
+    dictee_you_wrote: "Escribiste", dictee_actual: "Frase real",
     ctx_subject: "Tema", ctx_scenario: "Escenario", ctx_grammar: "Punto de gramática",
     ctx_ph_default: "Ej: viaje, restaurante...",
     ctx_ph_subject: "Ej: viaje, trabajo, universidad...",
@@ -494,6 +503,9 @@ const I18N = {
     mode_libre: "Freies Gespräch", mode_guidee: "Geführtes Gespräch",
     mode_roleplay: "Rollenspiel", mode_grammaire: "Grammatik",
     mode_conjugaison: "Konjugation", mode_ecoute: "Hören / Diktat",
+    dictee_listen: "Hör dir den Satz an und schreib dann, was du gehört hast.",
+    dictee_placeholder: "🎧 Hör dir den Satz an und schreib dann unten, was du gehört hast.",
+    dictee_you_wrote: "Du hast geschrieben", dictee_actual: "Tatsächlicher Satz",
     ctx_subject: "Thema", ctx_scenario: "Szenario", ctx_grammar: "Grammatikthema",
     ctx_ph_default: "z. B. Reise, Restaurant...",
     ctx_ph_subject: "z. B. Reise, Arbeit, Universität...",
@@ -643,6 +655,9 @@ const I18N = {
     mode_libre: "Conversa livre", mode_guidee: "Conversa guiada",
     mode_roleplay: "Simulação", mode_grammaire: "Gramática",
     mode_conjugaison: "Conjugação", mode_ecoute: "Escuta / ditado",
+    dictee_listen: "Ouça a frase e depois escreva o que você ouviu.",
+    dictee_placeholder: "🎧 Ouça a frase e depois escreva o que você ouviu abaixo.",
+    dictee_you_wrote: "Você escreveu", dictee_actual: "Frase real",
     ctx_subject: "Tema", ctx_scenario: "Cenário", ctx_grammar: "Ponto de gramática",
     ctx_ph_default: "Ex: viagem, restaurante...",
     ctx_ph_subject: "Ex: viagem, trabalho, universidade...",
@@ -1060,6 +1075,7 @@ $("personaSelect").addEventListener("change", (e) => {
 $("modeSelect").addEventListener("change", (e) => {
   state.mode = e.target.value;
   updateContextField();
+  micBtn.disabled = !micAvailable();
 });
 
 // Affiche/masque le champ contextuel selon le mode, dans la bonne langue.
@@ -1453,8 +1469,11 @@ let azureSttBroken = false;
 function canUseAzureStt() {
   return !!currentSession && !azureSttBroken && !!window.SpeechSDK;
 }
+// Le mode écoute/dictée se répond au clavier (retranscrire ce qu'on entend) :
+// répondre au micro n'aurait pas de sens et interférerait avec la
+// comparaison texte à texte, donc le micro reste désactivé dans ce mode.
 function micAvailable() {
-  return canUseAzureStt() || !!SR;
+  return state.mode !== "ecoute" && (canUseAzureStt() || !!SR);
 }
 
 // Arrêt automatique après un silence : évite d'obliger l'élève à recliquer
@@ -1663,6 +1682,7 @@ $("textForm").addEventListener("submit", (e) => {
   const text = input.value.trim();
   if (!text) return;
   input.value = "";
+  if (state.mode === "ecoute" && state.started) { handleDicteeSubmit(text); return; }
   sendMessage(text);
 });
 
@@ -2026,6 +2046,7 @@ Tu es aussi un professeur de français bienveillant, mais tu ne corriges JAMAIS 
     roleplay: `Jeu de rôle. Scénario : ${state.context || "au choix"}. Joue pleinement ton personnage, en suivant un déroulé réaliste et dans l'ordre logique de la vraie vie pour cette situation, étape par étape (par exemple, au restaurant : demander d'abord s'il y a une réservation, puis le nombre de personnes, avant d'installer les clients et de présenter le menu). Ne saute pas d'étapes et ne pars pas dans une autre direction avant d'avoir naturellement progressé dans la situation. Choisis aussi le registre (tutoiement ou vouvoiement) comme dans la vraie vie pour cette situation précise : vouvoiement pour un contexte formel ou entre inconnus (entretien d'embauche, administration, médecin, hôtel, cadre professionnel...), tutoiement pour un contexte familier (amis, famille, situation informelle). Une fois choisi, garde CE MÊME registre du début à la fin de la conversation, sans jamais en changer en cours de route.`,
     grammaire: `Leçon de grammaire interactive sur : ${state.context || "au choix"}. Ne fais pas de longs exposés : pose des questions et guide l'apprenant vers la règle.`,
     conjugaison: `Exercices de conjugaison, un verbe à la fois. Choisis un verbe (varie les verbes réguliers et irréguliers, adaptés aux temps autorisés pour ce niveau), un temps et une personne, et demande à l'apprenant de le conjuguer, par exemple sous la forme "Conjugue 'finir' à la première personne du pluriel, au passé composé." Attends sa réponse, dis clairement si c'est juste ou faux, donne la bonne forme avec une explication très courte si c'est faux, puis enchaîne directement sur un nouvel exercice avec un verbe différent. Un seul exercice à la fois, jamais plusieurs d'un coup.`,
+    ecoute: `Exercice d'écoute/dictée. Dis UNE SEULE phrase complète adaptée au niveau de l'apprenant, jamais une question ni une consigne : juste une phrase déclarative que l'apprenant va écouter et essayer de retranscrire par écrit. Une phrase différente à chaque tour, ne te répète jamais. Ne commente rien d'autre, ne réagis à aucune réponse : chaque tour est indépendant.`,
   }[state.mode];
 
   const levelGuidance = LEVEL_GUIDANCE[state.level] || LEVEL_GUIDANCE.intermediaire;
@@ -2238,6 +2259,12 @@ function makeWordsClickable(text, container) {
   }
 }
 
+// Mode écoute/dictée : la phrase du tuteur en cours (cachée à l'écran, juste
+// entendue) et la bulle qui l'affichera une fois révélée après la tentative
+// de l'apprenant.
+let dicteeSentence = "";
+let dicteeBubble = null;
+
 // =========================================================
 //  Envoi d'un message au tuteur
 // =========================================================
@@ -2279,13 +2306,23 @@ async function sendMessage(text, isSystemTrigger = false, fromVoice = false) {
     // réservé plutôt qu'une chaîne vide dans ce cas rare.
     state.messages.push({ role: "assistant", content: raw || "…" });
     data.reply = fixInversionQuestions(data.reply);
-    addBubble("tutor", data.reply);
-    // Réservé au tuteur classique : un "mood" resté dans l'historique (si
-    // l'élève a changé de personnage en cours de route) ou halluciné par
-    // erreur ne doit jamais s'appliquer à un autre personnage.
-    const mood = state.persona === "tuteur" && VALID_MOODS.includes(data.mood) ? data.mood : null;
-    speak(data.reply, mood);
-    setStatus(t("your_turn"));
+    if (state.mode === "ecoute") {
+      // La phrase reste cachée (juste entendue) jusqu'à ce que l'apprenant
+      // ait tenté de la retranscrire : sinon il pourrait la lire au lieu de
+      // l'écouter, ce qui viderait l'exercice de son sens.
+      dicteeSentence = data.reply;
+      dicteeBubble = addDicteeBubble(dicteeSentence);
+      speak(dicteeSentence, null);
+      setStatus(t("dictee_listen"));
+    } else {
+      addBubble("tutor", data.reply);
+      // Réservé au tuteur classique : un "mood" resté dans l'historique (si
+      // l'élève a changé de personnage en cours de route) ou halluciné par
+      // erreur ne doit jamais s'appliquer à un autre personnage.
+      const mood = state.persona === "tuteur" && VALID_MOODS.includes(data.mood) ? data.mood : null;
+      speak(data.reply, mood);
+      setStatus(t("your_turn"));
+    }
   } catch (err) {
     if (err && err.message === "TRIAL_LIMIT_REACHED") {
       state.messages.pop();   // ce tour n'a pas eu de réponse, ne pas le garder dans l'historique
@@ -2405,6 +2442,60 @@ function addBubble(who, text) {
   transcriptEl.appendChild(div);
   transcriptEl.scrollTop = transcriptEl.scrollHeight;
   return div;
+}
+
+// Bulle "cachée" du mode écoute/dictée : ni le texte ni les mots cliquables
+// habituels, juste une invitation à écouter (la phrase n'est révélée
+// qu'après la tentative de l'apprenant, voir revealDicteeAnswer).
+function addDicteeBubble(sentence) {
+  const div = document.createElement("div");
+  div.className = "bubble tutor";
+  const label = document.createElement("span");
+  label.textContent = t("dictee_placeholder");
+  div.appendChild(label);
+  const btn = document.createElement("span");
+  btn.className = "speak-again";
+  btn.textContent = "🔊";
+  btn.title = t("replay_title");
+  btn.addEventListener("click", () => speak(sentence));
+  div.appendChild(btn);
+  transcriptEl.appendChild(div);
+  transcriptEl.scrollTop = transcriptEl.scrollHeight;
+  return div;
+}
+
+// Révèle la vraie phrase et surligne uniquement les mots qui diffèrent entre
+// ce que l'apprenant a tapé et ce qui a réellement été dit (même diff mot à
+// mot que le panneau Corrections, mêmes couleurs, pour rester cohérent).
+// Ignore la casse et la ponctuation en début/fin de mot pour comparer :
+// une dictée sans majuscule initiale ni point final ne doit pas être
+// signalée comme fautive juste pour ça, seul le contenu compte.
+function normalizeForDictee(word) {
+  return word.toLowerCase().replace(/^[.,!?;:"'«»()]+|[.,!?;:"'«»()]+$/g, "");
+}
+function revealDicteeAnswer(bubble, typed, sentence) {
+  const { origParts, betterParts } = diffWords(typed, sentence, normalizeForDictee);
+  bubble.innerHTML = `
+    <div class="row"><span class="tag">${t("dictee_you_wrote")}</span><span>${diffPartsToHtml(origParts, "err-word")}</span></div>
+    <div class="row"><span class="tag">${t("dictee_actual")}</span><span>${diffPartsToHtml(betterParts, "fix-word")}</span></div>`;
+  const btn = document.createElement("span");
+  btn.className = "speak-again";
+  btn.textContent = "🔊";
+  btn.title = t("replay_title");
+  btn.addEventListener("click", () => speak(sentence));
+  bubble.appendChild(btn);
+}
+
+// Appelé depuis le formulaire de texte quand le mode est "écoute" : ne passe
+// jamais par sendMessage (ce n'est pas une réponse conversationnelle), la
+// comparaison se fait entièrement en local, puis on redemande juste une
+// nouvelle phrase au tuteur.
+async function handleDicteeSubmit(typed) {
+  if (!dicteeSentence || !dicteeBubble) return;
+  revealDicteeAnswer(dicteeBubble, typed, dicteeSentence);
+  dicteeBubble = null;
+  dicteeSentence = "";
+  await sendMessage("[Phrase suivante pour la dictée.]", true);
 }
 
 // Nettoyage local immédiat de la transcription : majuscule au début et
@@ -2677,20 +2768,24 @@ let savedCorrections = [];
 // Diff mot à mot (LCS) entre la phrase de l'apprenant et sa correction, pour
 // ne surligner que les mots qui changent au lieu de barrer/colorer toute la
 // phrase (plus lisible sur une phrase longue avec peu de fautes).
-function diffWords(original, better) {
+// "normalize" ne sert qu'à la comparaison (ex : ignorer la ponctuation pour
+// la dictée, voir handleDicteeSubmit) : le mot affiché reste toujours celui
+// d'origine, jamais la version normalisée.
+function diffWords(original, better, normalize = (w) => w) {
   const a = (original || "").split(/\s+/).filter(Boolean);
   const b = (better || "").split(/\s+/).filter(Boolean);
+  const na = a.map(normalize), nb = b.map(normalize);
   const n = a.length, m = b.length;
   const dp = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(0));
   for (let i = n - 1; i >= 0; i--) {
     for (let j = m - 1; j >= 0; j--) {
-      dp[i][j] = a[i] === b[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+      dp[i][j] = na[i] === nb[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
     }
   }
   const origParts = [], betterParts = [];
   let i = 0, j = 0;
   while (i < n && j < m) {
-    if (a[i] === b[j]) { origParts.push({ word: a[i], changed: false }); betterParts.push({ word: b[j], changed: false }); i++; j++; }
+    if (na[i] === nb[j]) { origParts.push({ word: a[i], changed: false }); betterParts.push({ word: b[j], changed: false }); i++; j++; }
     else if (dp[i + 1][j] >= dp[i][j + 1]) { origParts.push({ word: a[i], changed: true }); i++; }
     else { betterParts.push({ word: b[j], changed: true }); j++; }
   }
