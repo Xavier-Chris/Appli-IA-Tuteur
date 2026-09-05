@@ -2613,16 +2613,19 @@ function openPaywall() {
 }
 $("closePaywall").addEventListener("click", () => ($("paywallModal").hidden = true));
 
-$("helpBtn").addEventListener("click", () => ($("helpModal").hidden = false));
+function markHelpSeen() {
+  localStorage.setItem("hasSeenHelp", "1");
+  $("helpBtn").classList.remove("help-hint");
+}
+$("helpBtn").addEventListener("click", () => { $("helpModal").hidden = false; markHelpSeen(); });
 $("closeHelp").addEventListener("click", () => ($("helpModal").hidden = true));
 
-// Premier visiteur sur cet appareil : on ouvre l'aide automatiquement une
-// seule fois, plutôt que de compter sur lui pour remarquer le bouton ❓ tout
-// seul. Mémorisé même s'il ferme sans tout lire, pour ne jamais réapparaître
-// de force ensuite (le bouton reste disponible à tout moment).
+// Premier visiteur sur cet appareil : un discret halo pulsant attire l'œil
+// vers le bouton ❓ sans rien imposer (une fenêtre automatique au chargement
+// a été jugée trop agressive par Xavier). Disparaît dès le premier clic,
+// jamais de force ensuite.
 if (!localStorage.getItem("hasSeenHelp")) {
-  localStorage.setItem("hasSeenHelp", "1");
-  $("helpModal").hidden = false;
+  $("helpBtn").classList.add("help-hint");
 }
 // Lien de paiement Stripe tout prêt (créé une fois dans le tableau de bord
 // Stripe) : pas besoin d'appel serveur pour démarrer un paiement, juste
