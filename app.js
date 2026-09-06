@@ -129,7 +129,7 @@ const I18N = {
       <p><strong>Panneau Vocabulaire</strong> : les mots que tu as ajoutés. Le bouton <strong>Réviser</strong> te les fait retravailler avec des fiches de révision espacée.</p>
       <h3>Régler ta leçon</h3>
       <p><strong>Niveau</strong> : adapte le vocabulaire et la difficulté des phrases du tuteur.</p>
-      <p><strong>Mode</strong> : conversation libre, guidée sur un thème, jeu de rôle, ou leçon de grammaire.</p>
+      <p><strong>Mode</strong> : conversation libre, guidée sur un thème, jeu de rôle, leçon de grammaire, conjugaison, ou écoute/dictée.</p>
       <p><strong>Personnage</strong> : change qui te parle (le tuteur classique, ou un personnage avec sa propre personnalité).</p>
       <p><strong>Contexte</strong> : précise le thème ou le scénario, selon le mode choisi.</p>
       <h3>Ton compte</h3>
@@ -281,7 +281,7 @@ const I18N = {
       <p><strong>Vocabulary panel</strong>: the words you've added. The <strong>Review</strong> button lets you practice them with spaced-repetition flashcards.</p>
       <h3>Adjusting your lesson</h3>
       <p><strong>Level</strong>: adapts the tutor's vocabulary and sentence difficulty.</p>
-      <p><strong>Mode</strong>: free conversation, guided on a topic, roleplay, or a grammar lesson.</p>
+      <p><strong>Mode</strong>: free conversation, guided on a topic, roleplay, a grammar lesson, conjugation, or listening/dictation.</p>
       <p><strong>Character</strong>: changes who's talking to you (the classic tutor, or a character with their own personality).</p>
       <p><strong>Context</strong>: specifies the topic or scenario, depending on the mode you picked.</p>
       <h3>Your account</h3>
@@ -433,7 +433,7 @@ const I18N = {
       <p><strong>Panel de vocabulario</strong>: las palabras que has añadido. El botón <strong>Repasar</strong> te permite practicarlas con fichas de repetición espaciada.</p>
       <h3>Ajustar tu lección</h3>
       <p><strong>Nivel</strong>: adapta el vocabulario y la dificultad de las frases del tutor.</p>
-      <p><strong>Modo</strong>: conversación libre, guiada sobre un tema, juego de rol, o lección de gramática.</p>
+      <p><strong>Modo</strong>: conversación libre, guiada sobre un tema, juego de rol, lección de gramática, conjugación, o escucha/dictado.</p>
       <p><strong>Personaje</strong>: cambia quién te habla (el tutor clásico, o un personaje con su propia personalidad).</p>
       <p><strong>Contexto</strong>: precisa el tema o el escenario, según el modo elegido.</p>
       <h3>Tu cuenta</h3>
@@ -585,7 +585,7 @@ const I18N = {
       <p><strong>Vokabel-Feld</strong>: die Wörter, die du hinzugefügt hast. Der Button <strong>Wiederholen</strong> lässt dich sie mit Karteikarten im Abstand wiederholen üben.</p>
       <h3>Deine Lektion einstellen</h3>
       <p><strong>Niveau</strong>: passt den Wortschatz und die Satzschwierigkeit des Tutors an.</p>
-      <p><strong>Modus</strong>: freies Gespräch, geführt zu einem Thema, Rollenspiel, oder eine Grammatiklektion.</p>
+      <p><strong>Modus</strong>: freies Gespräch, geführt zu einem Thema, Rollenspiel, eine Grammatiklektion, Konjugation, oder Hören/Diktat.</p>
       <p><strong>Figur</strong>: ändert, wer mit dir spricht (der klassische Tutor, oder eine Figur mit eigener Persönlichkeit).</p>
       <p><strong>Kontext</strong>: legt das Thema oder Szenario fest, je nach gewähltem Modus.</p>
       <h3>Dein Konto</h3>
@@ -737,7 +737,7 @@ const I18N = {
       <p><strong>Painel de vocabulário</strong>: as palavras que você adicionou. O botão <strong>Revisar</strong> permite praticá-las com fichas de repetição espaçada.</p>
       <h3>Ajustar sua aula</h3>
       <p><strong>Nível</strong>: adapta o vocabulário e a dificuldade das frases do tutor.</p>
-      <p><strong>Modo</strong>: conversa livre, guiada sobre um tema, interpretação de papéis, ou aula de gramática.</p>
+      <p><strong>Modo</strong>: conversa livre, guiada sobre um tema, interpretação de papéis, aula de gramática, conjugação, ou escuta/ditado.</p>
       <p><strong>Personagem</strong>: muda quem fala com você (o tutor clássico, ou um personagem com sua própria personalidade).</p>
       <p><strong>Contexto</strong>: define o tema ou o cenário, de acordo com o modo escolhido.</p>
       <h3>Sua conta</h3>
