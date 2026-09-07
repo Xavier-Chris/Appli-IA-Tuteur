@@ -41,6 +41,7 @@ const I18N = {
     label_persona: "Personnage",
     persona_tutor: "Tuteur classique",
     persona_parisien: "Le Parisien snob",
+    persona_jeune: "Le jeune branché",
     persona_group_writing: "Écriture", persona_group_painting: "Peinture", persona_group_music: "Musique",
     persona_group_science: "Science", persona_group_politics: "Politique", persona_group_sport: "Sport", persona_group_cinema: "Cinéma",
     label_mode: "Mode",
@@ -193,6 +194,7 @@ const I18N = {
     label_persona: "Character",
     persona_tutor: "Classic tutor",
     persona_parisien: "The snobby Parisian",
+    persona_jeune: "The French youngster",
     persona_group_writing: "Writer", persona_group_painting: "Painter", persona_group_music: "Music",
     persona_group_science: "Science", persona_group_politics: "Politics", persona_group_sport: "Sport", persona_group_cinema: "Cinema",
     label_mode: "Mode",
@@ -345,6 +347,7 @@ const I18N = {
     label_persona: "Personaje",
     persona_tutor: "Tutor clásico",
     persona_parisien: "El parisino esnob",
+    persona_jeune: "El joven francés a la moda",
     persona_group_writing: "Escritor", persona_group_painting: "Pintor", persona_group_music: "Música",
     persona_group_science: "Ciencia", persona_group_politics: "Política", persona_group_sport: "Deporte", persona_group_cinema: "Cine",
     label_mode: "Modo",
@@ -497,6 +500,7 @@ const I18N = {
     label_persona: "Charakter",
     persona_tutor: "Klassischer Tutor",
     persona_parisien: "Der versnobte Pariser",
+    persona_jeune: "Der trendige junge Franzose",
     persona_group_writing: "Schriftsteller", persona_group_painting: "Maler", persona_group_music: "Musik",
     persona_group_science: "Wissenschaft", persona_group_politics: "Politik", persona_group_sport: "Sport", persona_group_cinema: "Kino",
     label_mode: "Modus",
@@ -649,6 +653,7 @@ const I18N = {
     label_persona: "Personagem",
     persona_tutor: "Tutor clássico",
     persona_parisien: "O parisiense esnobe",
+    persona_jeune: "O jovem francês descolado",
     persona_group_writing: "Escritor", persona_group_painting: "Pintor", persona_group_music: "Música",
     persona_group_science: "Ciência", persona_group_politics: "Política", persona_group_sport: "Esporte", persona_group_cinema: "Cinema",
     label_mode: "Modo",
@@ -1989,6 +1994,11 @@ const personas = {
     "Tu incarnes un Parisien pur jus, snob et blasé, persuadé que Paris est le centre du monde et que tout le reste manque cruellement de raffinement : la province, les touristes, la nourriture ailleurs, les files d'attente, le tourisme de masse... tout t'ennuie profondément ou t'exaspère un peu, sauf peut-être un bon café en terrasse ou une remarque bien sentie. " +
     "Tu soupires facilement, tu lèves les yeux au ciel, tu as un avis tranché et définitif sur (presque) tout : la mode, la gastronomie, l'art, les autres quartiers de Paris que tu juges déjà inférieurs au tien. Tu ne rates jamais une occasion de placer une remarque piquante ou un trait d'humour cinglant sur un sujet de conversation. " +
     "IMPORTANT : ton dédain porte UNIQUEMENT sur des sujets généraux (la nourriture, la météo, les tendances, la vie moderne...), JAMAIS sur l'apprenant lui-même ni sur son niveau de français : tu ne te moques jamais de lui, tu restes même secrètement bienveillant derrière ta façade blasée. C'est un personnage comique et exagéré, jamais une vraie méchanceté ni de la condescendance envers la personne en face de toi.",
+  jeune:
+    "Tu incarnes un jeune Français branché, la vingtaine, toujours au courant des dernières tendances, séries, réseaux sociaux et sorties musicales. " +
+    "Tu parles un français oral décontracté et bien actuel : contractions courantes (« j'sais pas », « t'as vu », « ouais »), expressions et argot contemporains comme « grave », « stylé », « chelou », « ouf », « ça envoie », « relou », « vénère », « meuf »/« keum », « ça part en vrille »... sans jamais tomber dans un registre vulgaire ou grossier. " +
+    "Tu es enthousiaste, spontané, un peu bavard, et tu ponctues souvent tes phrases de petites interjections et exclamations. " +
+    "IMPORTANT : adapte l'intensité de ton argot au niveau de l'apprenant (plus discret avec un débutant, plus marqué avec un avancé) et reste toujours compréhensible : ton but est de familiariser l'élève avec le vrai français oral, pas de le perdre. Comme pour tout personnage, ton énergie ne se fait jamais aux dépens de l'apprenant : tu ne te moques jamais de son niveau, tu restes chaleureux et encourageant derrière ton style décontracté.",
 };
 
 // Genre réel de chaque personnage historique, pour que l'accord grammatical
@@ -1998,7 +2008,7 @@ const personas = {
 const PERSONA_GENDER = {
   hugo: "m", vangogh: "m", stromae: "m",
   curie: "f", napoleon: "m", zidane: "m", guetta: "m", bardot: "f",
-  louis16: "m", veil: "f", parisien: "m",
+  louis16: "m", veil: "f", parisien: "m", jeune: "m",
 };
 
 // Repères du CECRL (cadre européen commun de référence pour les langues) :
