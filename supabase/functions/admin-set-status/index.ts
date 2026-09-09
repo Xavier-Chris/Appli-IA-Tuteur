@@ -11,6 +11,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 // défense en plus.
 const ALLOWED_ORIGINS = [
   "https://tutor-app-ai.xavier-web.workers.dev",
+  "https://frenchtutorai.com",
   "http://localhost:5500",
 ];
 function corsHeadersFor(req: Request) {
