@@ -30,6 +30,12 @@ const MODELS: Record<string, string> = {
 };
 const MAX_TOKENS = 2000;
 const TRIAL_DAILY_LIMIT_SECONDS = 600;
+// Sans ça, un compte "trial" garde ses 10 minutes gratuites CHAQUE jour,
+// indéfiniment : rien n'empêchait quelqu'un d'utiliser l'appli des mois
+// sans jamais payer. Passé ce nombre de jours depuis la création du
+// compte, le trial est fermé (0 minute), même si le quota du jour même
+// n'a pas été touché.
+const TRIAL_TOTAL_DAYS = 14;
 // Un incrément de temps aberrant (bug client, onglet resté ouvert des
 // heures sans message) ne doit jamais faire sauter tout le quota du jour
 // d'un coup : plafonné à 2 minutes par message, largement au-dessus du
@@ -63,10 +69,20 @@ Deno.serve(async (req) => {
     const { systemPrompt, messages, model, elapsedSeconds } = await req.json();
     const claudeModel = MODELS[model] || MODELS.main;
 
-    const { data: profile } = await admin.from("profiles").select("plan").eq("user_id", user.id).maybeSingle();
+    const { data: profile } = await admin.from("profiles").select("plan, created_at").eq("user_id", user.id).maybeSingle();
     const plan = profile?.plan || "trial";
 
     if (plan === "trial") {
+      const trialAgeDays = profile?.created_at
+        ? (Date.now() - new Date(profile.created_at).getTime()) / (1000 * 60 * 60 * 24)
+        : 0;
+      if (trialAgeDays >= TRIAL_TOTAL_DAYS) {
+        return new Response(JSON.stringify({ error: "TRIAL_EXPIRED" }), {
+          status: 402,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
       const today = new Date().toISOString().slice(0, 10);
       const { data: usageRow } = await admin.from("usage_daily")
         .select("seconds_used").eq("user_id", user.id).eq("day", today).maybeSingle();

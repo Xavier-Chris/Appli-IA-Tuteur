@@ -180,6 +180,9 @@ const I18N = {
     paywall_note: "Tu as utilisé tes 10 minutes gratuites du jour. Reviens demain, ou passe à l'abonnement pour un accès illimité.",
     btn_subscribe: "S'abonner (20€/mois)",
     trial_limit_status: "Essai gratuit du jour terminé.",
+    paywall_expired_h: "Ton essai gratuit est terminé",
+    paywall_expired_note: "Tu as utilisé tes 14 jours d'essai gratuit. Abonne-toi pour continuer avec des conversations illimitées.",
+    trial_expired_status: "Essai gratuit terminé.",
     import_h: "Importer ton vocabulaire ?",
     import_note: "On a trouvé du vocabulaire et des corrections déjà sauvegardés dans ce navigateur. Tu veux les ajouter à ton compte ?",
     btn_skip_import: "Ignorer",
@@ -333,6 +336,9 @@ const I18N = {
     paywall_note: "You've used your 10 free minutes for today. Come back tomorrow, or subscribe for unlimited access.",
     btn_subscribe: "Subscribe (€20/month)",
     trial_limit_status: "Today's free trial is over.",
+    paywall_expired_h: "Your free trial has ended",
+    paywall_expired_note: "You've used your 14 days of free practice. Subscribe to continue with unlimited conversations.",
+    trial_expired_status: "Free trial has ended.",
     import_h: "Import your vocabulary?",
     import_note: "We found vocabulary and corrections already saved in this browser. Do you want to add them to your account?",
     btn_skip_import: "Skip",
@@ -486,6 +492,9 @@ const I18N = {
     paywall_note: "Has usado tus 10 minutos gratis de hoy. Vuelve mañana, o suscríbete para un acceso ilimitado.",
     btn_subscribe: "Suscribirse (20€/mes)",
     trial_limit_status: "Prueba gratuita de hoy terminada.",
+    paywall_expired_h: "Tu prueba gratuita ha terminado",
+    paywall_expired_note: "Has usado tus 14 días de práctica gratuita. Suscríbete para continuar con conversaciones ilimitadas.",
+    trial_expired_status: "Prueba gratuita terminada.",
     import_h: "¿Importar tu vocabulario?",
     import_note: "Encontramos vocabulario y correcciones ya guardados en este navegador. ¿Quieres añadirlos a tu cuenta?",
     btn_skip_import: "Omitir",
@@ -639,6 +648,9 @@ const I18N = {
     paywall_note: "Du hast deine 10 kostenlosen Minuten für heute aufgebraucht. Komm morgen wieder, oder abonniere für unbegrenzten Zugang.",
     btn_subscribe: "Abonnieren (20€/Monat)",
     trial_limit_status: "Kostenloser Test für heute beendet.",
+    paywall_expired_h: "Deine kostenlose Testphase ist beendet",
+    paywall_expired_note: "Du hast deine 14 Tage kostenloses Üben aufgebraucht. Abonniere, um mit unbegrenzten Gesprächen fortzufahren.",
+    trial_expired_status: "Kostenlose Testphase beendet.",
     import_h: "Dein Vokabular importieren?",
     import_note: "Wir haben Vokabular und Korrekturen gefunden, die bereits in diesem Browser gespeichert sind. Möchtest du sie zu deinem Konto hinzufügen?",
     btn_skip_import: "Überspringen",
@@ -792,6 +804,9 @@ const I18N = {
     paywall_note: "Você usou seus 10 minutos grátis de hoje. Volte amanhã, ou assine para acesso ilimitado.",
     btn_subscribe: "Assinar (20€/mês)",
     trial_limit_status: "Teste grátis de hoje encerrado.",
+    paywall_expired_h: "Seu teste grátis terminou",
+    paywall_expired_note: "Você usou seus 14 dias de prática grátis. Assine para continuar com conversas ilimitadas.",
+    trial_expired_status: "Teste grátis encerrado.",
     import_h: "Importar seu vocabulário?",
     import_note: "Encontramos vocabulário e correções já salvos neste navegador. Quer adicioná-los à sua conta?",
     btn_skip_import: "Ignorar",
@@ -2336,10 +2351,11 @@ async function sendMessage(text, isSystemTrigger = false, fromVoice = false) {
       setStatus(t("your_turn"));
     }
   } catch (err) {
-    if (err && err.message === "TRIAL_LIMIT_REACHED") {
+    if (err && (err.message === "TRIAL_LIMIT_REACHED" || err.message === "TRIAL_EXPIRED")) {
+      const expired = err.message === "TRIAL_EXPIRED";
       state.messages.pop();   // ce tour n'a pas eu de réponse, ne pas le garder dans l'historique
-      openPaywall();
-      setStatus(t("trial_limit_status"));
+      openPaywall(expired);
+      setStatus(t(expired ? "trial_expired_status" : "trial_limit_status"));
     } else {
       console.error(err);
       const msg = err && err.message ? err.message : String(err);
@@ -2717,7 +2733,17 @@ $("adminSubmitBtn").addEventListener("click", async () => {
 // =========================================================
 //  Fin d'essai gratuit / abonnement (Stripe)
 // =========================================================
-function openPaywall() {
+// expired = true : le trial de 14 jours est vraiment terminé (plus jamais
+// de minutes gratuites), pas juste le quota du jour même. Message différent
+// dans les deux cas, sinon "reviens demain" serait trompeur pour quelqu'un
+// qui ne pourra plus jamais revenir gratuitement.
+function openPaywall(expired) {
+  const hKey = expired ? "paywall_expired_h" : "paywall_h";
+  const noteKey = expired ? "paywall_expired_note" : "paywall_note";
+  $("paywallTitle").setAttribute("data-i18n", hKey);
+  $("paywallTitle").textContent = t(hKey);
+  $("paywallNote").setAttribute("data-i18n", noteKey);
+  $("paywallNote").textContent = t(noteKey);
   $("paywallModal").hidden = false;
 }
 $("closePaywall").addEventListener("click", () => ($("paywallModal").hidden = true));
